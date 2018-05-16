@@ -4,8 +4,8 @@
 
 using namespace std;
 
-char InjectFile[] = "opengl3_example.dll";
 char HaloProcess[] = "halo.exe";
+char dllPath[250] = "C:\\Repos\\HaloTAS\\TASHook\\Release\\TASDLL.dll";
 
 typedef HINSTANCE (*fpLoadLibrary)(char*);
 
@@ -20,10 +20,6 @@ bool InjectDLL(DWORD ProcessId) {
 	fpLoadLibrary LoadLibraryAddr = (fpLoadLibrary)GetProcAddress(hDll, "LoadLibraryA");
 
 	hProc = OpenProcess(PROCESS_ALL_ACCESS, false, ProcessId);
-
-	char dllPath[250] = "C:\\Repos\\HaloTAS\\imgui-master\\examples\\opengl3_example\\Release\\";
-
-	strcat_s(dllPath, InjectFile);
 
 	paramAddr = VirtualAllocEx(hProc, 0, strlen(dllPath) + 1, MEM_COMMIT, PAGE_READWRITE);
 	bool memoryWritten = WriteProcessMemory(hProc, paramAddr, dllPath, strlen(dllPath) + 1, NULL);
