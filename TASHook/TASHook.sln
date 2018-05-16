@@ -11,6 +11,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TASGameHook", "TASGameHook\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TASInterface", "TASInterface\TASInterface.csproj", "{BAC39276-E839-49F5-AF64-B640BA5936B4}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TASInjector", "TASInjector\TASInjector.vcxproj", "{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HaloHook", "HaloHook\HaloHook.vcxproj", "{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +67,26 @@ Global
 		{BAC39276-E839-49F5-AF64-B640BA5936B4}.Release|x64.Build.0 = Release|Any CPU
 		{BAC39276-E839-49F5-AF64-B640BA5936B4}.Release|x86.ActiveCfg = Release|Any CPU
 		{BAC39276-E839-49F5-AF64-B640BA5936B4}.Release|x86.Build.0 = Release|Any CPU
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Debug|x64.ActiveCfg = Debug|x64
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Debug|x64.Build.0 = Debug|x64
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Debug|x86.ActiveCfg = Debug|Win32
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Debug|x86.Build.0 = Debug|Win32
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Release|Any CPU.ActiveCfg = Release|Win32
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Release|x64.ActiveCfg = Release|x64
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Release|x64.Build.0 = Release|x64
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Release|x86.ActiveCfg = Release|Win32
+		{EE1EBF6E-0C6D-49DB-AFBF-6C15DDB51A16}.Release|x86.Build.0 = Release|Win32
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Debug|x64.ActiveCfg = Debug|x64
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Debug|x64.Build.0 = Debug|x64
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Debug|x86.ActiveCfg = Debug|Win32
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Debug|x86.Build.0 = Debug|Win32
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Release|Any CPU.ActiveCfg = Release|Win32
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Release|x64.ActiveCfg = Release|x64
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Release|x64.Build.0 = Release|x64
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Release|x86.ActiveCfg = Release|Win32
+		{316BFEC5-9C62-4030-A684-AFF2BDAD9AFC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
