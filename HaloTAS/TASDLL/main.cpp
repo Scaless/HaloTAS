@@ -1,10 +1,5 @@
-// ImGui - standalone example application for GLFW + OpenGL 3, using programmable pipeline
-// If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
-// (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan graphics context creation, etc.)
-// (GL3W is a helper library to access OpenGL functions since there is no standard header to access modern OpenGL functions easily. Alternatives are GLEW, Glad, etc.)
 
-#define GLFW_EXPOSE_NATIVE_WIN32
-
+#include "HaloConstants.h"
 #include <inttypes.h>
 #include <string>
 #include <map>
@@ -12,7 +7,7 @@
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
 #include <stdio.h>
-#include <GL/gl3w.h>    // This example is using gl3w to access OpenGL functions (because it is small). You may use glew/glad/glLoadGen/etc. whatever already works for you.
+#include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
 #include <dwmapi.h>
@@ -121,198 +116,6 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 	return ProgramID;
 }
 
-// KEYS is a layout of the keyboard keys in memory (one byte per key)
-enum KEYS {
-	ESC = 0,
-	F1,
-	F2,
-	F3,
-	F4,
-	F5,
-	F6,
-	F7,
-	F8,
-	F9,
-	F10,
-	F11,
-	F12,
-	PrntScrn,
-	ScrollLock,
-	PauseBreak,
-	Tilde,
-	NUM_1,
-	NUM_2,
-	NUM_3,
-	NUM_4,
-	NUM_5,
-	NUM_6,
-	NUM_7,
-	NUM_8,
-	NUM_9,
-	NUM_0,
-	Minus,
-	Equal,
-	Backspace,
-	Tab,
-	Q,
-	W,
-	E,
-	R,
-	T,
-	Y,
-	U,
-	I,
-	O,
-	P,
-	LeftBracket,
-	RightBracket,
-	Pipe,
-	CapsLock,
-	A,
-	S,
-	D,
-	F,
-	G,
-	H,
-	J,
-	K,
-	L,
-	Colon,
-	Quote,
-	Enter,
-	LShift,
-	Z,
-	X,
-	C,
-	V,
-	B,
-	N,
-	M,
-	Comma,
-	Period,
-	ForwardSlash,
-	RShift,
-	LCtrl,
-	LWin,
-	LAlt,
-	Space,
-	RAlt,
-	RWin,
-	KeyThatLiterallyNoOneHasEverUsed,
-	RightCtrl,
-	Up,
-	Down,
-	Left,
-	Right
-};
-
-std::string KEY_PRINT_CODES[] = {
-	"ESC",
-	"F1",
-	"F2",
-	"F3",
-	"F4",
-	"F5",
-	"F6",
-	"F7",
-	"F8",
-	"F9",
-	"F10",
-	"F11",
-	"F12",
-	"PrntScrn",
-	"ScrollLock",
-	"PauseBreak",
-	"Tilde",
-	"1",
-	"2",
-	"3",
-	"4",
-	"5",
-	"6",
-	"7",
-	"8",
-	"9",
-	"0",
-	"Minus",
-	"Equal",
-	"Backspace",
-	"Tab",
-	"Q",
-	"W",
-	"E",
-	"R",
-	"T",
-	"Y",
-	"U",
-	"I",
-	"O",
-	"P",
-	"[",
-	"]",
-	"|",
-	"CapsLock",
-	"A",
-	"S",
-	"D",
-	"F",
-	"G",
-	"H",
-	"J",
-	"K",
-	"L",
-	"Colon",
-	"Quote",
-	"Enter",
-	"LShift",
-	"Z",
-	"X",
-	"C",
-	"V",
-	"B",
-	"N",
-	"M",
-	",",
-	".",
-	"/",
-	"RShift",
-	"LCtrl",
-	"LWin",
-	"LAlt",
-	"Space",
-	"RAlt",
-	"RWin",
-	"Menu",
-	"RCtrl",
-	"Up",
-	"Down",
-	"Left",
-	"Right",
-	"Insert",
-	"Home",
-	"PageUp",
-	"Delete",
-	"End",
-	"PageDown",
-	"NumLock",
-	"NUM_/",
-	"NUM_*",
-	"NUM_0",
-	"NUM_1",
-	"NUM_2",
-	"NUM_3",
-	"NUM_4",
-	"NUM_5",
-	"NUM_6",
-	"NUM_7",
-	"NUM_8",
-	"NUM_9",
-	"NUM_-",
-	"NUM_+",
-	"NUM_ENTER",
-	"NUM_.",
-};
-
 struct InputMoment {
 	uint8_t inputBuf[104];
 	float updown, leftright;
@@ -355,11 +158,15 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	bool* ADDR_SIMULATE = (bool*)0x00721E8C;
 	bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
 
+
+	float* health = (float*)0x400B8DE8;
 	float* pos = (float*)0x400B8D60;
-	float* campos = (float*)0x400B8DA4;
+	//float* campos = (float*)0x400B8DA4;
+	float* campos = (float*)0x006AC6D0;
 	float* dirx = (float*)0x400B8F28;
 	float* diry = (float*)0x400B8F3C;
-	float* look = (float*)0x400B8F34;
+	//float* look = (float*)0x400B8F34;
+	float* look = (float*)0x006AC688;
 
 	std::map<uint64_t, InputMoment> allInputs;
 
@@ -396,7 +203,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 	// Setup style
 	ImGui::StyleColorsDark();
-	//ImGui::StyleColorsClassic();
 
 	//bool show_demo_window = true;
 	//bool show_another_window = false;
@@ -445,46 +251,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		1.0f,-1.0f, 1.0f
 	};
 
-	//// One color for each vertex. They were generated randomly.
-	//static const GLfloat g_color_buffer_data[] = {
-	//	0.583f,  0.771f,  0.014f,
-	//	0.609f,  0.115f,  0.436f,
-	//	0.327f,  0.483f,  0.844f,
-	//	0.822f,  0.569f,  0.201f,
-	//	0.435f,  0.602f,  0.223f,
-	//	0.310f,  0.747f,  0.185f,
-	//	0.597f,  0.770f,  0.761f,
-	//	0.559f,  0.436f,  0.730f,
-	//	0.359f,  0.583f,  0.152f,
-	//	0.483f,  0.596f,  0.789f,
-	//	0.559f,  0.861f,  0.639f,
-	//	0.195f,  0.548f,  0.859f,
-	//	0.014f,  0.184f,  0.576f,
-	//	0.771f,  0.328f,  0.970f,
-	//	0.406f,  0.615f,  0.116f,
-	//	0.676f,  0.977f,  0.133f,
-	//	0.971f,  0.572f,  0.833f,
-	//	0.140f,  0.616f,  0.489f,
-	//	0.997f,  0.513f,  0.064f,
-	//	0.945f,  0.719f,  0.592f,
-	//	0.543f,  0.021f,  0.978f,
-	//	0.279f,  0.317f,  0.505f,
-	//	0.167f,  0.620f,  0.077f,
-	//	0.347f,  0.857f,  0.137f,
-	//	0.055f,  0.953f,  0.042f,
-	//	0.714f,  0.505f,  0.345f,
-	//	0.783f,  0.290f,  0.734f,
-	//	0.722f,  0.645f,  0.174f,
-	//	0.302f,  0.455f,  0.848f,
-	//	0.225f,  0.587f,  0.040f,
-	//	0.517f,  0.713f,  0.338f,
-	//	0.053f,  0.959f,  0.120f,
-	//	0.393f,  0.621f,  0.362f,
-	//	0.673f,  0.211f,  0.457f,
-	//	0.820f,  0.883f,  0.371f,
-	//	0.982f,  0.099f,  0.879f
-	//};
-
 	GLuint VertexArrayID;
 	glGenVertexArrays(1, &VertexArrayID);
 	glBindVertexArray(VertexArrayID);
@@ -498,12 +264,10 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// Give our vertices to OpenGL.
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
-	//GLuint colorbuffer;
-	//glGenBuffers(1, &colorbuffer);
-	//glBindBuffer(GL_ARRAY_BUFFER, colorbuffer);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(g_color_buffer_data), g_color_buffer_data, GL_STATIC_DRAW);
-
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
+
+	static float fov = 40;
+	static float zoomedfov = 18;
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -572,17 +336,17 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::SameLine();
 			ImGui::Text("Frames since level start = %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
 			ImGui::SameLine();
-			ImGui::Text("Player Position: (%f,%f,%f)", pos[0], pos[1], pos[2]);
-			ImGui::SameLine();
-			ImGui::Text("Shoot Position?: (%f,%f,%f)", campos[0], campos[1], campos[2]);
+			ImGui::Text("Camera Position: (%f,%f,%f)", campos[0], campos[1], campos[2]);
 			ImGui::SameLine();
 			ImGui::Text("Look Direction: (%f,%f,%f)", look[0], look[1], look[2]);
+
+			ImGui::SliderFloat("Player Health", health, 0, 5);
 
 			if (ImGui::Button("Close")) {
 				break;
 			}
 
-			//ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 			static bool forceSimulate = true;
 			ImGui::Checkbox("Force Simulate", &forceSimulate);
 			*ADDR_SIMULATE = forceSimulate ? 0 : 1;
@@ -597,18 +361,18 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::SameLine();
 			ImGui::Checkbox("Play", &isPlayback);
 			
-			int count = 0;
-			//std::set<std::string> types;
-			for (int i = 0x40000000; i < 0x41B40000; i += 4) {
-				uint32_t* b = (uint32_t*)i;
-				uint32_t* c = (uint32_t*)(i + 4);
-				if (*b == 0x68656164u) {
-					count++;
-					//types.insert(std::to_string(*b));
-					//ImGui::Text("t: %08x", *c);
-				}
-			}
-			ImGui::Text("Count: %d", count);
+			//int count = 0;
+			////std::set<std::string> types;
+			//for (int i = 0x40000000; i < 0x41B40000; i += 4) {
+			//	uint32_t* b = (uint32_t*)i;
+			//	uint32_t* c = (uint32_t*)(i + 4);
+			//	if (*b == 0x68656164u) {
+			//		count++;
+			//		//types.insert(std::to_string(*b));
+			//		//ImGui::Text("t: %08x", *c);
+			//	}
+			//}
+			//ImGui::Text("Count: %d", count);
 
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
@@ -738,9 +502,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		// DRAW OUR GAME OVERLAY
 		int width, height, x, y;
 		glfwGetWindowSize(window, &width, &height);
-		glm::mat4 Projection = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.5f, 1000.0f);
+		glm::mat4 Projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.5f, 1000.0f);
 
-		glm::vec3 playerPos(pos[0], pos[1], pos[2]);
+		glm::vec3 playerPos(campos[0], campos[1], campos[2]);
 		glm::vec3 dir(look[0], look[1], look[2]);
 		glm::vec3 lookAt = playerPos + dir;
 
@@ -751,70 +515,80 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			glm::vec3(0, 0, 1)  // Head is up (set to 0,-1,0 to look upside-down)
 		);
 
-		for (int i = 0x40000000; i < 0x41B40000; i += 4) {
-			uint32_t* b = (uint32_t*)i;
-			uint32_t* c = (uint32_t*)(i + 4);
+		//// TEST TRIANGLE DRAWING
+		glUseProgram(programID);
+		// 1st attribute buffer : vertices
+		glEnableVertexAttribArray(0);
+		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+		glVertexAttribPointer(
+			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+			3,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset
+		);
 
-			if (*b == 0x68656164u) {
-				float* poss = (float*)(i + (29 * 4));
+		// Get a handle for our "MVP" uniform
+		// Only during the initialisation
+		GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+		GLuint ColorID = glGetUniformLocation(programID, "fixedColor");
 
-				glm::vec3 color;
+		glm::mat4 model, mvp;
+		glm::mat4 identity = glm::mat4(1.0f);
+		glm::vec3 color;
+		uint32_t *c = (uint32_t*)0x40000000;
+		uint32_t *end = (uint32_t*)0x41B40000;
 
-				switch (*c) {
-				case 0x1130u: // Elite
-					color.b = .8f;
-					break;
-				case 0xE78u: // Marine
-					color.g = .8f;
-					break;
-				case 0xD1Cu: // ?
-					color.r = 1;
-					break;
-				default:
-					color.r = .1f;
-					color.g = .1f;
-					color.b = .1f;
-					break;
+		std::vector<uint32_t*> objects;
+		objects.reserve(512);
+		
+		if (*ADDR_FRAMES_SINCE_LEVEL_START != lastInputCounter) {
+			for (int i = 0; i < 0x1B40000 / 4; i++) {
+				if (c[i] == 0x68656164u) {
+					objects.push_back(&c[i]);
 				}
-
-				glm::mat4 Model = glm::mat4(1.0f);
-				Model = glm::translate(Model, glm::vec3(poss[0], poss[1], poss[2] - .5f));
-				Model = glm::scale(Model, glm::vec3(.05f, .05f, .05f));
-
-				// Our ModelViewProjection : multiplication of our 3 matrices
-				glm::mat4 mvp = Projection * View * Model; // Remember, matrix multiplication is the other way around
-
-														   // Get a handle for our "MVP" uniform
-														   // Only during the initialisation
-				GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-				GLuint ColorID = glGetUniformLocation(programID, "fixedColor");
-
-				// Send our transformation to the currently bound shader, in the "MVP" uniform
-				// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-				glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-				glUniform3f(ColorID, color.x, color.y, color.z);
-
-				//// TEST TRIANGLE DRAWING
-				glUseProgram(programID);
-				// 1st attribute buffer : vertices
-				glEnableVertexAttribArray(0);
-				glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-				glVertexAttribPointer(
-					0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-					3,                  // size
-					GL_FLOAT,           // type
-					GL_FALSE,           // normalized?
-					0,                  // stride
-					(void*)0            // array buffer offset
-				);
-
-				// Draw the triangle !
-				glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-				glDisableVertexAttribArray(0);
 			}
 		}
-		//
+		
+		for (auto& v : objects) {
 
+			float* poss = (float*)(v + (29));
+
+			switch (*(v+1)) {
+			case 0x1130u: // Elite
+				color.b = 1;
+				break;
+			case 0xE78u: // Marine
+				color.g = 1;
+				break;
+			case 0xD1Cu: // ?
+				color.r = 1;
+				break;
+			default:
+				color.r = .1f;
+				color.g = .1f;
+				color.b = .1f;
+				break;
+			}
+
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(poss[0], poss[1], poss[2]));
+			model = glm::scale(model, glm::vec3(.05f, .05f, .05f));
+
+			// Our ModelViewProjection : multiplication of our 3 matrices
+			mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
+
+											 // Send our transformation to the currently bound shader, in the "MVP" uniform
+											 // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+			glUniform3f(ColorID, color.x, color.y, color.z);
+
+			// Draw the triangle !
+			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
+		}
+
+		glDisableVertexAttribArray(0);
 
 		// Draw our UI
 		ImGui::Render();

@@ -59,5 +59,8 @@
     <ClInclude Include="imgui_impl_glfw_gl3.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="HaloConstants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
