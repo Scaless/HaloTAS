@@ -166,7 +166,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	float* dirx = (float*)0x400B8F28;
 	float* diry = (float*)0x400B8F3C;
 	//float* look = (float*)0x400B8F34;
-	float* look = (float*)0x006AC688;
+	float* look = (float*)0x006AC72C;
 
 	std::map<uint64_t, InputMoment> allInputs;
 
@@ -274,6 +274,19 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	{
 		counter++;
 
+		std::vector<uint32_t*> objects;
+		objects.reserve(512);
+		uint32_t *c = (uint32_t*)0x40000000;
+		static std::map<uint32_t, bool> mp;
+
+		if (*ADDR_FRAMES_SINCE_LEVEL_START != lastInputCounter) {
+			for (int i = 0; i < 0x1B40000 / 4; i++) {
+				if (c[i] == 0x68656164u) {
+					objects.push_back(&c[i]);
+				}
+			}
+		}
+
 		InputKey ik;
 		ik.subKey.subLevel = *ADDR_CHECKPOINT_INDICATOR;
 		ik.subKey.inputCounter = *ADDR_FRAMES_SINCE_LEVEL_START;
@@ -340,7 +353,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::SameLine();
 			ImGui::Text("Look Direction: (%f,%f,%f)", look[0], look[1], look[2]);
 
-			ImGui::SliderFloat("Player Health", health, 0, 5);
+			ImGui::SliderFloat("Player Health", health, 0, 500);
 
 			if (ImGui::Button("Close")) {
 				break;
@@ -360,6 +373,20 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::Checkbox("Record", &isRecording);
 			ImGui::SameLine();
 			ImGui::Checkbox("Play", &isPlayback);
+
+			
+			for (auto& v : objects) {
+
+				auto val = *(v + 1);
+
+				if (!mp.count(val)) {
+					mp[val] = false;
+				}
+			}
+
+			/*for (auto& v : mp) {
+				ImGui::Checkbox(std::to_string(v.first).c_str(), &v.second);
+			}*/
 			
 			//int count = 0;
 			////std::set<std::string> types;
@@ -376,7 +403,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
-				ImGui::InputFloat3("Position", pos);
+				ImGui::DragFloat3("Position", pos);
 
 				int tempLeftMouse = *ADDR_LEFTMOUSE;
 				if (ImGui::SliderInt("LeftMouse", &tempLeftMouse, 0, 255)) {
@@ -537,40 +564,70 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glm::mat4 model, mvp;
 		glm::mat4 identity = glm::mat4(1.0f);
 		glm::vec3 color;
-		uint32_t *c = (uint32_t*)0x40000000;
-		uint32_t *end = (uint32_t*)0x41B40000;
-
-		std::vector<uint32_t*> objects;
-		objects.reserve(512);
-		
-		if (*ADDR_FRAMES_SINCE_LEVEL_START != lastInputCounter) {
-			for (int i = 0; i < 0x1B40000 / 4; i++) {
-				if (c[i] == 0x68656164u) {
-					objects.push_back(&c[i]);
-				}
-			}
-		}
 		
 		for (auto& v : objects) {
 
 			float* poss = (float*)(v + (29));
+			glm::vec3 color;
 
-			switch (*(v+1)) {
-			case 0x1130u: // Elite
-				color.b = 1;
-				break;
-			case 0xE78u: // Marine
-				color.g = 1;
-				break;
-			case 0xD1Cu: // ?
-				color.r = 1;
-				break;
-			default:
-				color.r = .1f;
-				color.g = .1f;
-				color.b = .1f;
-				break;
+			if (mp[*(v + 1)] == true) {
+				color.r = .5f;
+				color.b = .5f;
 			}
+			else {
+				switch (*(v + 1)) {
+				
+				
+					break;
+				
+				case 580: // Static doodad
+				case 628: // bulkhead?
+				case 680: // Animated warning light
+				case 732: // Door
+				case 764: // Projectile/Impact
+					color.r = .5f;
+					color.g = .5f;
+					color.b = .5f;
+					break;
+				case 800: // Ammo/Health/Consumable
+				case 836: // bulkhead?
+				case 892: // unknown (trigger?)
+				case 1204: // assault rifle
+				case 1320: // plasma pistol
+				case 1356: // POA Big terminal in front of keyes
+				case 1436: // plasma rifle
+				case 1612: // POA crewman chairs
+				case 1668: // unknown (trigger?)
+				case 1728: // unknown (???)
+					color.r = .1f;
+					color.g = .1f;
+					color.b = .1f;
+					break;
+				case 3356: // Grunt
+					color.r = 1;
+					break;
+				case 3584: // ??? Light?
+					break;
+				case 3588: // You! The Player!
+				case 3704: // Marine
+					color.g = 1;
+					break;
+				case 4400: // Elite
+					color.b = 1;
+					break;
+				case 5328: // Keyes
+					color.r = 1;
+					color.g = 1;
+					break;
+				default:
+					color.r = .1f;
+					color.g = .1f;
+					color.b = .1f;
+					break;
+				}
+			}
+
+			
 
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(poss[0], poss[1], poss[2]));
