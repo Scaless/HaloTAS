@@ -266,8 +266,10 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 
-	static float fov = 40;
-	static float zoomedfov = 18;
+	float fov = 40;
+	float zoomedfov = 18;
+	bool showPrimitives = false;
+	float cullDistance = 100;
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -278,15 +280,15 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		objects.reserve(512);
 		uint32_t *c = (uint32_t*)0x40000000;
 		static std::map<uint32_t, bool> mp;
-
-		if (*ADDR_FRAMES_SINCE_LEVEL_START != lastInputCounter) {
+		
+		if (showPrimitives) {
 			for (int i = 0; i < 0x1B40000 / 4; i++) {
 				if (c[i] == 0x68656164u) {
 					objects.push_back(&c[i]);
 				}
 			}
 		}
-
+		
 		InputKey ik;
 		ik.subKey.subLevel = *ADDR_CHECKPOINT_INDICATOR;
 		ik.subKey.inputCounter = *ADDR_FRAMES_SINCE_LEVEL_START;
@@ -353,7 +355,11 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::SameLine();
 			ImGui::Text("Look Direction: (%f,%f,%f)", look[0], look[1], look[2]);
 
-			ImGui::SliderFloat("Player Health", health, 0, 500);
+			ImGui::Checkbox("Show Primitives", &showPrimitives);
+			if (showPrimitives) {
+				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 100);
+			}
+			//ImGui::SliderFloat("Player Health", health, 0, 500);
 
 			if (ImGui::Button("Close")) {
 				break;
@@ -523,13 +529,15 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 
 		// DRAW OUR GAME OVERLAY
 		int width, height, x, y;
 		glfwGetWindowSize(window, &width, &height);
-		glm::mat4 Projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.5f, 1000.0f);
+		glm::mat4 Projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.5f, cullDistance);
 
 		glm::vec3 playerPos(campos[0], campos[1], campos[2]);
 		glm::vec3 dir(look[0], look[1], look[2]);
@@ -568,6 +576,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		for (auto& v : objects) {
 
 			float* poss = (float*)(v + (29));
+			float* scl = (float*)(v + 122);
 			glm::vec3 color;
 
 			if (mp[*(v + 1)] == true) {
@@ -627,17 +636,17 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				}
 			}
 
-			
-
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(poss[0], poss[1], poss[2]));
-			model = glm::scale(model, glm::vec3(.05f, .05f, .05f));
+			
+			model = glm::scale(model, glm::vec3(.04f, .04f, .04f));
+			//model = glm::scale(model, glm::vec3(scl[0], scl[1], scl[2]));
 
 			// Our ModelViewProjection : multiplication of our 3 matrices
 			mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
 
-											 // Send our transformation to the currently bound shader, in the "MVP" uniform
-											 // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+			// Send our transformation to the currently bound shader, in the "MVP" uniform
+			// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
 			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
 			glUniform3f(ColorID, color.x, color.y, color.z);
 
