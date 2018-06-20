@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <unordered_map>
+#include <glm/glm.hpp>
 
 // KEYS is a layout of the keyboard keys in Halo's memory (one unsigned byte per key)
 // When held, each key increments by 1 for each frame up to the max of 255
@@ -85,7 +87,9 @@ enum KEYS {
 	Up,
 	Down,
 	Left,
-	Right
+	Right,
+
+	KEY_COUNT
 };
 
 // Text to display for KEYS codes
@@ -194,4 +198,58 @@ std::string KEY_PRINT_CODES[] = {
 	"NUM_+",
 	"NUM_ENTER",
 	"NUM_.",
+};
+
+struct GameObject {
+	uint32_t identifier; // "daeh"
+	uint32_t tag_id;
+	uint32_t padding1[10];
+	uint32_t counter;
+	uint32_t padding2[16];
+	float unit_x;
+	float unit_y;
+	float unit_z;
+	uint32_t padding3[14];
+	float unit_x_ineffective;
+	float unit_y_ineffective;
+	float unit_z_ineffective;
+};
+
+bool GameObject_Sort(const GameObject *l, const GameObject *r) {
+	return l->tag_id < r->tag_id;
+}
+
+struct Tag {
+	uint32_t id;
+	glm::vec3 displayColor;
+	std::string displayName;
+};
+
+std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
+	{580, Tag{ 580, glm::vec3(0,1,0), "doodad" }}, 
+	{628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }}, 
+	{632, Tag{ 632, glm::vec3(0,1,0), "tree"   }}, 
+	{680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }}, 
+	{732, Tag{ 732, glm::vec3(0,1,0), "door"   }}, 
+	{736, Tag{ 736, glm::vec3(0,1,0), "tree"   }}, 
+	{764, Tag{ 764, glm::vec3(0,1,0), "projectile impact"   }}, 
+	{800, Tag{ 800, glm::vec3(0,1,0), "Ammo/Health/Consumable"   }}, 
+	{836, Tag{ 836, glm::vec3(0,1,0), "bulkhead?"   }}, 
+	{892, Tag{ 892, glm::vec3(0,1,0), "trigger?"   }}, 
+	{972, Tag{ 972, glm::vec3(0,1,0), "Needler"   }}, 
+	{1204,Tag{ 1204, glm::vec3(0,1,0), "MA5B"  }}, 
+	{1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }}, 
+	{1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }}, 
+	{1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle"  }}, 
+	{1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }}, 
+	{1668,Tag{ 1668, glm::vec3(0,1,0), "trigger?"  }},
+	{1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }}, 
+	{1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee"  }}, 
+	{3356,Tag{ 3356, glm::vec3(0,1,0), "Grunt"  }},
+	{3584,Tag{ 3584, glm::vec3(0,1,0), "Light/Warthog"  }}, 
+	{3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }}, 
+	{3704,Tag{ 3704, glm::vec3(0,1,0), "Marine"  }}, 
+	{4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }}, 
+	{4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }}, 
+	{5328,Tag{ 5328, glm::vec3(0,1,0), "Cpt. Keyes" }},
 };

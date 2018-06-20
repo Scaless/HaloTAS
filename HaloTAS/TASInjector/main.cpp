@@ -62,6 +62,4 @@ int main() {
 
 	printf("DLL injected.\n");
 	Sleep(1000);
-	return 0;
 }
-

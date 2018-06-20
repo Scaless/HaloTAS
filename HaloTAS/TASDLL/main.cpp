@@ -1,3 +1,4 @@
+#pragma warning(disable:4996)
 
 #include "HaloConstants.h"
 #include <inttypes.h>
@@ -20,6 +21,33 @@
 #include <vector>
 
 #pragma comment(lib, "dwmapi.lib")
+
+int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
+int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
+float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
+float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
+char* ADDR_MAP_STRING = (char*)0x006A8174;
+uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
+uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
+uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
+uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
+uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
+bool* ADDR_SIMULATE = (bool*)0x00721E8C;
+bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
+
+int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
+int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
+int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1810; // Scroll
+
+uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
+uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
+
+float* health = (float*)0x400B8DE8;
+float* campos = (float*)0x006AC6D0;
+float* dirx = (float*)0x400B8F28;
+float* diry = (float*)0x400B8F3C;
+float* look = (float*)0x006AC72C;
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -118,7 +146,8 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 
 struct InputMoment {
 	uint8_t inputBuf[104];
-	float updown, leftright;
+	//float updown, leftright;
+	int32_t mouseX, mouseY;
 	uint8_t leftmouse, rightmouse;
 };
 
@@ -143,31 +172,42 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 	return TRUE;
 }
 
+void PatchMouseEnableManualInput() {
+	unsigned long OldProtection, blah;
+	//give that address read and write permissions and store the old permissions at oldProtection
+	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, PAGE_EXECUTE_READWRITE, &OldProtection);
+
+	//write the memory into the program and overwrite previous value
+	//memcpy((LPVOID)ADDR_PATCH_DINPUT_MOUSE, valueToWrite, byteNum);
+	std::copy_n(PATCH_DINPUT_MOUSE_BYTES, 7, ADDR_PATCH_DINPUT_MOUSE);
+
+	//reset the permissions of the address back to oldProtection after writting memory
+	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, OldProtection, &blah);
+}
+
+void UnPatchMouseDisableManualInput() {
+	unsigned long OldProtection, blah;
+	//give that address read and write permissions and store the old permissions at oldProtection
+	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, PAGE_EXECUTE_READWRITE, &OldProtection);
+
+	//write the memory into the program and overwrite previous value
+	//memcpy((LPVOID)ADDR_PATCH_DINPUT_MOUSE, valueToWrite, byteNum);
+	std::copy_n(PATCH_DINPUT_MOUSE_ORIGINAL, 7, ADDR_PATCH_DINPUT_MOUSE);
+
+	//reset the permissions of the address back to oldProtection after writting memory
+	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, OldProtection, &blah);
+}
+
+GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
+	for (auto& v : objects) {
+		if (v->tag_id == 3588) {
+			return v;
+		}
+	}
+}
+
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
-	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
-	int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
-	float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
-	float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
-	char* ADDR_MAP_STRING = (char*)0x006A8174;
-	uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
-	uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
-	uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
-	uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
-	uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
-	bool* ADDR_SIMULATE = (bool*)0x00721E8C;
-	bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
-
-
-	float* health = (float*)0x400B8DE8;
-	float* pos = (float*)0x400B8D60;
-	//float* campos = (float*)0x400B8DA4;
-	float* campos = (float*)0x006AC6D0;
-	float* dirx = (float*)0x400B8F28;
-	float* diry = (float*)0x400B8F3C;
-	//float* look = (float*)0x400B8F34;
-	float* look = (float*)0x006AC72C;
-
 	std::map<uint64_t, InputMoment> allInputs;
 
 	EnumWindows(EnumWindowsProc, GetCurrentProcessId());
@@ -197,8 +237,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// Setup ImGui binding
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
 	ImGui_ImplGlfwGL3_Init(window, true);
 
 	// Setup style
@@ -266,8 +304,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 
-	float fov = 40;
-	float zoomedfov = 18;
+	float defaultFOV = 38;
+	float pistolZoomFOV = 18;
 	bool showPrimitives = false;
 	float cullDistance = 100;
 
@@ -278,16 +316,21 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 		std::vector<uint32_t*> objects;
 		objects.reserve(512);
+		std::vector<GameObject*> gameObjects;
+		gameObjects.reserve(512);
 		uint32_t *c = (uint32_t*)0x40000000;
 		static std::map<uint32_t, bool> mp;
 		
 		if (showPrimitives) {
 			for (int i = 0; i < 0x1B40000 / 4; i++) {
-				if (c[i] == 0x68656164u) {
+				if (c[i] == 0x68656164u) { // "daeh" in ASCII
 					objects.push_back(&c[i]);
+					gameObjects.push_back((GameObject*)&c[i]);
 				}
 			}
 		}
+
+		std::sort(gameObjects.begin(), gameObjects.end(), GameObject_Sort);
 		
 		InputKey ik;
 		ik.subKey.subLevel = *ADDR_CHECKPOINT_INDICATOR;
@@ -309,8 +352,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				for (int i = 0; i < sizeof(im.inputBuf); i++) {
 					im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
 				}
-				im.updown = *ADDR_UPDOWNVIEW;
-				im.leftright = *ADDR_LEFTRIGHTVIEW;
+				im.mouseX = *ADDR_DINPUT_MOUSEX;
+				im.mouseY = *ADDR_DINPUT_MOUSEY;
 				im.leftmouse = *ADDR_LEFTMOUSE;
 				im.rightmouse = *ADDR_RIGHTMOUSE;
 
@@ -323,8 +366,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			for (int i = 0; i < sizeof(savedIM.inputBuf); i++) {
 				ADDR_KEYBOARD_INPUT[i] = savedIM.inputBuf[i];
 			}
-			*ADDR_UPDOWNVIEW = savedIM.updown;
-			*ADDR_LEFTRIGHTVIEW = savedIM.leftright;
+			*ADDR_DINPUT_MOUSEX = savedIM.mouseX;
+			*ADDR_DINPUT_MOUSEY = savedIM.mouseY;
 			*ADDR_LEFTMOUSE = savedIM.leftmouse;
 			*ADDR_RIGHTMOUSE = savedIM.rightmouse;
 		}
@@ -335,10 +378,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		glfwPollEvents();
 		ImGui_ImplGlfwGL3_NewFrame();
-
-		// 1. Show a simple window.
-		// Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets automatically appears in a window called "Debug".
-		{
+		{ // ImGui Rendering
 			int width, height, x, y;
 			glfwGetWindowSize(window, &width, &height);
 			glfwGetWindowPos(window, &x, &y);
@@ -347,25 +387,29 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			ImGui::Begin("Halo TAS", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
-			ImGui::Text("Current Map: %s\t", ADDR_MAP_STRING);
-			ImGui::SameLine();
-			ImGui::Text("Frames since level start = %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
-			ImGui::SameLine();
-			ImGui::Text("Camera Position: (%f,%f,%f)", campos[0], campos[1], campos[2]);
-			ImGui::SameLine();
-			ImGui::Text("Look Direction: (%f,%f,%f)", look[0], look[1], look[2]);
-
-			ImGui::Checkbox("Show Primitives", &showPrimitives);
-			if (showPrimitives) {
-				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 100);
-			}
-			//ImGui::SliderFloat("Player Health", health, 0, 500);
-
 			if (ImGui::Button("Close")) {
 				break;
 			}
 
+			ImGui::Text("Current Map: %s\t", ADDR_MAP_STRING);
+			ImGui::SameLine();
+			ImGui::Text("Frames since level start = %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
+			ImGui::SameLine();
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+			ImGui::Checkbox("Show Primitives", &showPrimitives);
+			if (showPrimitives) {
+				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 250);
+			}
+
+			if (ImGui::Button("PatchMouse")) {
+				PatchMouseEnableManualInput();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("UnPatchMouse")) {
+				UnPatchMouseDisableManualInput();
+			}
+
 			static bool forceSimulate = true;
 			ImGui::Checkbox("Force Simulate", &forceSimulate);
 			*ADDR_SIMULATE = forceSimulate ? 0 : 1;
@@ -380,19 +424,56 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::SameLine();
 			ImGui::Checkbox("Play", &isPlayback);
 
-			
-			for (auto& v : objects) {
+			for (auto& v : gameObjects) {
 
-				auto val = *(v + 1);
+				auto val = v->tag_id;
 
 				if (!mp.count(val)) {
 					mp[val] = false;
 				}
 			}
+			for (auto& m : mp) {
+				std::string tagName = "UNKNOWN";
+				if (KNOWN_TAGS.count(m.first)) {
+					tagName = KNOWN_TAGS.at(m.first).displayName;
+				}
+				auto countf = 1;
+				ImGui::PushID(countf);
+				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 0, 0, 0));
+				if (ImGui::CollapsingHeader(tagName.c_str())) {
+					auto count = 1;
+					for (auto& v : gameObjects) {
+						if (v->tag_id == m.first) {
+							ImGui::PushID(count * countf + count);
+							ImGui::PushItemWidth(300);
+							ImGui::DragFloat3(std::to_string(count).c_str(), &(v->unit_x), .1f, -10000, 10000);
+							ImGui::PopItemWidth();
+							
+							ImGui::SameLine();
+							if (ImGui::Button("MoveThisToMe")) {
+								auto player = GetPlayerObject(gameObjects);
 
-			/*for (auto& v : mp) {
-				ImGui::Checkbox(std::to_string(v.first).c_str(), &v.second);
-			}*/
+								v->unit_x = player->unit_x + 1;
+								v->unit_y = player->unit_y;
+								v->unit_z = player->unit_z;
+							}
+							ImGui::SameLine();
+							if (ImGui::Button("MoveMeToThis")) {
+								auto player = GetPlayerObject(gameObjects);
+
+								player->unit_x = v->unit_x;
+								player->unit_y = v->unit_y;
+								player->unit_z = v->unit_z + .5f;
+							}
+							count++;
+							ImGui::PopID();
+						}
+					}
+				}
+				ImGui::PopStyleColor();
+				countf++;
+				ImGui::PopID();
+			}
 			
 			//int count = 0;
 			////std::set<std::string> types;
@@ -402,14 +483,16 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			//	if (*b == 0x68656164u) {
 			//		count++;
 			//		//types.insert(std::to_string(*b));
-			//		//ImGui::Text("t: %08x", *c);
+			//		//ImGui::Text("t: %u", *c);
 			//	}
 			//}
 			//ImGui::Text("Count: %d", count);
 
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
-				ImGui::DragFloat3("Position", pos);
+				ImGui::Text("Camera Position: (%f,%f,%f)", campos[0], campos[1], campos[2]);
+				ImGui::SameLine();
+				ImGui::Text("Look Direction: (%f,%f,%f)", look[0], look[1], look[2]);
 
 				int tempLeftMouse = *ADDR_LEFTMOUSE;
 				if (ImGui::SliderInt("LeftMouse", &tempLeftMouse, 0, 255)) {
@@ -420,6 +503,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				if (ImGui::SliderInt("RightMouse", &tempRightMouse, 0, 255)) {
 					*ADDR_RIGHTMOUSE = (uint8_t)tempRightMouse;
 				}
+
+				ImGui::SliderInt("RawMouseX", ADDR_DINPUT_MOUSEX, -5, 5);
+				ImGui::SliderInt("RawMouseY", ADDR_DINPUT_MOUSEY, -5, 5);
 
 				ImGui::SliderFloat("Vertical View Angle", ADDR_UPDOWNVIEW, -1.492f, 1.492f);
 				ImGui::SliderFloat("Horizontal View Angle", ADDR_LEFTRIGHTVIEW, 0, pi*2.0f);
@@ -478,49 +564,32 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				ImGui::PopItemWidth();
 			}
 
-			//if (ImGui::CollapsingHeader("Recorded Map"))
-			//{
-			//	//ImGui::Columns(2, "recordMap", true);
-			//	//ImGui::Separator();
-			//	int reverseInputCount = 0;
-			//	for (auto iter = allInputs.rbegin(); iter != allInputs.rend(); ++iter) {
-			//		reverseInputCount++;
-			//		uint64_t id = iter->first;
-			//		InputMoment im = iter->second;
-			//		for (int n = 0; n < 104; n++)
-			//		{
-			//			int tempInputVal = (int)im.inputBuf[n];
-			//			if (tempInputVal > 0) {
-			//				ImGui::Text("%" PRIu64, id);
-			//				ImGui::NextColumn();
-			//				ImGui::PushID(KEY_PRINT_CODES[n].c_str());
-			//				ImGui::SliderInt(KEY_PRINT_CODES[n].c_str(), &tempInputVal, 0, 255);
-			//				ImGui::PopID();
-			//				ImGui::NextColumn();
-			//			}
-			//		}
-			//		break;
-			//	}
-			//}
+			if (ImGui::CollapsingHeader("Recorded Map"))
+			{
+				////ImGui::Columns(2, "recordMap", true);
+				////ImGui::Separator();
+				//int reverseInputCount = 0;
+				//for (auto iter = allInputs.rbegin(); iter != allInputs.rend(); ++iter) {
+				//	reverseInputCount++;
+				//	uint64_t id = iter->first;
+				//	InputMoment im = iter->second;
+				//	for (int n = 0; n < 104; n++)
+				//	{
+				//		int tempInputVal = (int)im.inputBuf[n];
+				//		if (tempInputVal > 0) {
+				//			ImGui::Text("%" PRIu64, id);
+				//			ImGui::NextColumn();
+				//			ImGui::PushID(KEY_PRINT_CODES[n].c_str());
+				//			ImGui::SliderInt(KEY_PRINT_CODES[n].c_str(), &tempInputVal, 0, 255);
+				//			ImGui::PopID();
+				//			ImGui::NextColumn();
+				//		}
+				//	}
+				//	break;
+				//}
+			}
 			ImGui::End();
 		}
-
-		// 2. Show another simple window. In most cases you will use an explicit Begin/End pair to name your windows.
-		/*if (show_another_window)
-		{
-		ImGui::Begin("Another Window", &show_another_window);
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-		show_another_window = false;
-		ImGui::End();
-		}*/
-
-		// 3. Show the ImGui demo window. Most of the sample code is in ImGui::ShowDemoWindow(). Read its code to learn more about Dear ImGui!
-		//if (show_demo_window)
-		//{
-		//    ImGui::SetNextWindowPos(ImVec2(650, 20), ImGuiCond_FirstUseEver); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
-		//    ImGui::ShowDemoWindow(&show_demo_window);
-		//}
 
 		// Rendering
 		int display_w, display_h;
@@ -533,11 +602,10 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
 		// DRAW OUR GAME OVERLAY
-		int width, height, x, y;
+		int width, height;
 		glfwGetWindowSize(window, &width, &height);
-		glm::mat4 Projection = glm::perspective(glm::radians(fov), (float)width / (float)height, 0.5f, cullDistance);
+		glm::mat4 Projection = glm::perspective(glm::radians(defaultFOV), (float)width / (float)height, 0.5f, cullDistance);
 
 		glm::vec3 playerPos(campos[0], campos[1], campos[2]);
 		glm::vec3 dir(look[0], look[1], look[2]);
@@ -580,59 +648,14 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			glm::vec3 color;
 
 			if (mp[*(v + 1)] == true) {
-				color.r = .5f;
-				color.b = .5f;
+				color.b = 1.0f;
 			}
 			else {
-				switch (*(v + 1)) {
-				
-				
-					break;
-				
-				case 580: // Static doodad
-				case 628: // bulkhead?
-				case 680: // Animated warning light
-				case 732: // Door
-				case 764: // Projectile/Impact
-					color.r = .5f;
-					color.g = .5f;
-					color.b = .5f;
-					break;
-				case 800: // Ammo/Health/Consumable
-				case 836: // bulkhead?
-				case 892: // unknown (trigger?)
-				case 1204: // assault rifle
-				case 1320: // plasma pistol
-				case 1356: // POA Big terminal in front of keyes
-				case 1436: // plasma rifle
-				case 1612: // POA crewman chairs
-				case 1668: // unknown (trigger?)
-				case 1728: // unknown (???)
-					color.r = .1f;
-					color.g = .1f;
-					color.b = .1f;
-					break;
-				case 3356: // Grunt
+				if (KNOWN_TAGS.count(*(v + 1)) > 0) {
+					color = KNOWN_TAGS.at(*(v + 1)).displayColor;
+				}
+				else {
 					color.r = 1;
-					break;
-				case 3584: // ??? Light?
-					break;
-				case 3588: // You! The Player!
-				case 3704: // Marine
-					color.g = 1;
-					break;
-				case 4400: // Elite
-					color.b = 1;
-					break;
-				case 5328: // Keyes
-					color.r = 1;
-					color.g = 1;
-					break;
-				default:
-					color.r = .1f;
-					color.g = .1f;
-					color.b = .1f;
-					break;
 				}
 			}
 
@@ -651,7 +674,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			glUniform3f(ColorID, color.x, color.y, color.z);
 
 			// Draw the triangle !
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
+			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
 		glDisableVertexAttribArray(0);
@@ -659,9 +684,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		// Draw our UI
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-
-		
-		
 
 		glfwSwapBuffers(window);
 	}
