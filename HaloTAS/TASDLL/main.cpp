@@ -37,17 +37,17 @@ bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
 
 int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
 int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
-int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1810; // Scroll
+//int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
 
 uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
 uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
 
-float* health = (float*)0x400B8DE8;
 float* campos = (float*)0x006AC6D0;
 float* dirx = (float*)0x400B8F28;
 float* diry = (float*)0x400B8F3C;
 float* look = (float*)0x006AC72C;
+float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00445920;
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -432,12 +432,12 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 					mp[val] = false;
 				}
 			}
+			auto countf = 1;
 			for (auto& m : mp) {
-				std::string tagName = "UNKNOWN";
+				std::string tagName = "UNKNOWN" + std::to_string(countf);
 				if (KNOWN_TAGS.count(m.first)) {
 					tagName = KNOWN_TAGS.at(m.first).displayName;
 				}
-				auto countf = 1;
 				ImGui::PushID(countf);
 				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 0, 0, 0));
 				if (ImGui::CollapsingHeader(tagName.c_str())) {
@@ -588,7 +588,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				//	break;
 				//}
 			}
-			ImGui::End();
 		}
 
 		// Rendering
@@ -598,14 +597,20 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// DRAW OUR GAME OVERLAY
 		int width, height;
 		glfwGetWindowSize(window, &width, &height);
-		glm::mat4 Projection = glm::perspective(glm::radians(defaultFOV), (float)width / (float)height, 0.5f, cullDistance);
+
+		float currentGameFOV_rad = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
+		float horizontalFOV = glm::degrees(currentGameFOV_rad);
+		horizontalFOV = (horizontalFOV * height) / width;
+		glm::mat4 Projection = glm::perspectiveFov(glm::radians(horizontalFOV), (float)width, (float)height, 0.5f, cullDistance);
+
+		ImGui::End();
 
 		glm::vec3 playerPos(campos[0], campos[1], campos[2]);
 		glm::vec3 dir(look[0], look[1], look[2]);
@@ -613,9 +618,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 		// Camera matrix
 		glm::mat4 View = glm::lookAt(
-			playerPos, // Camera is at (4,3,3), in World Space
-			lookAt, // and looks at the origin
-			glm::vec3(0, 0, 1)  // Head is up (set to 0,-1,0 to look upside-down)
+			playerPos, 
+			lookAt,
+			glm::vec3(0, 0, 1)
 		);
 
 		//// TEST TRIANGLE DRAWING
@@ -641,18 +646,18 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glm::mat4 identity = glm::mat4(1.0f);
 		glm::vec3 color;
 		
-		for (auto& v : objects) {
+		for (auto& v : gameObjects) {
 
-			float* poss = (float*)(v + (29));
-			float* scl = (float*)(v + 122);
+			//float* poss = (float*)(v + (29));
+			//float* scl = (float*)(v + 122);
 			glm::vec3 color;
 
-			if (mp[*(v + 1)] == true) {
+			if (mp[v->tag_id] == true) {
 				color.b = 1.0f;
 			}
 			else {
-				if (KNOWN_TAGS.count(*(v + 1)) > 0) {
-					color = KNOWN_TAGS.at(*(v + 1)).displayColor;
+				if (KNOWN_TAGS.count(v->tag_id) > 0) {
+					color = KNOWN_TAGS.at(v->tag_id).displayColor;
 				}
 				else {
 					color.r = 1;
@@ -660,9 +665,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			}
 
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(poss[0], poss[1], poss[2]));
+			model = glm::translate(model, glm::vec3(v->unit_x, v->unit_y, v->unit_z));
 			
-			model = glm::scale(model, glm::vec3(.04f, .04f, .04f));
+			model = glm::scale(model, glm::vec3(.025f, .025f, .025f));
 			//model = glm::scale(model, glm::vec3(scl[0], scl[1], scl[2]));
 
 			// Our ModelViewProjection : multiplication of our 3 matrices
@@ -674,9 +679,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			glUniform3f(ColorID, color.x, color.y, color.z);
 
 			// Draw the triangle !
-			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-			glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
 		glDisableVertexAttribArray(0);
