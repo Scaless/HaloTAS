@@ -1,5 +1,7 @@
 #pragma warning(disable:4996)
 
+#define _USE_MATH_DEFINES
+
 // #define HALO_VANILLA
 #define HALO_CUSTOMED
 
@@ -23,6 +25,7 @@
 #include <algorithm>
 #include <sstream>
 #include <vector>
+#include <math.h>
 
 #pragma comment(lib, "dwmapi.lib")
 
@@ -219,10 +222,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// Setup style
 	ImGui::StyleColorsDark();
 
-	//bool show_demo_window = true;
-	//bool show_another_window = false;
-	ImVec4 clear_color = ImVec4(0.0f, 0.0f, 0.0f, 0.0f);
-	float pi = 3.1415f;
+	//float pi = 3.1415f;
 
 	// Set up OPENGL drawing stuff
 	// Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
@@ -291,18 +291,13 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	{
 		counter++;
 
-		std::vector<uint32_t*> objects;
-		objects.reserve(512);
 		std::vector<GameObject*> gameObjects;
-		gameObjects.reserve(512);
-		uint32_t *c = (uint32_t*)0x40000000;
 		static std::map<uint32_t, bool> mp;
 		
 		if (showPrimitives) {
-			for (int i = 0; i < 0x1B40000 / 4; i++) {
-				if (c[i] == 0x68656164u) { // "daeh" in ASCII
-					objects.push_back(&c[i]);
-					gameObjects.push_back((GameObject*)&c[i]);
+			for (int i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
+				if (ADDR_TAGS_ARRAY[i] == 0x68656164u) { // = "daeh" = "head" in little endian
+					gameObjects.push_back((GameObject*)&ADDR_TAGS_ARRAY[i]);
 				}
 			}
 		}
@@ -454,19 +449,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				countf++;
 				ImGui::PopID();
 			}
-			
-			//int count = 0;
-			////std::set<std::string> types;
-			//for (int i = 0x40000000; i < 0x41B40000; i += 4) {
-			//	uint32_t* b = (uint32_t*)i;
-			//	uint32_t* c = (uint32_t*)(i + 4);
-			//	if (*b == 0x68656164u) {
-			//		count++;
-			//		//types.insert(std::to_string(*b));
-			//		//ImGui::Text("t: %u", *c);
-			//	}
-			//}
-			//ImGui::Text("Count: %d", count);
 
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
@@ -488,7 +470,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				ImGui::SliderInt("RawMouseY", ADDR_DINPUT_MOUSEY, -5, 5);
 
 				ImGui::SliderFloat("Vertical View Angle", ADDR_UPDOWNVIEW, -1.492f, 1.492f);
-				ImGui::SliderFloat("Horizontal View Angle", ADDR_LEFTRIGHTVIEW, 0, pi*2.0f);
+				ImGui::SliderFloat("Horizontal View Angle", ADDR_LEFTRIGHTVIEW, 0, M_PI*2.0f);
 
 				ImGui::Columns(6, "inputmap", true);
 				ImGui::Separator();
@@ -520,19 +502,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			{
 				ImGui::PushItemWidth(200);
 				
-				/*int tempLeftMouse = *ADDR_LEFTMOUSE;
-				if (tempLeftMouse > 0) {
-					ImGui::SliderInt("LeftMouse", &tempLeftMouse, 0, 255);
-				}
-
-				int tempRightMouse = *ADDR_RIGHTMOUSE;
-				if (tempRightMouse > 0) {
-					ImGui::SliderInt("RightMouse", &tempRightMouse, 0, 255);
-				}
-
-				ImGui::SliderFloat("Vertical View Angle", ADDR_UPDOWNVIEW, -1.492f, 1.492f);
-				ImGui::SliderFloat("Horizontal View Angle", ADDR_LEFTRIGHTVIEW, 0, pi*2.0f);*/
-
 				for (int n = 0; n < 104; n++)
 				{
 					int tempInputVal = (int)ADDR_KEYBOARD_INPUT[n];
@@ -543,38 +512,13 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 				ImGui::PopItemWidth();
 			}
-
-			if (ImGui::CollapsingHeader("Recorded Map"))
-			{
-				////ImGui::Columns(2, "recordMap", true);
-				////ImGui::Separator();
-				//int reverseInputCount = 0;
-				//for (auto iter = allInputs.rbegin(); iter != allInputs.rend(); ++iter) {
-				//	reverseInputCount++;
-				//	uint64_t id = iter->first;
-				//	InputMoment im = iter->second;
-				//	for (int n = 0; n < 104; n++)
-				//	{
-				//		int tempInputVal = (int)im.inputBuf[n];
-				//		if (tempInputVal > 0) {
-				//			ImGui::Text("%" PRIu64, id);
-				//			ImGui::NextColumn();
-				//			ImGui::PushID(KEY_PRINT_CODES[n].c_str());
-				//			ImGui::SliderInt(KEY_PRINT_CODES[n].c_str(), &tempInputVal, 0, 255);
-				//			ImGui::PopID();
-				//			ImGui::NextColumn();
-				//		}
-				//	}
-				//	break;
-				//}
-			}
 		}
 
 		// Rendering
 		int display_w, display_h;
 		glfwGetFramebufferSize(window, &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
-		glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+		glClearColor(0,0,0,0);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
 		//glEnable(GL_BLEND);
