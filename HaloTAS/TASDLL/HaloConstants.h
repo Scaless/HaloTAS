@@ -4,6 +4,66 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 
+// Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
+uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
+
+#if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
+#error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
+#endif
+
+#if defined(HALO_VANILLA)
+	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
+	int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
+	float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
+	float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
+	char* ADDR_MAP_STRING = (char*)0x006A8174;
+	uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
+	uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
+	uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
+	uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
+	uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
+	bool* ADDR_SIMULATE = (bool*)0x00721E8C;
+	bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
+
+	int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
+	int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
+	int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
+
+	// Patch point for allowing external directinput mouse movement
+	uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
+
+	float* ADDR_CAMERA_POSITION = (float*)0x006AC6D0;
+	float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x006AC72C;
+	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00445920;
+
+#elif defined(HALO_CUSTOMED)
+
+	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
+	int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
+	float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
+	float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
+	char* ADDR_MAP_STRING = (char*)0x006A8174;
+	uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
+	uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
+	uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
+	uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
+	uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
+	bool* ADDR_SIMULATE = (bool*)0x00721E8C;
+	bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
+
+	int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
+	int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
+	int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
+
+	// Patch point for allowing external directinput mouse movement
+	uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
+	float* ADDR_CAMERA_POSITION = (float*)0x00647600;
+	float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x0064765C;
+	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00446280;
+
+#endif
+
 // KEYS is a layout of the keyboard keys in Halo's memory (one unsigned byte per key)
 // When held, each key increments by 1 for each frame up to the max of 255
 enum KEYS {
@@ -244,7 +304,8 @@ std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
 	{1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }}, 
 	{1668,Tag{ 1668, glm::vec3(0,1,0), "trigger?"  }},
 	{1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }}, 
-	{1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee"  }}, 
+	{1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee" } },
+	{2888,Tag{ 2888, glm::vec3(0,1,0), "Pelican"  }},
 	{3356,Tag{ 3356, glm::vec3(0,1,0), "Grunt"  }},
 	{3584,Tag{ 3584, glm::vec3(0,1,0), "Light/Warthog"  }}, 
 	{3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }}, 

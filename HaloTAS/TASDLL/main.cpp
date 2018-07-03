@@ -1,5 +1,8 @@
 #pragma warning(disable:4996)
 
+// #define HALO_VANILLA
+#define HALO_CUSTOMED
+
 #include "HaloConstants.h"
 #include <inttypes.h>
 #include <string>
@@ -15,39 +18,13 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <fstream>
 #include <algorithm>
 #include <sstream>
 #include <vector>
 
 #pragma comment(lib, "dwmapi.lib")
-
-int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
-int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
-float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
-float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
-char* ADDR_MAP_STRING = (char*)0x006A8174;
-uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
-uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
-uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
-uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
-uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
-bool* ADDR_SIMULATE = (bool*)0x00721E8C;
-bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
-
-int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
-int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
-//int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
-
-uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
-uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
-uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
-
-float* campos = (float*)0x006AC6D0;
-float* dirx = (float*)0x400B8F28;
-float* diry = (float*)0x400B8F3C;
-float* look = (float*)0x006AC72C;
-float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00445920;
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -231,7 +208,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	GLFWwindow* window = glfwCreateWindow(800, 800, "Halo TAS Tools", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0); //no vsync
+	glfwSwapInterval(0); //0 = no vsync
 	gl3wInit();
 
 	// Setup ImGui binding
@@ -446,7 +423,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 						if (v->tag_id == m.first) {
 							ImGui::PushID(count * countf + count);
 							ImGui::PushItemWidth(300);
-							ImGui::DragFloat3(std::to_string(count).c_str(), &(v->unit_x), .1f, -10000, 10000);
+							ImGui::DragFloat3(("POS: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
+							//ImGui::DragFloat3(("ROT: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
 							ImGui::PopItemWidth();
 							
 							ImGui::SameLine();
@@ -465,6 +443,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 								player->unit_y = v->unit_y;
 								player->unit_z = v->unit_z + .5f;
 							}
+							ImGui::SameLine();
+							ImGui::Text("Addr: %p", v);
 							count++;
 							ImGui::PopID();
 						}
@@ -490,9 +470,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
-				ImGui::Text("Camera Position: (%f,%f,%f)", campos[0], campos[1], campos[2]);
+				ImGui::Text("Camera Position: (%f,%f,%f)", ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
 				ImGui::SameLine();
-				ImGui::Text("Look Direction: (%f,%f,%f)", look[0], look[1], look[2]);
+				ImGui::Text("Look Direction: (%f,%f,%f)", ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 
 				int tempLeftMouse = *ADDR_LEFTMOUSE;
 				if (ImGui::SliderInt("LeftMouse", &tempLeftMouse, 0, 255)) {
@@ -610,11 +590,14 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		horizontalFOV = (horizontalFOV * height) / width;
 		glm::mat4 Projection = glm::perspectiveFov(glm::radians(horizontalFOV), (float)width, (float)height, 0.5f, cullDistance);
 
-		ImGui::End();
+		ImGui::Text("horfov: %f", horizontalFOV);
 
-		glm::vec3 playerPos(campos[0], campos[1], campos[2]);
-		glm::vec3 dir(look[0], look[1], look[2]);
+		glm::vec3 playerPos(ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
+		glm::vec3 dir(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 		glm::vec3 lookAt = playerPos + dir;
+		ImGui::DragFloat3("campos", glm::value_ptr(playerPos));
+		ImGui::DragFloat3("dir", glm::value_ptr(dir));
+		ImGui::DragFloat3("lookAt", glm::value_ptr(lookAt));
 
 		// Camera matrix
 		glm::mat4 View = glm::lookAt(
@@ -645,11 +628,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glm::mat4 model, mvp;
 		glm::mat4 identity = glm::mat4(1.0f);
 		glm::vec3 color;
-		
+
 		for (auto& v : gameObjects) {
 
-			//float* poss = (float*)(v + (29));
-			//float* scl = (float*)(v + 122);
 			glm::vec3 color;
 
 			if (mp[v->tag_id] == true) {
@@ -666,33 +647,34 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(v->unit_x, v->unit_y, v->unit_z));
-			
+
 			model = glm::scale(model, glm::vec3(.025f, .025f, .025f));
-			//model = glm::scale(model, glm::vec3(scl[0], scl[1], scl[2]));
 
 			// Our ModelViewProjection : multiplication of our 3 matrices
 			mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
 
-			// Send our transformation to the currently bound shader, in the "MVP" uniform
-			// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+											 // Send our transformation to the currently bound shader, in the "MVP" uniform
+											 // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
 			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
 			glUniform3f(ColorID, color.x, color.y, color.z);
 
 			// Draw the triangle !
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+												   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		}
 
 		glDisableVertexAttribArray(0);
 
+		ImGui::End();
+
 		// Draw our UI
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-
+		
 		glfwSwapBuffers(window);
 	}
-
+	
 	// Cleanup
 	ImGui_ImplGlfwGL3_Shutdown();
 	ImGui::DestroyContext();

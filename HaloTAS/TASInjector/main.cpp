@@ -3,7 +3,7 @@
 #include <TlHelp32.h>
 #include <filesystem>
 
-char HaloProcess[] = "halo.exe";
+char HaloProcess[] = "haloce.exe";
 char dllPath[250] = "C:\\Repos\\HaloTAS\\HaloTAS\\Release\\TASDLL.dll";
 
 typedef HINSTANCE (*fpLoadLibrary)(char*);
