@@ -293,7 +293,7 @@ struct Tag {
 };
 
 std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
-	{580, Tag{ 580, glm::vec3(0,1,0), "doodad" }}, 
+	{580, Tag{ 580, glm::vec3(0,1,0), "static prop" }}, 
 	{628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }}, 
 	{632, Tag{ 632, glm::vec3(0,1,0), "tree"   }}, 
 	{680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }}, 

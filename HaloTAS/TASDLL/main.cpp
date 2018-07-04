@@ -27,7 +27,8 @@
 #include <vector>
 #include <math.h>
 
-#pragma comment(lib, "dwmapi.lib")
+#include <ft2build.h>
+#include FT_FREETYPE_H  
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -186,6 +187,67 @@ GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
 	}
 }
 
+struct Character {
+	GLuint     TextureID;  // ID handle of the glyph texture
+	glm::ivec2 Size;       // Size of glyph
+	glm::ivec2 Bearing;    // Offset from baseline to left/top of glyph
+	GLuint     Advance;    // Offset to advance to next glyph
+};
+
+std::map<GLchar, Character> Characters;
+GLuint VAO, VBO;
+GLuint TextProgram;
+//glm::mat4 textProj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+
+void RenderText(std::string text, GLfloat scale, glm::vec3 color, glm::mat4 proj)
+{
+	// Activate corresponding render state	
+	
+	glUniform3f(glGetUniformLocation(TextProgram, "textColor"), color.x, color.y, color.z);
+	glUniformMatrix4fv(glGetUniformLocation(TextProgram, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
+	
+	glActiveTexture(GL_TEXTURE0);
+	glBindVertexArray(VAO);
+
+	GLfloat x = 0;
+	GLfloat y = 0;
+
+	// Iterate through all characters
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++)
+	{
+		Character ch = Characters[*c];
+
+		GLfloat xpos = x + ch.Bearing.x * scale;
+		GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+
+		GLfloat w = ch.Size.x * scale;
+		GLfloat h = ch.Size.y * scale;
+		// Update VBO for each character
+		GLfloat vertices[6][4] = {
+		{ xpos,     ypos + h,   0.0, 0.0 },
+		{ xpos,     ypos,       0.0, 1.0 },
+		{ xpos + w, ypos,       1.0, 1.0 },
+
+		{ xpos,     ypos + h,   0.0, 0.0 },
+		{ xpos + w, ypos,       1.0, 1.0 },
+		{ xpos + w, ypos + h,   1.0, 0.0 }
+		};
+		// Render glyph texture over quad
+		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+		// Update content of VBO memory
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		// Render quad
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
+		x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+	}
+	//glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
 	std::map<uint64_t, InputMoment> allInputs;
@@ -214,6 +276,69 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glfwSwapInterval(0); //0 = no vsync
 	gl3wInit();
 
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft)) {
+		MessageBox(NULL, "Could not init FreeType", "OH NO", MB_OK);
+	}
+	FT_Face face;
+	if (FT_New_Face(ft, "arial.ttf", 0, &face)) {
+		MessageBox(NULL, "Could not load font", "OH NO", MB_OK);
+	}
+	FT_Set_Pixel_Sizes(face, 0, 72);
+
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
+
+	for (GLubyte c = 0; c < 128; c++)
+	{
+		// Load character glyph 
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+		{
+			MessageBox(NULL, "ERROR::FREETYTPE: Failed to load Glyph", "OH NO", MB_OK);
+			continue;
+		}
+		// Generate texture
+		GLuint texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(
+			GL_TEXTURE_2D,
+			0,
+			GL_RED,
+			face->glyph->bitmap.width,
+			face->glyph->bitmap.rows,
+			0,
+			GL_RED,
+			GL_UNSIGNED_BYTE,
+			face->glyph->bitmap.buffer
+		);
+		// Set texture options
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// Now store character for later use
+		Character character = {
+			texture,
+			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+			face->glyph->advance.x
+		};
+		Characters.insert(std::pair<GLchar, Character>(c, character));
+	}
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glGenVertexArrays(1, &VAO);
+	glGenBuffers(1, &VBO);
+	glBindVertexArray(VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
 	// Setup ImGui binding
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
@@ -221,8 +346,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 	// Setup style
 	ImGui::StyleColorsDark();
-
-	//float pi = 3.1415f;
 
 	// Set up OPENGL drawing stuff
 	// Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
@@ -280,11 +403,12 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
+	TextProgram = LoadShaders("FreeType.vertexshader", "FreeType.fragmentshader");
 
 	float defaultFOV = 38;
 	float pistolZoomFOV = 18;
 	bool showPrimitives = false;
-	float cullDistance = 100;
+	float cullDistance = 25;
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
@@ -521,8 +645,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glClearColor(0,0,0,0);
 		glEnable(GL_DEPTH_TEST);
 		glDepthFunc(GL_LESS);
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// DRAW OUR GAME OVERLAY
@@ -534,34 +658,20 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		horizontalFOV = (horizontalFOV * height) / width;
 		glm::mat4 Projection = glm::perspectiveFov(glm::radians(horizontalFOV), (float)width, (float)height, 0.5f, cullDistance);
 
-		ImGui::Text("horfov: %f", horizontalFOV);
+		//ImGui::Text("horfov: %f", horizontalFOV);
 
 		glm::vec3 playerPos(ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
 		glm::vec3 dir(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 		glm::vec3 lookAt = playerPos + dir;
-		ImGui::DragFloat3("campos", glm::value_ptr(playerPos));
+		/*ImGui::DragFloat3("campos", glm::value_ptr(playerPos));
 		ImGui::DragFloat3("dir", glm::value_ptr(dir));
-		ImGui::DragFloat3("lookAt", glm::value_ptr(lookAt));
+		ImGui::DragFloat3("lookAt", glm::value_ptr(lookAt));*/
 
 		// Camera matrix
 		glm::mat4 View = glm::lookAt(
 			playerPos, 
 			lookAt,
 			glm::vec3(0, 0, 1)
-		);
-
-		//// TEST TRIANGLE DRAWING
-		glUseProgram(programID);
-		// 1st attribute buffer : vertices
-		glEnableVertexAttribArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-		glVertexAttribPointer(
-			0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset
 		);
 
 		// Get a handle for our "MVP" uniform
@@ -571,34 +681,56 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 		glm::mat4 model, mvp;
 		glm::mat4 identity = glm::mat4(1.0f);
-		glm::vec3 color;
 
+		
 		for (auto& v : gameObjects) {
 
 			glm::vec3 color;
+			std::string name;
+
+			glm::vec3 modelPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z);
+
+			if (glm::distance(modelPos, playerPos) > cullDistance)
+				continue;
 
 			if (mp[v->tag_id] == true) {
 				color.b = 1.0f;
+				name = "UNKNOWN";
 			}
 			else {
 				if (KNOWN_TAGS.count(v->tag_id) > 0) {
 					color = KNOWN_TAGS.at(v->tag_id).displayColor;
+					name = KNOWN_TAGS.at(v->tag_id).displayName;
 				}
 				else {
 					color.r = 1;
+					name = "UNKNOWN";
 				}
 			}
 
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(v->unit_x, v->unit_y, v->unit_z));
+			model = glm::translate(model, modelPos);
 
-			model = glm::scale(model, glm::vec3(.025f, .025f, .025f));
+			model = glm::scale(model, glm::vec3(.01f, .01f, .01f));
 
 			// Our ModelViewProjection : multiplication of our 3 matrices
 			mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
 
 											 // Send our transformation to the currently bound shader, in the "MVP" uniform
 											 // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+			glUseProgram(programID);
+			// 1st attribute buffer : vertices
+			glEnableVertexAttribArray(0);
+			glBindVertexArray(VertexArrayID);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+			glVertexAttribPointer(
+				0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
+			);
 			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
 			glUniform3f(ColorID, color.x, color.y, color.z);
 
@@ -606,9 +738,23 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
 												   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		}
 
-		glDisableVertexAttribArray(0);
+			glUseProgram(TextProgram);
+			glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z + .05f);
+			glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
+
+			model = trans;
+			model = glm::scale(model, glm::vec3(.0005f, .0005f, .0005f));
+			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+
+			mvp = Projection * View * model;
+			std::stringstream ss;
+			ss << name;
+			ss << "[";
+			ss << (void*)v;
+			ss << "]";
+			RenderText(ss.str(), 1.0f, color, mvp);
+		}
 
 		ImGui::End();
 
