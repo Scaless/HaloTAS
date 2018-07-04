@@ -20,4 +20,4 @@ Halo: Combat Evolved PC Speedrunning Tools
  [imgui]: <https://github.com/ocornut/imgui>
  [glm]: <https://github.com/g-truc/glm>
  
- [screenshot1]: https://i.imgur.com/9TcUWkd.png
+ [screenshot1]: https://i.imgur.com/Fj2gOWp.png
