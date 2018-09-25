@@ -12,16 +12,23 @@ uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
 #endif
 
+#if !defined(HALO_VANILLA) && !defined(HALO_CUSTOMED)
+#error "Either HALO_VANILLA or HALO_CUSTOMED has to be defined."
+#endif
+
 #if defined(HALO_VANILLA)
 	
-	uint32_t* ADDR_TAGS_ARRAY = (uint32_t*)0x40440000;
-	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x1B40000;
+	uint32_t* ADDR_TAGS_ARRAY = (uint32_t*)0x40000000;
+	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x440000;
 
 	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
-	int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
+	uint16_t* ADDR_SIMULATION_TICK = (uint16_t*)0x400002F4;
+	uint16_t* ADDR_SIMULATION_TICK_2 = (uint16_t*)0x400002FC;
+	uint8_t* ADDR_GAME_IS_RUNNING = (uint8_t*)0x400002E9;
+	uint8_t* ADDR_GAME_IS_PAUSED = (uint8_t*)0x400002EA;
 	float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
 	float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
-	char* ADDR_MAP_STRING = (char*)0x006A8174;
+	char* ADDR_MAP_STRING = (char*)0x40000004;
 	uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
 	uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
 	uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
@@ -40,6 +47,8 @@ uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
 	float* ADDR_CAMERA_POSITION = (float*)0x006AC6D0;
 	float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x006AC72C;
 	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00445920;
+
+	float* ADDR_GAME_SPEED = (float*)0x40000300;
 
 #elif defined(HALO_CUSTOMED)
 	
@@ -68,6 +77,8 @@ uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
 	float* ADDR_CAMERA_POSITION = (float*)0x00647600;
 	float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x0064765C;
 	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00446280;
+
+	float* ADDR_GAME_SPEED = (float*)0x40000300;
 
 #endif
 
@@ -293,31 +304,41 @@ struct Tag {
 };
 
 std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
-	{580, Tag{ 580, glm::vec3(0,1,0), "static prop" }}, 
-	{628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }}, 
-	{632, Tag{ 632, glm::vec3(0,1,0), "tree"   }}, 
-	{680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }}, 
-	{732, Tag{ 732, glm::vec3(0,1,0), "door"   }}, 
-	{736, Tag{ 736, glm::vec3(0,1,0), "tree"   }}, 
-	{764, Tag{ 764, glm::vec3(0,1,0), "projectile impact"   }}, 
-	{800, Tag{ 800, glm::vec3(0,1,0), "Ammo/Health/Consumable"   }}, 
-	{836, Tag{ 836, glm::vec3(0,1,0), "bulkhead?"   }}, 
-	{892, Tag{ 892, glm::vec3(0,1,0), "trigger?"   }}, 
-	{972, Tag{ 972, glm::vec3(0,1,0), "Needler"   }}, 
-	{1204,Tag{ 1204, glm::vec3(0,1,0), "MA5B"  }}, 
-	{1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }}, 
-	{1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }}, 
-	{1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle"  }}, 
-	{1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }}, 
-	{1668,Tag{ 1668, glm::vec3(0,1,0), "trigger?"  }},
-	{1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }}, 
-	{1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee" } },
-	{2888,Tag{ 2888, glm::vec3(0,1,0), "Pelican"  }},
-	{3356,Tag{ 3356, glm::vec3(0,1,0), "Grunt"  }},
-	{3584,Tag{ 3584, glm::vec3(0,1,0), "Light/Warthog"  }}, 
-	{3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }}, 
-	{3704,Tag{ 3704, glm::vec3(0,1,0), "Marine"  }}, 
-	{4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }}, 
-	{4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }}, 
-	{5328,Tag{ 5328, glm::vec3(0,1,0), "Cpt. Keyes" }},
+{ 580, Tag{ 580, glm::vec3(0,1,0), "static prop" } },
+{ 616, Tag{ 616, glm::vec3(0,1,0), "Terminal" }},
+{ 628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }}, 
+{ 632, Tag{ 632, glm::vec3(0,1,0), "tree"   }}, 
+{ 680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }}, 
+{ 720, Tag{ 720, glm::vec3(0,1,0), "debris" } },
+{ 732, Tag{ 732, glm::vec3(0,1,0), "door"   }},
+{ 736, Tag{ 736, glm::vec3(0,1,0), "tree"   }}, 
+{ 764, Tag{ 764, glm::vec3(0,1,0), "projectile"   }}, 
+{ 800, Tag{ 800, glm::vec3(0,1,0), "Ammo/Health/Consumable"   }}, 
+{ 836, Tag{ 836, glm::vec3(0,1,0), "bulkhead?"   }}, 
+{ 892, Tag{ 892, glm::vec3(0,1,0), "trigger?"   }}, 
+{ 940, Tag{ 940, glm::vec3(0,1,0), "Door" } },
+{ 972, Tag{ 972, glm::vec3(0,1,0), "Needler" } },
+{ 1088,Tag{ 1088, glm::vec3(0,1,0), "Shotgun"   }},
+{ 1204,Tag{ 1204, glm::vec3(0,1,0), "MA5B"  }}, 
+{ 1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }}, 
+{ 1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }}, 
+{ 1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle/Rockets"  }}, 
+{ 1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }}, 
+{ 1668,Tag{ 1668, glm::vec3(0,1,0), "Pistol"  }},
+{ 1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }}, 
+{ 1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee" } },
+{ 2076,Tag{ 2076, glm::vec3(0,1,0), "Ghost" } },
+{ 2424,Tag{ 2424, glm::vec3(0,1,0), "Wraith" } },
+{ 2888,Tag{ 2888, glm::vec3(0,1,0), "Pelican" } },
+{ 2892,Tag{ 2892, glm::vec3(0,1,0), "Popcorn"  }},
+{ 3356,Tag{ 3356, glm::vec3(0,1,0), "Grunt" } },
+{ 3584,Tag{ 3584, glm::vec3(0,1,0), "Warthog?"  }}, 
+{ 3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }}, 
+{ 3704,Tag{ 3704, glm::vec3(0,1,0), "Marine" } },
+{ 3936,Tag{ 3936, glm::vec3(0,1,0), "Infection Form "  }},
+{ 4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }}, 
+{ 4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }}, 
+{ 5328,Tag{ 5328, glm::vec3(0,1,0), "Cpt. Keyes" } },
+{ 5792,Tag{ 5792, glm::vec3(0,1,0), "Flood A" } },
+{ 6024,Tag{ 6024, glm::vec3(0,1,0), "Flood B" }},
 };

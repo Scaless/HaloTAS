@@ -3,7 +3,23 @@
 #include <TlHelp32.h>
 #include <filesystem>
 
+#define HALO_VANILLA
+//#define HALO_CUSTOMED
+
+#if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
+#error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
+#endif
+
+#if !defined(HALO_VANILLA) && !defined(HALO_CUSTOMED)
+#error "Either HALO_VANILLA or HALO_CUSTOMED has to be defined."
+#endif
+
+#if defined(HALO_VANILLA)
+char HaloProcess[] = "halo.exe";
+#elif defined(HALO_CUSTOMED)
 char HaloProcess[] = "haloce.exe";
+#endif
+
 char dllPath[250] = "C:\\Repos\\HaloTAS\\HaloTAS\\Release\\TASDLL.dll";
 
 typedef HINSTANCE (*fpLoadLibrary)(char*);

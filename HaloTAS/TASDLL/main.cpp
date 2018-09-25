@@ -2,8 +2,8 @@
 
 #define _USE_MATH_DEFINES
 
-// #define HALO_VANILLA
-#define HALO_CUSTOMED
+#define HALO_VANILLA
+//#define HALO_CUSTOMED
 
 #include "HaloConstants.h"
 #include <inttypes.h>
@@ -252,6 +252,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
 	std::map<uint64_t, InputMoment> allInputs;
 
+	byte* heapSnapshot = new byte[0x1B40000];
+
 	EnumWindows(EnumWindowsProc, GetCurrentProcessId());
 	RECT rect;
 
@@ -259,6 +261,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	bool isPlayback = false;
 	int counter = 0;
 	int32_t lastInputCounter = -1;
+	float UIScale = 1;
 
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
@@ -498,12 +501,24 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 250);
 			}
 
+			ImGui::DragFloat("UI Scale", &UIScale, 1, 1, 20);
+
 			if (ImGui::Button("PatchMouse")) {
 				PatchMouseEnableManualInput();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("UnPatchMouse")) {
 				UnPatchMouseDisableManualInput();
+			}
+
+			ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
+
+			if(ImGui::Button("Save Snapshot")) {
+				memcpy(heapSnapshot, (void*)0x40000000, 0x43FFFF);
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Load Snapshot")) {
+				memcpy((void*)0x40000000, heapSnapshot, 0x43FFFF);
 			}
 
 			static bool forceSimulate = true;
@@ -682,7 +697,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glm::mat4 model, mvp;
 		glm::mat4 identity = glm::mat4(1.0f);
 
-		
 		for (auto& v : gameObjects) {
 
 			glm::vec3 color;
@@ -743,8 +757,10 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z + .05f);
 			glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
 
+			float textScale = .00025f * UIScale;
+
 			model = trans;
-			model = glm::scale(model, glm::vec3(.0005f, .0005f, .0005f));
+			model = glm::scale(model, glm::vec3(textScale, textScale, textScale));
 			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
 
 			mvp = Projection * View * model;
