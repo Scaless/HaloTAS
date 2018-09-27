@@ -492,6 +492,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			ImGui::Text("Current Map: %s\t", ADDR_MAP_STRING);
 			ImGui::SameLine();
+			ImGui::Text("Ticks since level start = %d\t", *ADDR_SIMULATION_TICK_2);
+			ImGui::SameLine();
 			ImGui::Text("Frames since level start = %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
 			ImGui::SameLine();
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -543,50 +545,54 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 					mp[val] = false;
 				}
 			}
-			auto countf = 1;
-			for (auto& m : mp) {
-				std::string tagName = "UNKNOWN" + std::to_string(countf);
-				if (KNOWN_TAGS.count(m.first)) {
-					tagName = KNOWN_TAGS.at(m.first).displayName;
-				}
-				ImGui::PushID(countf);
-				ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 0, 0, 0));
-				if (ImGui::CollapsingHeader(tagName.c_str())) {
-					auto count = 1;
-					for (auto& v : gameObjects) {
-						if (v->tag_id == m.first) {
-							ImGui::PushID(count * countf + count);
-							ImGui::PushItemWidth(300);
-							ImGui::DragFloat3(("POS: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
-							//ImGui::DragFloat3(("ROT: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
-							ImGui::PopItemWidth();
+
+			if (ImGui::CollapsingHeader("Tags"))
+			{
+				auto countf = 1;
+				for (auto& m : mp) {
+					std::string tagName = "UNKNOWN" + std::to_string(countf);
+					if (KNOWN_TAGS.count(m.first)) {
+						tagName = KNOWN_TAGS.at(m.first).displayName;
+					}
+					ImGui::PushID(countf);
+					ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0, 0, 0, 0));
+					if (ImGui::CollapsingHeader(tagName.c_str())) {
+						auto count = 1;
+						for (auto& v : gameObjects) {
+							if (v->tag_id == m.first) {
+								ImGui::PushID(count * countf + count);
+								ImGui::PushItemWidth(300);
+								ImGui::DragFloat3(("POS: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
+								//ImGui::DragFloat3(("ROT: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
+								ImGui::PopItemWidth();
 							
-							ImGui::SameLine();
-							if (ImGui::Button("MoveThisToMe")) {
-								auto player = GetPlayerObject(gameObjects);
+								ImGui::SameLine();
+								if (ImGui::Button("MoveThisToMe")) {
+									auto player = GetPlayerObject(gameObjects);
 
-								v->unit_x = player->unit_x + 1;
-								v->unit_y = player->unit_y;
-								v->unit_z = player->unit_z;
-							}
-							ImGui::SameLine();
-							if (ImGui::Button("MoveMeToThis")) {
-								auto player = GetPlayerObject(gameObjects);
+									v->unit_x = player->unit_x + 1;
+									v->unit_y = player->unit_y;
+									v->unit_z = player->unit_z;
+								}
+								ImGui::SameLine();
+								if (ImGui::Button("MoveMeToThis")) {
+									auto player = GetPlayerObject(gameObjects);
 
-								player->unit_x = v->unit_x;
-								player->unit_y = v->unit_y;
-								player->unit_z = v->unit_z + .5f;
+									player->unit_x = v->unit_x;
+									player->unit_y = v->unit_y;
+									player->unit_z = v->unit_z + .5f;
+								}
+								ImGui::SameLine();
+								ImGui::Text("Addr: %p", v);
+								count++;
+								ImGui::PopID();
 							}
-							ImGui::SameLine();
-							ImGui::Text("Addr: %p", v);
-							count++;
-							ImGui::PopID();
 						}
 					}
+					ImGui::PopStyleColor();
+					countf++;
+					ImGui::PopID();
 				}
-				ImGui::PopStyleColor();
-				countf++;
-				ImGui::PopID();
 			}
 
 			if (ImGui::CollapsingHeader("Manual Input"))

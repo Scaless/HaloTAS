@@ -20,7 +20,7 @@ char HaloProcess[] = "halo.exe";
 char HaloProcess[] = "haloce.exe";
 #endif
 
-char dllPath[250] = "C:\\Repos\\HaloTAS\\HaloTAS\\Release\\TASDLL.dll";
+char dllPath[250] = "C:\\Repos\\HaloTAS\\HaloTAS\\Debug\\TASDLL.dll";
 
 typedef HINSTANCE (*fpLoadLibrary)(char*);
 
