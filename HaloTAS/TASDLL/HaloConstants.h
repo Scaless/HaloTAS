@@ -8,6 +8,8 @@
 uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
 
+uint8_t PATCH_CUSTOM_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
 #endif
@@ -26,6 +28,7 @@ uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
 	uint16_t* ADDR_SIMULATION_TICK_2 = (uint16_t*)0x400002FC;
 	uint8_t* ADDR_GAME_IS_RUNNING = (uint8_t*)0x400002E9;
 	uint8_t* ADDR_GAME_IS_PAUSED = (uint8_t*)0x400002EA;
+	bool* ADDR_RUN_INJECTED_CODE = (bool*)0x0071D1A4;
 	float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
 	float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
 	char* ADDR_MAP_STRING = (char*)0x40000004;
@@ -37,12 +40,14 @@ uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
 	bool* ADDR_SIMULATE = (bool*)0x00721E8C;
 	bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
 
+
 	int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
 	int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
 	int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
 
 	// Patch point for allowing external directinput mouse movement
 	uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
+	uint8_t* ADDR_PATCH_CUSTOM_FUNC = (uint8_t*)0x004C7793;
 
 	float* ADDR_CAMERA_POSITION = (float*)0x006AC6D0;
 	float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x006AC72C;

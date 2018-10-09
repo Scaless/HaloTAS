@@ -24,6 +24,8 @@
 #include <fstream>
 #include <algorithm>
 #include <sstream>
+#include <iostream>
+#include <fstream>
 #include <vector>
 #include <math.h>
 
@@ -153,30 +155,28 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 	return TRUE;
 }
 
-void PatchMouseEnableManualInput() {
-	unsigned long OldProtection, blah;
+void PatchProgramMemory(LPVOID PatchAddress, uint8_t* PatchBytes, int PatchSize) {
+	unsigned long OldProtection, unused;
 	//give that address read and write permissions and store the old permissions at oldProtection
-	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, PAGE_EXECUTE_READWRITE, &OldProtection);
+	VirtualProtect(PatchAddress, PatchSize, PAGE_EXECUTE_READWRITE, &OldProtection);
 
 	//write the memory into the program and overwrite previous value
-	//memcpy((LPVOID)ADDR_PATCH_DINPUT_MOUSE, valueToWrite, byteNum);
-	std::copy_n(PATCH_DINPUT_MOUSE_BYTES, 7, ADDR_PATCH_DINPUT_MOUSE);
+	std::copy_n(PatchBytes, PatchSize, (uint8_t*)PatchAddress);
 
 	//reset the permissions of the address back to oldProtection after writting memory
-	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, OldProtection, &blah);
+	VirtualProtect(PatchAddress, PatchSize, OldProtection, &unused);
+}
+
+void PatchMouseEnableManualInput() {
+	PatchProgramMemory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
 }
 
 void UnPatchMouseDisableManualInput() {
-	unsigned long OldProtection, blah;
-	//give that address read and write permissions and store the old permissions at oldProtection
-	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, PAGE_EXECUTE_READWRITE, &OldProtection);
+	PatchProgramMemory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
+}
 
-	//write the memory into the program and overwrite previous value
-	//memcpy((LPVOID)ADDR_PATCH_DINPUT_MOUSE, valueToWrite, byteNum);
-	std::copy_n(PATCH_DINPUT_MOUSE_ORIGINAL, 7, ADDR_PATCH_DINPUT_MOUSE);
-
-	//reset the permissions of the address back to oldProtection after writting memory
-	VirtualProtect((LPVOID)(ADDR_PATCH_DINPUT_MOUSE), 7, OldProtection, &blah);
+void PatchCustomFunc() {
+	PatchProgramMemory(ADDR_PATCH_CUSTOM_FUNC, PATCH_CUSTOM_FUNC_BYTES, 15);
 }
 
 GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
@@ -248,8 +248,35 @@ void RenderText(std::string text, GLfloat scale, glm::vec3 color, glm::mat4 proj
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+extern "C" __declspec(dllexport) void WINAPI RecordFrame(void) {
+	std::ofstream logFile("log.txt", std::ios::app);
+
+	uint32_t frames = *ADDR_FRAMES_SINCE_LEVEL_START;
+	uint32_t tick = *ADDR_SIMULATION_TICK;
+
+	if (tick == 0) {
+		logFile << ADDR_MAP_STRING << std::endl;
+	}
+	
+	logFile << "Frame#" << frames << "\tTick#" << tick << std::endl;
+
+	logFile.close();
+}
+
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
+	auto handle = GetModuleHandle(TEXT("TASDLL"));
+	auto addr = (int)GetProcAddress(handle, "_RecordFrame@0");
+	PATCH_CUSTOM_FUNC_BYTES[0] = 0xE8; // x86 CALL
+	addr -= 0x4C7798; // Call location
+
+	PATCH_CUSTOM_FUNC_BYTES[1] = addr & 0x000000FF;
+	PATCH_CUSTOM_FUNC_BYTES[2] = (addr & 0x0000FF00) >> 8;
+	PATCH_CUSTOM_FUNC_BYTES[3] = (addr & 0x00FF0000) >> 16;
+	PATCH_CUSTOM_FUNC_BYTES[4] = (addr & 0xFF000000) >> 24;
+
+	PatchCustomFunc();
+
 	std::map<uint64_t, InputMoment> allInputs;
 
 	byte* heapSnapshot = new byte[0x1B40000];
@@ -499,6 +526,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
 			ImGui::Checkbox("Show Primitives", &showPrimitives);
+			ImGui::Checkbox("Run Injected Code", ADDR_RUN_INJECTED_CODE);
+
 			if (showPrimitives) {
 				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 250);
 			}
@@ -799,10 +828,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	return S_OK;
 }
 
-int main() {
-	//Main_Thread(NULL);
-}
-
+// Entry point for DLL
 INT APIENTRY DllMain(HMODULE hDLL, DWORD Reason, LPVOID /*Reserved*/)
 {
 	DWORD dwThreadID;
