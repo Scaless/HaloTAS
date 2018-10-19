@@ -39,6 +39,12 @@
     <ClCompile Include="..\imgui\imgui.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="render_opengl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="render_text.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h">
@@ -59,7 +65,13 @@
     <ClInclude Include="imgui_impl_glfw_gl3.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="HaloConstants.h">
+    <ClInclude Include="render_text.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="halo_constants.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render_opengl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

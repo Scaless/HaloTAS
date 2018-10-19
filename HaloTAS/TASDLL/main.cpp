@@ -5,20 +5,18 @@
 #define HALO_VANILLA
 //#define HALO_CUSTOMED
 
-#include "HaloConstants.h"
-#include <inttypes.h>
+#include "halo_constants.h"
+#include <cinttypes>
 #include <string>
 #include <map>
 #include <set>
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
-#include <stdio.h>
+#include <cstdio>
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
 #include <dwmapi.h>
 #include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
@@ -27,110 +25,16 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
-#include <math.h>
 
-#include <ft2build.h>
-#include FT_FREETYPE_H  
-
-static void glfw_error_callback(int error, const char* description)
-{
-	fprintf(stderr, "Error %d: %s\n", error, description);
-	MessageBox(0, description, "", MB_OK);
-}
-
-GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path) {
-
-	// Create the shaders
-	GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
-	GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
-
-	// Read the Vertex Shader code from the file
-	std::string VertexShaderCode;
-	std::ifstream VertexShaderStream(vertex_file_path, std::ios::in);
-	if (VertexShaderStream.is_open()) {
-		std::stringstream sstr;
-		sstr << VertexShaderStream.rdbuf();
-		VertexShaderCode = sstr.str();
-		VertexShaderStream.close();
-	}
-	else {
-		printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_file_path);
-		getchar();
-		return 0;
-	}
-
-	// Read the Fragment Shader code from the file
-	std::string FragmentShaderCode;
-	std::ifstream FragmentShaderStream(fragment_file_path, std::ios::in);
-	if (FragmentShaderStream.is_open()) {
-		std::stringstream sstr;
-		sstr << FragmentShaderStream.rdbuf();
-		FragmentShaderCode = sstr.str();
-		FragmentShaderStream.close();
-	}
-
-	GLint Result = GL_FALSE;
-	int InfoLogLength;
-
-	// Compile Vertex Shader
-	printf("Compiling shader : %s\n", vertex_file_path);
-	char const * VertexSourcePointer = VertexShaderCode.c_str();
-	glShaderSource(VertexShaderID, 1, &VertexSourcePointer, NULL);
-	glCompileShader(VertexShaderID);
-
-	// Check Vertex Shader
-	glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
-	glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	if (InfoLogLength > 0) {
-		std::vector<char> VertexShaderErrorMessage(InfoLogLength + 1);
-		glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
-		printf("%s\n", &VertexShaderErrorMessage[0]);
-	}
-
-	// Compile Fragment Shader
-	printf("Compiling shader : %s\n", fragment_file_path);
-	char const * FragmentSourcePointer = FragmentShaderCode.c_str();
-	glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer, NULL);
-	glCompileShader(FragmentShaderID);
-
-	// Check Fragment Shader
-	glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
-	glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	if (InfoLogLength > 0) {
-		std::vector<char> FragmentShaderErrorMessage(InfoLogLength + 1);
-		glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
-		printf("%s\n", &FragmentShaderErrorMessage[0]);
-	}
-
-	// Link the program
-	printf("Linking program\n");
-	GLuint ProgramID = glCreateProgram();
-	glAttachShader(ProgramID, VertexShaderID);
-	glAttachShader(ProgramID, FragmentShaderID);
-	glLinkProgram(ProgramID);
-
-	// Check the program
-	glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
-	glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
-	if (InfoLogLength > 0) {
-		std::vector<char> ProgramErrorMessage(InfoLogLength + 1);
-		glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
-		printf("%s\n", &ProgramErrorMessage[0]);
-	}
-
-	glDetachShader(ProgramID, VertexShaderID);
-	glDetachShader(ProgramID, FragmentShaderID);
-
-	glDeleteShader(VertexShaderID);
-	glDeleteShader(FragmentShaderID);
-
-	return ProgramID;
-}
+#include "render_text.h"
+#include "render_opengl.h"
 
 struct InputMoment {
+	uint32_t checkpointId;
+	uint32_t tick;
 	uint8_t inputBuf[104];
-	//float updown, leftright;
 	int32_t mouseX, mouseY;
+	glm::vec3 lookDirection;
 	uint8_t leftmouse, rightmouse;
 };
 
@@ -155,28 +59,28 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 	return TRUE;
 }
 
-void PatchProgramMemory(LPVOID PatchAddress, uint8_t* PatchBytes, int PatchSize) {
-	unsigned long OldProtection, unused;
+void patch_program_memory(LPVOID patch_address, uint8_t* patch_bytes, const int patch_size) {
+	unsigned long old_protection, unused;
 	//give that address read and write permissions and store the old permissions at oldProtection
-	VirtualProtect(PatchAddress, PatchSize, PAGE_EXECUTE_READWRITE, &OldProtection);
+	VirtualProtect(patch_address, patch_size, PAGE_EXECUTE_READWRITE, &old_protection);
 
 	//write the memory into the program and overwrite previous value
-	std::copy_n(PatchBytes, PatchSize, (uint8_t*)PatchAddress);
+	std::copy_n(patch_bytes, patch_size, static_cast<uint8_t*>(patch_address));
 
 	//reset the permissions of the address back to oldProtection after writting memory
-	VirtualProtect(PatchAddress, PatchSize, OldProtection, &unused);
+	VirtualProtect(patch_address, patch_size, old_protection, &unused);
 }
 
-void PatchMouseEnableManualInput() {
-	PatchProgramMemory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
+void patch_mouse_enable_manual_input() {
+	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
 }
 
-void UnPatchMouseDisableManualInput() {
-	PatchProgramMemory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
+void un_patch_mouse_disable_manual_input() {
+	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
 }
 
-void PatchCustomFunc() {
-	PatchProgramMemory(ADDR_PATCH_CUSTOM_FUNC, PATCH_CUSTOM_FUNC_BYTES, 15);
+void patch_custom_func() {
+	patch_program_memory(ADDR_PATCH_CUSTOM_FUNC, PATCH_CUSTOM_FUNC_BYTES, 15);
 }
 
 GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
@@ -187,86 +91,88 @@ GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
 	}
 }
 
-struct Character {
-	GLuint     TextureID;  // ID handle of the glyph texture
-	glm::ivec2 Size;       // Size of glyph
-	glm::ivec2 Bearing;    // Offset from baseline to left/top of glyph
-	GLuint     Advance;    // Offset to advance to next glyph
-};
+static bool record = false;
+static bool playback = false;
+static uint32_t last_input_tick;
 
-std::map<GLchar, Character> Characters;
-GLuint VAO, VBO;
-GLuint TextProgram;
-//glm::mat4 textProj = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+std::map<uint64_t, InputMoment> stored_inputs_map;
 
-void RenderText(std::string text, GLfloat scale, glm::vec3 color, glm::mat4 proj)
-{
-	// Activate corresponding render state	
+extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
+
+	const uint32_t frames = *ADDR_FRAMES_SINCE_LEVEL_START;
+	const uint32_t tick = *ADDR_SIMULATION_TICK;
+	const uint32_t subLevel = *ADDR_CHECKPOINT_INDICATOR;
+
+	if (tick == last_input_tick)
+		return;
 	
-	glUniform3f(glGetUniformLocation(TextProgram, "textColor"), color.x, color.y, color.z);
-	glUniformMatrix4fv(glGetUniformLocation(TextProgram, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
-	
-	glActiveTexture(GL_TEXTURE0);
-	glBindVertexArray(VAO);
+	last_input_tick = tick;
 
-	GLfloat x = 0;
-	GLfloat y = 0;
-
-	// Iterate through all characters
-	std::string::const_iterator c;
-	for (c = text.begin(); c != text.end(); c++)
+	if (record)
 	{
-		Character ch = Characters[*c];
+		std::ofstream logFile("log.hbin", std::ios::app | std::ios::binary);
 
-		GLfloat xpos = x + ch.Bearing.x * scale;
-		GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+		InputMoment im;
+		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
+			im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
+		}
+		im.checkpointId = *ADDR_CHECKPOINT_INDICATOR;
+		im.tick = tick;
+		im.mouseX = *ADDR_DINPUT_MOUSEX;
+		im.mouseY = *ADDR_DINPUT_MOUSEY;
+		im.lookDirection = glm::vec3(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
+		im.leftmouse = *ADDR_LEFTMOUSE;
+		im.rightmouse = *ADDR_RIGHTMOUSE;
 
-		GLfloat w = ch.Size.x * scale;
-		GLfloat h = ch.Size.y * scale;
-		// Update VBO for each character
-		GLfloat vertices[6][4] = {
-		{ xpos,     ypos + h,   0.0, 0.0 },
-		{ xpos,     ypos,       0.0, 1.0 },
-		{ xpos + w, ypos,       1.0, 1.0 },
-
-		{ xpos,     ypos + h,   0.0, 0.0 },
-		{ xpos + w, ypos,       1.0, 1.0 },
-		{ xpos + w, ypos + h,   1.0, 0.0 }
-		};
-		// Render glyph texture over quad
-		glBindTexture(GL_TEXTURE_2D, ch.TextureID);
-		// Update content of VBO memory
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		// Render quad
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-		x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
+		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
+		logFile.close();
 	}
-	//glBindVertexArray(0);
-	glBindTexture(GL_TEXTURE_2D, 0);
+
+	if(playback)
+	{
+		InputKey ik;
+		ik.subKey.subLevel = subLevel;
+		ik.subKey.inputCounter = tick;
+
+		InputMoment savedIM = stored_inputs_map[ik.fullKey];
+
+		memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
+		*ADDR_DINPUT_MOUSEX = savedIM.mouseX;
+		*ADDR_DINPUT_MOUSEY = savedIM.mouseY;
+		//*ADDR_LEFTMOUSE = savedIM.leftmouse;
+		//*ADDR_RIGHTMOUSE = savedIM.rightmouse;
+		ADDR_CAMERA_LOOK_VECTOR[0] = savedIM.lookDirection.x;
+		ADDR_CAMERA_LOOK_VECTOR[1] = savedIM.lookDirection.y;
+		ADDR_CAMERA_LOOK_VECTOR[2] = savedIM.lookDirection.z;
+	}
+
 }
 
-extern "C" __declspec(dllexport) void WINAPI RecordFrame(void) {
-	std::ofstream logFile("log.txt", std::ios::app);
-
-	uint32_t frames = *ADDR_FRAMES_SINCE_LEVEL_START;
-	uint32_t tick = *ADDR_SIMULATION_TICK;
-
-	if (tick == 0) {
-		logFile << ADDR_MAP_STRING << std::endl;
-	}
+void load_inputs()
+{
+	stored_inputs_map.clear();
 	
-	logFile << "Frame#" << frames << "\tTick#" << tick << std::endl;
+	std::ifstream logFile("log.hbin", std::ios::app | std::ios::binary);
+	
+	char buf[sizeof(InputMoment)];
+	while(!logFile.eof())
+	{
+		logFile.read(buf, sizeof(InputMoment));
+		InputMoment* im = reinterpret_cast<InputMoment*>(&buf);
 
-	logFile.close();
+		InputKey ik;
+		ik.subKey.subLevel = *ADDR_CHECKPOINT_INDICATOR;
+		ik.subKey.inputCounter = *ADDR_SIMULATION_TICK;
+		stored_inputs_map[ik.fullKey] = *im;
+	}
 }
 
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
+	std::unique_ptr<TextRenderer> textRenderer{};
+
 	auto handle = GetModuleHandle(TEXT("TASDLL"));
-	auto addr = (int)GetProcAddress(handle, "_RecordFrame@0");
+	auto addr = reinterpret_cast<int>(GetProcAddress(handle, "_RecordFrame@0"));
 	PATCH_CUSTOM_FUNC_BYTES[0] = 0xE8; // x86 CALL
 	addr -= 0x4C7798; // Call location
 
@@ -275,7 +181,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	PATCH_CUSTOM_FUNC_BYTES[3] = (addr & 0x00FF0000) >> 16;
 	PATCH_CUSTOM_FUNC_BYTES[4] = (addr & 0xFF000000) >> 24;
 
-	PatchCustomFunc();
+	patch_custom_func();
 
 	std::map<uint64_t, InputMoment> allInputs;
 
@@ -306,68 +212,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glfwSwapInterval(0); //0 = no vsync
 	gl3wInit();
 
-	FT_Library ft;
-	if (FT_Init_FreeType(&ft)) {
-		MessageBox(NULL, "Could not init FreeType", "OH NO", MB_OK);
-	}
-	FT_Face face;
-	if (FT_New_Face(ft, "arial.ttf", 0, &face)) {
-		MessageBox(NULL, "Could not load font", "OH NO", MB_OK);
-	}
-	FT_Set_Pixel_Sizes(face, 0, 72);
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
-
-	for (GLubyte c = 0; c < 128; c++)
-	{
-		// Load character glyph 
-		if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-		{
-			MessageBox(NULL, "ERROR::FREETYTPE: Failed to load Glyph", "OH NO", MB_OK);
-			continue;
-		}
-		// Generate texture
-		GLuint texture;
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-		glTexImage2D(
-			GL_TEXTURE_2D,
-			0,
-			GL_RED,
-			face->glyph->bitmap.width,
-			face->glyph->bitmap.rows,
-			0,
-			GL_RED,
-			GL_UNSIGNED_BYTE,
-			face->glyph->bitmap.buffer
-		);
-		// Set texture options
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		// Now store character for later use
-		Character character = {
-			texture,
-			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-			face->glyph->advance.x
-		};
-		Characters.insert(std::pair<GLchar, Character>(c, character));
-	}
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	
 
 	// Setup ImGui binding
 	ImGui::CreateContext();
@@ -433,7 +278,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
-	TextProgram = LoadShaders("FreeType.vertexshader", "FreeType.fragmentshader");
+	
 
 	float defaultFOV = 38;
 	float pistolZoomFOV = 18;
@@ -460,7 +305,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		
 		InputKey ik;
 		ik.subKey.subLevel = *ADDR_CHECKPOINT_INDICATOR;
-		ik.subKey.inputCounter = *ADDR_FRAMES_SINCE_LEVEL_START;
+		ik.subKey.inputCounter = *ADDR_SIMULATION_TICK;
 
 		// Move window position/size to match Halo's
 		if (g_HWND) {
@@ -471,8 +316,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		}
 
 		if (isRecording) {
-			if (*ADDR_FRAMES_SINCE_LEVEL_START != lastInputCounter) {
-				lastInputCounter = *ADDR_FRAMES_SINCE_LEVEL_START;
+			if (*ADDR_SIMULATION_TICK != lastInputCounter) {
+				lastInputCounter = *ADDR_SIMULATION_TICK;
 
 				InputMoment im;
 				for (int i = 0; i < sizeof(im.inputBuf); i++) {
@@ -527,6 +372,12 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			ImGui::Checkbox("Show Primitives", &showPrimitives);
 			ImGui::Checkbox("Run Injected Code", ADDR_RUN_INJECTED_CODE);
+			ImGui::Checkbox("Record", &record);
+			if(ImGui::Button("Load Playback"))
+			{
+				load_inputs();
+			}
+			ImGui::Checkbox("Playback", &playback);
 
 			if (showPrimitives) {
 				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 250);
@@ -535,11 +386,11 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::DragFloat("UI Scale", &UIScale, 1, 1, 20);
 
 			if (ImGui::Button("PatchMouse")) {
-				PatchMouseEnableManualInput();
+				patch_mouse_enable_manual_input();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("UnPatchMouse")) {
-				UnPatchMouseDisableManualInput();
+				un_patch_mouse_disable_manual_input();
 			}
 
 			ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
@@ -787,8 +638,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
 												   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-			glUseProgram(TextProgram);
+			
 			glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z + .05f);
 			glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
 
@@ -802,9 +652,10 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			std::stringstream ss;
 			ss << name;
 			ss << "[";
-			ss << (void*)v;
+			ss << static_cast<void*>(v);
 			ss << "]";
-			RenderText(ss.str(), 1.0f, color, mvp);
+
+			textRenderer->RenderText(ss.str(), 1.0f, color, mvp);
 		}
 
 		ImGui::End();
@@ -824,8 +675,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glfwTerminate();
 
 	FreeLibraryAndExitThread(hDLL, NULL);
-
-	return S_OK;
 }
 
 // Entry point for DLL
