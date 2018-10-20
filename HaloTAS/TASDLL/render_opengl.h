@@ -9,6 +9,6 @@
 #include <sstream>
 #include <vector>
 
-static void glfw_error_callback(int error, const char* description);
+void glfw_error_callback(int error, const char* description);
 
 GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path);

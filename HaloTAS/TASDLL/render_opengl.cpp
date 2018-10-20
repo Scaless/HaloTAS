@@ -1,6 +1,6 @@
 #include "render_opengl.h"
 
-static void glfw_error_callback(int error, const char* description)
+void glfw_error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error %d: %s\n", error, description);
 	MessageBox(0, description, "", MB_OK);
