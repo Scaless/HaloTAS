@@ -12,7 +12,6 @@
 #include <set>
 #include "imgui.h"
 #include "imgui_impl_glfw_gl3.h"
-#include <cstdio>
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <dwmapi.h>
@@ -33,9 +32,7 @@ struct InputMoment {
 	uint32_t checkpointId;
 	uint32_t tick;
 	uint8_t inputBuf[104];
-	int32_t mouseX, mouseY;
-	glm::vec3 lookDirection;
-	uint8_t leftmouse, rightmouse;
+	float yaw, pitch;
 };
 
 union InputKey {
@@ -110,7 +107,9 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 
 	if (record)
 	{
-		std::ofstream logFile("log.hbin", std::ios::app | std::ios::binary);
+		std::string currentMap{ ADDR_MAP_STRING };
+		std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
+		std::ofstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary);
 
 		InputMoment im;
 		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
@@ -118,11 +117,8 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 		}
 		im.checkpointId = *ADDR_CHECKPOINT_INDICATOR;
 		im.tick = tick;
-		im.mouseX = *ADDR_DINPUT_MOUSEX;
-		im.mouseY = *ADDR_DINPUT_MOUSEY;
-		im.lookDirection = glm::vec3(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
-		im.leftmouse = *ADDR_LEFTMOUSE;
-		im.rightmouse = *ADDR_RIGHTMOUSE;
+		im.yaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
+		im.pitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
 
 		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
 		logFile.close();
@@ -134,25 +130,22 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 		ik.subKey.subLevel = subLevel;
 		ik.subKey.inputCounter = tick;
 
-		InputMoment savedIM = stored_inputs_map[ik.fullKey];
+		if(stored_inputs_map.count(ik.fullKey))
+		{
+			InputMoment savedIM = stored_inputs_map[ik.fullKey];
 
-		memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
-		*ADDR_DINPUT_MOUSEX = savedIM.mouseX;
-		*ADDR_DINPUT_MOUSEY = savedIM.mouseY;
-		//*ADDR_LEFTMOUSE = savedIM.leftmouse;
-		//*ADDR_RIGHTMOUSE = savedIM.rightmouse;
-		ADDR_CAMERA_LOOK_VECTOR[0] = savedIM.lookDirection.x;
-		ADDR_CAMERA_LOOK_VECTOR[1] = savedIM.lookDirection.y;
-		ADDR_CAMERA_LOOK_VECTOR[2] = savedIM.lookDirection.z;
+			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
+			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.yaw;
+			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.pitch;
+		}
 	}
-
 }
 
 void load_inputs()
 {
 	stored_inputs_map.clear();
 	
-	std::ifstream logFile("log.hbin", std::ios::app | std::ios::binary);
+	std::ifstream logFile("levels.a10.a10.hbin", std::ios::app | std::ios::binary);
 	
 	char buf[sizeof(InputMoment)];
 	while(!logFile.eof())
@@ -161,16 +154,14 @@ void load_inputs()
 		InputMoment* im = reinterpret_cast<InputMoment*>(&buf);
 
 		InputKey ik;
-		ik.subKey.subLevel = *ADDR_CHECKPOINT_INDICATOR;
-		ik.subKey.inputCounter = *ADDR_SIMULATION_TICK;
+		ik.subKey.subLevel = im->checkpointId;
+		ik.subKey.inputCounter = im->tick;
 		stored_inputs_map[ik.fullKey] = *im;
 	}
 }
 
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
-	std::unique_ptr<TextRenderer> textRenderer{};
-
 	auto handle = GetModuleHandle(TEXT("TASDLL"));
 	auto addr = reinterpret_cast<int>(GetProcAddress(handle, "_RecordFrame@0"));
 	PATCH_CUSTOM_FUNC_BYTES[0] = 0xE8; // x86 CALL
@@ -183,18 +174,12 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 	patch_custom_func();
 
-	std::map<uint64_t, InputMoment> allInputs;
-
 	byte* heapSnapshot = new byte[0x1B40000];
+
+	float UIScale = 1;
 
 	EnumWindows(EnumWindowsProc, GetCurrentProcessId());
 	RECT rect;
-
-	bool isRecording = false;
-	bool isPlayback = false;
-	int counter = 0;
-	int32_t lastInputCounter = -1;
-	float UIScale = 1;
 
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
@@ -211,8 +196,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(0); //0 = no vsync
 	gl3wInit();
-
-	
 
 	// Setup ImGui binding
 	ImGui::CreateContext();
@@ -278,18 +261,17 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
-	
 
 	float defaultFOV = 38;
 	float pistolZoomFOV = 18;
 	bool showPrimitives = false;
 	float cullDistance = 25;
+	std::unique_ptr<TextRenderer> textRenderer(new TextRenderer);
+	
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
-		counter++;
-
 		std::vector<GameObject*> gameObjects;
 		static std::map<uint32_t, bool> mp;
 		
@@ -303,10 +285,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 		std::sort(gameObjects.begin(), gameObjects.end(), GameObject_Sort);
 		
-		InputKey ik;
-		ik.subKey.subLevel = *ADDR_CHECKPOINT_INDICATOR;
-		ik.subKey.inputCounter = *ADDR_SIMULATION_TICK;
-
 		// Move window position/size to match Halo's
 		if (g_HWND) {
 			if (GetWindowRect(g_HWND, &rect)) {
@@ -315,40 +293,13 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			}
 		}
 
-		if (isRecording) {
-			if (*ADDR_SIMULATION_TICK != lastInputCounter) {
-				lastInputCounter = *ADDR_SIMULATION_TICK;
-
-				InputMoment im;
-				for (int i = 0; i < sizeof(im.inputBuf); i++) {
-					im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
-				}
-				im.mouseX = *ADDR_DINPUT_MOUSEX;
-				im.mouseY = *ADDR_DINPUT_MOUSEY;
-				im.leftmouse = *ADDR_LEFTMOUSE;
-				im.rightmouse = *ADDR_RIGHTMOUSE;
-
-				allInputs[ik.fullKey] = im;
-			}
-		}
-
-		if (isPlayback && allInputs.count(ik.fullKey) >= 1) {
-			InputMoment savedIM = allInputs[ik.fullKey];
-			for (int i = 0; i < sizeof(savedIM.inputBuf); i++) {
-				ADDR_KEYBOARD_INPUT[i] = savedIM.inputBuf[i];
-			}
-			*ADDR_DINPUT_MOUSEX = savedIM.mouseX;
-			*ADDR_DINPUT_MOUSEY = savedIM.mouseY;
-			*ADDR_LEFTMOUSE = savedIM.leftmouse;
-			*ADDR_RIGHTMOUSE = savedIM.rightmouse;
-		}
-
 		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
 		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		glfwPollEvents();
 		ImGui_ImplGlfwGL3_NewFrame();
+
 		{ // ImGui Rendering
 			int width, height, x, y;
 			glfwGetWindowSize(window, &width, &height);
@@ -407,15 +358,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::Checkbox("Force Simulate", &forceSimulate);
 			*ADDR_SIMULATE = forceSimulate ? 0 : 1;
 			*ADDR_ALLOW_INPUT = (*ADDR_SIMULATE == 1 ? 0 : 1);
-
-			if (ImGui::Button("Clear Recording")) {
-				isRecording = false;
-				allInputs.clear();
-			}
-			ImGui::SameLine();
-			ImGui::Checkbox("Record", &isRecording);
-			ImGui::SameLine();
-			ImGui::Checkbox("Play", &isPlayback);
 
 			for (auto& v : gameObjects) {
 

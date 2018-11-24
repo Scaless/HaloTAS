@@ -7,7 +7,6 @@
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
 uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
-
 uint8_t PATCH_CUSTOM_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
@@ -20,40 +19,41 @@ uint8_t PATCH_CUSTOM_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x
 
 #if defined(HALO_VANILLA)
 	
-	uint32_t* ADDR_TAGS_ARRAY = (uint32_t*)0x40000000;
+	uint32_t* ADDR_TAGS_ARRAY = reinterpret_cast<uint32_t*>(0x40000000);
 	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x440000;
 
-	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
-	uint16_t* ADDR_SIMULATION_TICK = (uint16_t*)0x400002F4;
-	uint16_t* ADDR_SIMULATION_TICK_2 = (uint16_t*)0x400002FC;
-	uint8_t* ADDR_GAME_IS_RUNNING = (uint8_t*)0x400002E9;
-	uint8_t* ADDR_GAME_IS_PAUSED = (uint8_t*)0x400002EA;
-	bool* ADDR_RUN_INJECTED_CODE = (bool*)0x0071D1A4;
-	float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
-	float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
-	char* ADDR_MAP_STRING = (char*)0x40000004;
-	uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
-	uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
-	uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
-	uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
-	uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
-	bool* ADDR_SIMULATE = (bool*)0x00721E8C;
-	bool* ADDR_ALLOW_INPUT = (bool*)0x006B15F8;
+	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
+	uint16_t* ADDR_SIMULATION_TICK = reinterpret_cast<uint16_t*>(0x400002F4);
+	uint16_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<uint16_t*>(0x400002FC);
+	uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
+	uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
+	bool* ADDR_RUN_INJECTED_CODE = reinterpret_cast<bool*>(0x0071D1A4);
+	float* ADDR_LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);
+	float* ADDR_UPDOWNVIEW = reinterpret_cast<float*>(0x402AD4BC);
+	char* ADDR_MAP_STRING = reinterpret_cast<char*>(0x40000004);
+	uint32_t* ADDR_CHECKPOINT_INDICATOR = reinterpret_cast<uint32_t*>(0x00746F90);
+	uint8_t* ADDR_KEYBOARD_INPUT = reinterpret_cast<uint8_t*>(0x006B1620);
+	uint8_t* ADDR_LEFTMOUSE = reinterpret_cast<uint8_t*>(0x006B1818);
+	uint8_t* ADDR_MIDDLEMOUSE = reinterpret_cast<uint8_t*>(0x006B1819);
+	uint8_t* ADDR_RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
+	bool* ADDR_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
+	bool* ADDR_ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
 
-
-	int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
-	int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
-	int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
+	int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
+	int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
+	int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
 
 	// Patch point for allowing external directinput mouse movement
-	uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
-	uint8_t* ADDR_PATCH_CUSTOM_FUNC = (uint8_t*)0x004C7793;
+	uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
+	uint8_t* ADDR_PATCH_CUSTOM_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
 
-	float* ADDR_CAMERA_POSITION = (float*)0x006AC6D0;
-	float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x006AC72C;
-	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00445920;
+	float* ADDR_CAMERA_POSITION = reinterpret_cast<float*>(0x006AC6D0);
+	float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
+	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
+	float* ADDR_PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
+	float* ADDR_PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
 
-	float* ADDR_GAME_SPEED = (float*)0x40000300;
+	float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
 
 #elif defined(HALO_CUSTOMED)
 	

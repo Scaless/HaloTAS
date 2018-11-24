@@ -3,7 +3,7 @@
 
 TextRenderer::TextRenderer()
 {
-
+	Initialize();
 }
 
 TextRenderer::~TextRenderer()
