@@ -4,9 +4,20 @@ Halo: Combat Evolved PC Speedrunning Tools
 #### Goals:
 - Have fun
 - Go fast
-- Sub-[Garish](https://www.twitch.tv/garishgoblin) time
+- Beat [human world record](https://haloruns.com/records?lb=0100) time
 
 ![Screenshot][screenshot1]
+
+#### Requirements to compile yourself:
+- Windows 10
+    - [Build 15063, aka version 1703, aka Creator's Update](https://en.wikipedia.org/wiki/Windows_10_version_history#Rings) or higher
+- Visual Studio 2017
+    - ".NET desktop development" component installed
+    - .NET 4.6.1 or later
+- Retail Halo:CE Installed
+    - Updated to [01.00.10.0621](http://halo.bungie.net/images/games/halopc/patch/110/halopc-patch-1.0.10.exe)
+
+## **Some paths are hardcoded in the source, I haven't setup a changeable config so you'll have to edit them manually.**
 
 #### Made possible with the following projects:
 
