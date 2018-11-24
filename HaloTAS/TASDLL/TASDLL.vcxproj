@@ -83,7 +83,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_68_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -91,6 +91,8 @@
       <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2010-32;$(SolutionDir)\lib\freetype;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -99,11 +101,13 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_68_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2010-32;$(SolutionDir)\lib\freetype;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

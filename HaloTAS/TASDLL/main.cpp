@@ -1,7 +1,5 @@
 #pragma warning(disable:4996)
 
-#define _USE_MATH_DEFINES
-
 #define HALO_VANILLA
 //#define HALO_CUSTOMED
 
@@ -24,6 +22,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <boost/math/constants/constants.hpp>
 
 #include "render_text.h"
 #include "render_opengl.h"
@@ -86,6 +85,7 @@ GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
 			return v;
 		}
 	}
+	return nullptr;
 }
 
 static bool record = false;
@@ -276,7 +276,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		static std::map<uint32_t, bool> mp;
 		
 		if (showPrimitives) {
-			for (int i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
+			for (uint32_t i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
 				if (ADDR_TAGS_ARRAY[i] == 0x68656164u) { // = "daeh" = "head" in little endian
 					gameObjects.push_back((GameObject*)&ADDR_TAGS_ARRAY[i]);
 				}
@@ -437,7 +437,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				ImGui::SliderInt("RawMouseY", ADDR_DINPUT_MOUSEY, -5, 5);
 
 				ImGui::SliderFloat("Vertical View Angle", ADDR_UPDOWNVIEW, -1.492f, 1.492f);
-				ImGui::SliderFloat("Horizontal View Angle", ADDR_LEFTRIGHTVIEW, 0, M_PI*2.0f);
+				ImGui::SliderFloat("Horizontal View Angle", ADDR_LEFTRIGHTVIEW, 0, boost::math::float_constants::pi * 2.0f);
 
 				ImGui::Columns(6, "inputmap", true);
 				ImGui::Separator();
