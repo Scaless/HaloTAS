@@ -18,7 +18,7 @@ void TextRenderer::Initialize()
 		MessageBox(NULL, "Could not init FreeType", "OH NO", MB_OK);
 	}
 	FT_Face face;
-	if (FT_New_Face(ft, "arial.ttf", 0, &face)) {
+	if (FT_New_Face(ft, "C:\\Windows\\Fonts\\consola.ttf", 0, &face)) {
 		MessageBox(NULL, "Could not load font", "OH NO", MB_OK);
 	}
 	FT_Set_Pixel_Sizes(face, 0, 72);
