@@ -16,6 +16,7 @@ Halo: Combat Evolved PC Speedrunning Tools
     - .NET 4.6.1 or later
 - Retail Halo:CE Installed
     - Updated to [01.00.10.0621](http://halo.bungie.net/images/games/halopc/patch/110/halopc-patch-1.0.10.exe)
+- Graphics card/driver capable of OpenGL 3.2 or higher
 
 ## **Some paths are hardcoded in the source, I haven't setup a changeable config so you'll have to edit them manually.**
 
