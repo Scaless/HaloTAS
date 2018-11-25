@@ -17,6 +17,7 @@ Halo: Combat Evolved PC Speedrunning Tools
 - Retail Halo:CE Installed
     - Updated to [01.00.10.0621](http://halo.bungie.net/images/games/halopc/patch/110/halopc-patch-1.0.10.exe)
 - Graphics card/driver capable of OpenGL 3.2 or higher
+    - NVIDIA or AMD, integrated Intel has problems
 - [Boost](https://www.boost.org/users/download/) v1.68 or higher
     - Default location: C:\boost_1_68_0
 	- If installing boost elsewhere, must change project include paths to point to boost install location
