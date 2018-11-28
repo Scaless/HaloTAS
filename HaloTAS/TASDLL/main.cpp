@@ -145,7 +145,10 @@ void load_inputs()
 {
 	stored_inputs_map.clear();
 	
-	std::ifstream logFile("levels.a10.a10.hbin", std::ios::app | std::ios::binary);
+	std::string currentMap{ ADDR_MAP_STRING };
+	std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
+
+	std::ifstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary);
 	
 	char buf[sizeof(InputMoment)];
 	while(!logFile.eof())
