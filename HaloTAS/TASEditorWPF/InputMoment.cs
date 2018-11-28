@@ -9,6 +9,7 @@ namespace TASEditorWPF
         public byte[] InputBuffer;
         public float MouseYaw; // Left-Right
         public float MousePitch; // Up-Down
+        public byte MouseLeft, MouseMiddle, MouseRight;
 
         public InputMoment()
         {

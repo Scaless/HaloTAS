@@ -32,6 +32,7 @@ struct InputMoment {
 	uint32_t tick;
 	uint8_t inputBuf[104];
 	float yaw, pitch;
+	uint8_t leftMouse,middleMouse,rightMouse;
 };
 
 union InputKey {
@@ -109,7 +110,7 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 	{
 		std::string currentMap{ ADDR_MAP_STRING };
 		std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
-		std::ofstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary);
+		std::ofstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary); // levels.a10.a10.hbin
 
 		InputMoment im;
 		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
@@ -119,6 +120,9 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 		im.tick = tick;
 		im.yaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
 		im.pitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
+		im.leftMouse = *ADDR_LEFTMOUSE;
+		im.middleMouse = *ADDR_MIDDLEMOUSE;
+		im.rightMouse = *ADDR_RIGHTMOUSE;
 
 		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
 		logFile.close();
@@ -137,6 +141,9 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
 			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.yaw;
 			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.pitch;
+			*ADDR_LEFTMOUSE = savedIM.leftMouse;
+			*ADDR_MIDDLEMOUSE = savedIM.middleMouse;
+			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
 		}
 	}
 }

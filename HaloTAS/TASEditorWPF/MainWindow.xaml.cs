@@ -80,6 +80,9 @@ namespace TASEditorWPF
                     Tick = BitConverter.ToUInt32(buf, 4),
                     MouseYaw = BitConverter.ToSingle(buf, 112),
                     MousePitch = BitConverter.ToSingle(buf, 116),
+                    MouseLeft = buf[117],
+                    MouseMiddle = buf[118],
+                    MouseRight = buf[119]
                 };
 
                 Array.Copy(buf, 8, im.InputBuffer, 0, 104);
