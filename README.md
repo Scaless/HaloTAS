@@ -6,7 +6,7 @@ Halo: Combat Evolved PC Speedrunning Tools
 - Go fast
 - Beat [human world record](https://haloruns.com/records?lb=0100) time
 
-![Screenshot][screenshot1]
+[![Video](https://img.youtube.com/vi/RUU3LAm7NqQ/0.jpg)](https://www.youtube.com/watch?v=RUU3LAm7NqQ)
 
 #### Requirements to compile yourself:
 - Windows 10
@@ -34,4 +34,4 @@ Halo: Combat Evolved PC Speedrunning Tools
  [imgui]: <https://github.com/ocornut/imgui>
  [glm]: <https://github.com/g-truc/glm>
  
- [screenshot1]: https://i.imgur.com/Fj2gOWp.png
+ [video1]: https://www.youtube.com/watch?v=RUU3LAm7NqQ
