@@ -18,6 +18,8 @@ uint8_t PATCH_CUSTOM_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x
 #endif
 
 #if defined(HALO_VANILLA)
+
+	uintptr_t PrintHUD = 0x004AE180;
 	
 	uint32_t* ADDR_TAGS_ARRAY = reinterpret_cast<uint32_t*>(0x40000000);
 	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x440000;

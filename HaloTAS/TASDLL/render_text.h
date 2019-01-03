@@ -6,7 +6,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H 
 #include "render_opengl.h"
-#include <map>
+#include <unordered_map>
 
 struct Character {
 	GLuint     TextureID;  // ID handle of the glyph texture
@@ -18,7 +18,7 @@ struct Character {
 class TextRenderer
 {
 private:
-	std::map<GLchar, Character> Characters;
+	std::unordered_map<GLchar, Character> Characters;
 	GLuint VAO, VBO;
 	GLuint TextProgram;
 

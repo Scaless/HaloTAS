@@ -486,7 +486,8 @@ void ImGui_ImplGlfwGL3_NewFrame()
         }
         else
         {
-            glfwSetCursor(g_Window, g_MouseCursors[cursor] ? g_MouseCursors[cursor] : g_MouseCursors[ImGuiMouseCursor_Arrow]);
+			// TODO: why does this destroy performance?
+            //glfwSetCursor(g_Window, g_MouseCursors[cursor] ? g_MouseCursors[cursor] : g_MouseCursors[ImGuiMouseCursor_Arrow]);
             glfwSetInputMode(g_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
     }

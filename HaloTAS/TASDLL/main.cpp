@@ -3,8 +3,6 @@
 #define HALO_VANILLA
 //#define HALO_CUSTOMED
 
-#include "halo_constants.h"
-#include <cinttypes>
 #include <string>
 #include <map>
 #include <set>
@@ -17,13 +15,10 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <fstream>
-#include <algorithm>
-#include <sstream>
-#include <iostream>
-#include <fstream>
 #include <vector>
 #include <boost/math/constants/constants.hpp>
 
+#include "halo_constants.h"
 #include "render_text.h"
 #include "render_opengl.h"
 
@@ -204,7 +199,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	GLFWwindow* window = glfwCreateWindow(800, 800, "Halo TAS Tools", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0); //0 = no vsync
+	glfwSwapInterval(0); //0 = no vsync, 1 = vsync
 	gl3wInit();
 
 	// Setup ImGui binding
@@ -277,29 +272,46 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	bool showPrimitives = false;
 	float cullDistance = 25;
 	std::unique_ptr<TextRenderer> textRenderer(new TextRenderer);
-	
+	std::vector<GameObject*> gameObjects;
+	static std::map<uint32_t, bool> mp;
 
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
-		std::vector<GameObject*> gameObjects;
-		static std::map<uint32_t, bool> mp;
-		
+		gameObjects.clear();
+		mp.clear();
+
 		if (showPrimitives) {
 			for (uint32_t i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
 				if (ADDR_TAGS_ARRAY[i] == 0x68656164u) { // = "daeh" = "head" in little endian
 					gameObjects.push_back((GameObject*)&ADDR_TAGS_ARRAY[i]);
 				}
 			}
-		}
 
-		std::sort(gameObjects.begin(), gameObjects.end(), GameObject_Sort);
+			std::sort(gameObjects.begin(), gameObjects.end(), GameObject_Sort);
+		}
 		
 		// Move window position/size to match Halo's
 		if (g_HWND) {
 			if (GetWindowRect(g_HWND, &rect)) {
-				glfwSetWindowPos(window, rect.left + 8, rect.top + 30);
-				glfwSetWindowSize(window, rect.right - rect.left - 16, rect.bottom - rect.top - 38);
+
+				int width, height, x, y;
+				glfwGetWindowSize(window, &width, &height);
+				glfwGetWindowPos(window, &x, &y);
+
+				int targetWidth, targetHeight, targetX, targetY;
+
+				targetX = rect.left + 8;
+				targetY = rect.top + 30;
+				targetWidth = rect.right - rect.left - 16;
+				targetHeight = rect.bottom - rect.top - 38;
+
+				if (targetX != x || targetY != y) {
+					glfwSetWindowPos(window, targetX, targetY);
+				}
+				if (targetWidth != width || targetHeight != height) {
+					glfwSetWindowSize(window, targetWidth, targetHeight);
+				}
 			}
 		}
 
@@ -311,11 +323,11 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		ImGui_ImplGlfwGL3_NewFrame();
 
 		{ // ImGui Rendering
-			int width, height, x, y;
+			/*int width, height, x, y;
 			glfwGetWindowSize(window, &width, &height);
 			glfwGetWindowPos(window, &x, &y);
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
-			ImGui::SetNextWindowSize(ImVec2(float(width), float(height)));
+			ImGui::SetNextWindowSize(ImVec2(float(width), float(height)));*/
 
 			ImGui::Begin("Halo TAS", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
@@ -352,6 +364,21 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::SameLine();
 			if (ImGui::Button("UnPatchMouse")) {
 				un_patch_mouse_disable_manual_input();
+			}
+
+			if (ImGui::Button("Test HUD")) {
+				wchar_t copy[64];
+				wcscpy_s(copy, 64, L"Test");
+
+				//EnterCriticalSection(&critSection);
+				__asm {
+					lea	eax, copy
+					push eax
+					mov	eax, 0 // player index
+					call PrintHUD
+					add	esp, 4
+				}
+				//LeaveCriticalSection(&critSection);
 			}
 
 			ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
@@ -527,13 +554,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			glm::vec3(0, 0, 1)
 		);
 
-		// Get a handle for our "MVP" uniform
-		// Only during the initialisation
-		GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-		GLuint ColorID = glGetUniformLocation(programID, "fixedColor");
-
 		glm::mat4 model, mvp;
-		glm::mat4 identity = glm::mat4(1.0f);
 
 		for (auto& v : gameObjects) {
 
@@ -544,6 +565,25 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			if (glm::distance(modelPos, playerPos) > cullDistance)
 				continue;
+
+			// Get a handle for our "MVP" uniform
+			// Only during the initialisation
+			GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+			GLuint ColorID = glGetUniformLocation(programID, "fixedColor");
+
+			glUseProgram(programID);
+			// 1st attribute buffer : vertices
+			glEnableVertexAttribArray(0);
+			glBindVertexArray(VertexArrayID);
+			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+			glVertexAttribPointer(
+				0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+				3,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset
+			);
 
 			if (mp[v->tag_id] == true) {
 				color.b = 1.0f;
@@ -568,47 +608,70 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			// Our ModelViewProjection : multiplication of our 3 matrices
 			mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
 
-											 // Send our transformation to the currently bound shader, in the "MVP" uniform
-											 // This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-			glUseProgram(programID);
-			// 1st attribute buffer : vertices
-			glEnableVertexAttribArray(0);
-			glBindVertexArray(VertexArrayID);
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-			glVertexAttribPointer(
-				0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				0,                  // stride
-				(void*)0            // array buffer offset
-			);
+			// Send our transformation to the currently bound shader, in the "MVP" uniform
+			// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
 			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
 			glUniform3f(ColorID, color.x, color.y, color.z);
 
 			// Draw the triangle !
 			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-												   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			
-			glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z + .05f);
-			glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
-
 			float textScale = .00025f * UIScale;
+			
+			std::stringstream ss;
+			ss << name;
+			ss << " [" << static_cast<void*>(v) << "]";
+			//ss << " (" << v->unit_x << "," << v->unit_y << "," << v->unit_z << ")";
+
+			glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y - .05f, v->unit_z + .05f);
+			glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
 
 			model = trans;
 			model = glm::scale(model, glm::vec3(textScale, textScale, textScale));
 			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
 
 			mvp = Projection * View * model;
-			std::stringstream ss;
-			ss << name;
-			ss << "[";
-			ss << static_cast<void*>(v);
-			ss << "]";
 
 			textRenderer->RenderText(ss.str(), 1.0f, color, mvp);
 		}
+		//{
+		//	glm::vec3 modelPos = glm::vec3(2.0f, -99.08f, 72.17f);
+		//	glm::vec3 color(0,0,1);
+		//	model = glm::mat4(1.0f);
+		//	model = glm::translate(model, modelPos);
+
+		//	model = glm::scale(model, glm::vec3(1.0f));
+
+		//	// Our ModelViewProjection : multiplication of our 3 matrices
+		//	mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
+
+		//	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+		//	glUniform3f(ColorID, color.x, color.y, color.z);
+
+		//	// Draw the triangle !
+		//	glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
+		//}
+		//{
+		//	glm::vec3 modelPos = glm::vec3(30.38f, 15.96f, 2.33f);
+		//	glm::vec3 color(0, 0, 1);
+		//	model = glm::mat4(1.0f);
+		//	model = glm::translate(model, modelPos);
+
+		//	model = glm::scale(model, glm::vec3(1.0f));
+
+		//	// Our ModelViewProjection : multiplication of our 3 matrices
+		//	mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
+
+		//	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
+		//	glUniform3f(ColorID, color.x, color.y, color.z);
+
+		//	// Draw the triangle !
+		//	glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
+		//}
+
+		
 
 		ImGui::End();
 
