@@ -21,7 +21,7 @@ void TextRenderer::Initialize()
 	if (FT_New_Face(ft, "C:\\Windows\\Fonts\\consola.ttf", 0, &face)) {
 		MessageBox(NULL, "Could not load font", "OH NO", MB_OK);
 	}
-	FT_Set_Pixel_Sizes(face, 0, 72);
+	FT_Set_Pixel_Sizes(face, 0, 24);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
 
@@ -76,7 +76,6 @@ void TextRenderer::Initialize()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-
 	TextProgram = LoadShaders("FreeType.vertexshader", "FreeType.fragmentshader");
 }
 
@@ -125,7 +124,7 @@ void TextRenderer::RenderText(std::string text, GLfloat scale, glm::vec3 color, 
 		// Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
 		x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
 	}
-	//glBindVertexArray(0);
+	glBindVertexArray(0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 

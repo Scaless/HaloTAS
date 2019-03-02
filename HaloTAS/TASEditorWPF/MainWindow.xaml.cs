@@ -63,7 +63,6 @@ namespace TASEditorWPF
                 Grid.SetRow(control, GridEntries.RowDefinitions.Count - 1);
             }
 
-            //hbinEditor.Import(inputMoments);
         }
 
         private List<InputMoment> LoadHBIN(Stream hbinFileStream)

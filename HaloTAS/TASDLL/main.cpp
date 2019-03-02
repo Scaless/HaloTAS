@@ -26,6 +26,7 @@ struct InputMoment {
 	uint32_t checkpointId;
 	uint32_t tick;
 	uint8_t inputBuf[104];
+	int32_t inputMouseX, inputMouseY;
 	float yaw, pitch;
 	uint8_t leftMouse,middleMouse,rightMouse;
 };
@@ -63,42 +64,46 @@ void patch_program_memory(LPVOID patch_address, uint8_t* patch_bytes, const int 
 	VirtualProtect(patch_address, patch_size, old_protection, &unused);
 }
 
-void patch_mouse_enable_manual_input() {
+void mouse_enable_manual_input() {
 	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
 }
 
-void un_patch_mouse_disable_manual_input() {
+void mouse_disable_manual_input() {
 	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
 }
 
-void patch_custom_func() {
-	patch_program_memory(ADDR_PATCH_CUSTOM_FUNC, PATCH_CUSTOM_FUNC_BYTES, 15);
-}
-
-GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
-	for (auto& v : objects) {
-		if (v->tag_id == 3588) {
-			return v;
-		}
-	}
-	return nullptr;
+void patch_frame_begin_func() {
+	patch_program_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_FUNC_BYTES, 15);
 }
 
 static bool record = false;
 static bool playback = false;
-static uint32_t last_input_tick;
+static bool tickStall = false;
+static uint16_t last_input_tick;
+static uint32_t last_frame;
 
 std::map<uint64_t, InputMoment> stored_inputs_map;
 
 extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 
 	const uint32_t frames = *ADDR_FRAMES_SINCE_LEVEL_START;
-	const uint32_t tick = *ADDR_SIMULATION_TICK;
+	const uint16_t tick = *ADDR_SIMULATION_TICK;
 	const uint32_t subLevel = *ADDR_CHECKPOINT_INDICATOR;
+
+	if (playback) {
+		*ADDR_DINPUT_MOUSEX = 0;
+		*ADDR_DINPUT_MOUSEY = 0;
+	}
 
 	if (tick == last_input_tick)
 		return;
 	
+	if (tickStall) {
+		*ADDR_SIMULATION_TICK = last_input_tick;
+		*ADDR_SIMULATION_TICK_2 = last_input_tick;
+		return;
+	}
+
 	last_input_tick = tick;
 
 	if (record)
@@ -113,6 +118,8 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 		}
 		im.checkpointId = *ADDR_CHECKPOINT_INDICATOR;
 		im.tick = tick;
+		//im.inputMouseX = *ADDR_DINPUT_MOUSEX;
+		//im.inputMouseY = *ADDR_DINPUT_MOUSEY;
 		im.yaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
 		im.pitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
 		im.leftMouse = *ADDR_LEFTMOUSE;
@@ -136,6 +143,8 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
 			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.yaw;
 			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.pitch;
+			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
+			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
 			*ADDR_LEFTMOUSE = savedIM.leftMouse;
 			*ADDR_MIDDLEMOUSE = savedIM.middleMouse;
 			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
@@ -167,17 +176,16 @@ void load_inputs()
 
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
-	auto handle = GetModuleHandle(TEXT("TASDLL"));
-	auto addr = reinterpret_cast<int>(GetProcAddress(handle, "_RecordFrame@0"));
-	PATCH_CUSTOM_FUNC_BYTES[0] = 0xE8; // x86 CALL
-	addr -= 0x4C7798; // Call location
+	auto dllHandle = GetModuleHandle(TEXT("TASDLL"));
+	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_RecordFrame@0"));
+	PATCH_FRAME_BEGIN_FUNC_BYTES[0] = 0xE8; // x86 CALL
+	addr -= (int)ADDR_FRAME_BEGIN_FUNC_OFFSET; // Call location
+	memcpy_s(&PATCH_FRAME_BEGIN_FUNC_BYTES[1], sizeof(addr), &addr, sizeof(addr));
+	patch_frame_begin_func();
 
-	PATCH_CUSTOM_FUNC_BYTES[1] = addr & 0x000000FF;
-	PATCH_CUSTOM_FUNC_BYTES[2] = (addr & 0x0000FF00) >> 8;
-	PATCH_CUSTOM_FUNC_BYTES[3] = (addr & 0x00FF0000) >> 16;
-	PATCH_CUSTOM_FUNC_BYTES[4] = (addr & 0xFF000000) >> 24;
-
-	patch_custom_func();
+	LPVOID LivesplitMemPoolAddr = reinterpret_cast<LPVOID>(0x44000000);
+	SIZE_T LivesplitMemPoolSize = 1024;
+	void* LivesplitMemPool = VirtualAlloc(LivesplitMemPoolAddr, LivesplitMemPoolSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
 	byte* heapSnapshot = new byte[0x1B40000];
 
@@ -190,8 +198,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
@@ -213,13 +221,13 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// Set up OPENGL drawing stuff
 	// Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
 	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-	static const GLfloat g_vertex_buffer_data[] = {
-		-1.0f,-1.0f,-1.0f, // triangle 1 : begin
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f, // triangle 1 : end
-		1.0f, 1.0f,-1.0f, // triangle 2 : begin
+	static const GLfloat cube_vertex_buffer[] = {
 		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f, // triangle 2 : end
+		-1.0f,-1.0f, 1.0f,
+		-1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f,-1.0f,
+		-1.0f,-1.0f,-1.0f,
+		-1.0f, 1.0f,-1.0f,
 		1.0f,-1.0f, 1.0f,
 		-1.0f,-1.0f,-1.0f,
 		1.0f,-1.0f,-1.0f,
@@ -263,7 +271,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// The following commands will talk about our 'vertexbuffer' buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
 	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertex_buffer), cube_vertex_buffer, GL_STATIC_DRAW);
 
 	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
 
@@ -275,22 +283,48 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	std::vector<GameObject*> gameObjects;
 	static std::map<uint32_t, bool> mp;
 
+	std::vector<DataPool*> dataPools;
+	DataPool* objectDataPool = nullptr;
+
+	int memOffset = 0;
+	// Scan memory for object references
+	for (uint32_t i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
+		if (memcmp(&MAGIC_DATAPOOLHEADER, &(ADDR_TAGS_ARRAY[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
+			DataPool* pool = (DataPool*)(&ADDR_TAGS_ARRAY[i] - 10);
+			memcpy((char*)LivesplitMemPool + memOffset, &pool->Name, sizeof(pool->Name));
+			memOffset += sizeof(pool->Name);
+			dataPools.push_back(pool);
+
+			if (std::string(pool->Name) == "object") {
+				objectDataPool = pool;
+			}
+		}
+	}
+
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
 		gameObjects.clear();
 		mp.clear();
 
-		if (showPrimitives) {
-			for (uint32_t i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
-				if (ADDR_TAGS_ARRAY[i] == 0x68656164u) { // = "daeh" = "head" in little endian
-					gameObjects.push_back((GameObject*)&ADDR_TAGS_ARRAY[i]);
-				}
-			}
+		if (objectDataPool != nullptr)
+		{
+			int count = objectDataPool->ObjectCount;
+			for (int i = 0; i < count; i++) {
+				uint32_t* basePtr = (uint32_t*)&objectDataPool->ObjectPointers[i];
 
-			std::sort(gameObjects.begin(), gameObjects.end(), GameObject_Sort);
+				if ((int)*basePtr == 0) {
+					continue;
+				}
+				if ((int)*basePtr < 0x40000000 || (int)*basePtr > 0x41B40000) {
+					continue;
+				}
+
+				GameObject* object = (GameObject*)(*basePtr - 6 * 4);
+				gameObjects.push_back(object);
+			}
 		}
-		
+
 		// Move window position/size to match Halo's
 		if (g_HWND) {
 			if (GetWindowRect(g_HWND, &rect)) {
@@ -343,34 +377,36 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::SameLine();
 			ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-			ImGui::Checkbox("Show Primitives", &showPrimitives);
 			ImGui::Checkbox("Run Injected Code", ADDR_RUN_INJECTED_CODE);
+			ImGui::SameLine();
 			ImGui::Checkbox("Record", &record);
+			ImGui::SameLine();
 			if(ImGui::Button("Load Playback"))
 			{
 				load_inputs();
 			}
+			ImGui::SameLine();
 			ImGui::Checkbox("Playback", &playback);
 
 			if (showPrimitives) {
 				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 250);
+				ImGui::DragFloat("UI Scale", &UIScale, .1f, 1, 20);
 			}
 
-			ImGui::DragFloat("UI Scale", &UIScale, 1, 1, 20);
+			ImGui::Checkbox("Tick Stall", &tickStall);
 
 			if (ImGui::Button("PatchMouse")) {
-				patch_mouse_enable_manual_input();
+				mouse_enable_manual_input();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("UnPatchMouse")) {
-				un_patch_mouse_disable_manual_input();
+				mouse_disable_manual_input();
 			}
 
 			if (ImGui::Button("Test HUD")) {
 				wchar_t copy[64];
 				wcscpy_s(copy, 64, L"Test");
 
-				//EnterCriticalSection(&critSection);
 				__asm {
 					lea	eax, copy
 					push eax
@@ -378,7 +414,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 					call PrintHUD
 					add	esp, 4
 				}
-				//LeaveCriticalSection(&critSection);
 			}
 
 			ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
@@ -396,6 +431,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			*ADDR_SIMULATE = forceSimulate ? 0 : 1;
 			*ADDR_ALLOW_INPUT = (*ADDR_SIMULATE == 1 ? 0 : 1);
 
+			ImGui::SameLine();
+			ImGui::Checkbox("Show Primitives", &showPrimitives);
+
 			for (auto& v : gameObjects) {
 
 				auto val = v->tag_id;
@@ -405,7 +443,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				}
 			}
 
-			if (ImGui::CollapsingHeader("Tags"))
+
+			if (ImGui::CollapsingHeader("Objects"))
 			{
 				auto countf = 1;
 				for (auto& m : mp) {
@@ -420,9 +459,18 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 						for (auto& v : gameObjects) {
 							if (v->tag_id == m.first) {
 								ImGui::PushID(count * countf + count);
+
+								ImGui::Text("Addr: %p", v);
+								ImGui::SameLine();
+
 								ImGui::PushItemWidth(300);
-								ImGui::DragFloat3(("POS: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
-								//ImGui::DragFloat3(("ROT: " + std::to_string(count)).c_str(), &(v->unit_x), .1f, -10000, 10000);
+								ImGui::DragFloat3("POS", &(v->unit_x), .1f, -10000, 10000);
+
+								ImGui::SameLine();
+								glm::vec3 eulerRotation = glm::eulerAngles(v->rotationQuaternion);
+								if (ImGui::DragFloat3("ROT", &eulerRotation.x, .1f, -10000, 10000)) {
+									v->rotationQuaternion = glm::quat(eulerRotation);
+								}
 								ImGui::PopItemWidth();
 							
 								ImGui::SameLine();
@@ -441,8 +489,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 									player->unit_y = v->unit_y;
 									player->unit_z = v->unit_z + .5f;
 								}
-								ImGui::SameLine();
-								ImGui::Text("Addr: %p", v);
 								count++;
 								ImGui::PopID();
 							}
@@ -454,12 +500,17 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 				}
 			}
 
+			GameObject* player = GetPlayerObject(gameObjects);
+
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
 				ImGui::Text("Camera Position: (%f,%f,%f)", ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
 				ImGui::SameLine();
 				ImGui::Text("Look Direction: (%f,%f,%f)", ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 
+				ImGui::DragFloat3("Camera Movement", ADDR_CAMERA_POSITION, .1f);
+				ImGui::DragFloat3("Camera Angle", ADDR_CAMERA_LOOK_VECTOR, .05f);
+				
 				int tempLeftMouse = *ADDR_LEFTMOUSE;
 				if (ImGui::SliderInt("LeftMouse", &tempLeftMouse, 0, 255)) {
 					*ADDR_LEFTMOUSE = (uint8_t)tempLeftMouse;
@@ -538,14 +589,10 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		horizontalFOV = (horizontalFOV * height) / width;
 		glm::mat4 Projection = glm::perspectiveFov(glm::radians(horizontalFOV), (float)width, (float)height, 0.5f, cullDistance);
 
-		//ImGui::Text("horfov: %f", horizontalFOV);
 
 		glm::vec3 playerPos(ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
 		glm::vec3 dir(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 		glm::vec3 lookAt = playerPos + dir;
-		/*ImGui::DragFloat3("campos", glm::value_ptr(playerPos));
-		ImGui::DragFloat3("dir", glm::value_ptr(dir));
-		ImGui::DragFloat3("lookAt", glm::value_ptr(lookAt));*/
 
 		// Camera matrix
 		glm::mat4 View = glm::lookAt(
@@ -556,86 +603,84 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 		glm::mat4 model, mvp;
 
-		for (auto& v : gameObjects) {
+		if (showPrimitives) {
+			for (auto& v : gameObjects) {
 
-			glm::vec3 color;
-			std::string name;
+				glm::vec3 color;
+				std::string name;
 
-			glm::vec3 modelPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z);
+				glm::vec3 modelPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z);
 
-			if (glm::distance(modelPos, playerPos) > cullDistance)
-				continue;
+				if (glm::distance(modelPos, playerPos) > cullDistance)
+					continue;
 
-			// Get a handle for our "MVP" uniform
-			// Only during the initialisation
-			GLuint MatrixID = glGetUniformLocation(programID, "MVP");
-			GLuint ColorID = glGetUniformLocation(programID, "fixedColor");
+				glUseProgram(programID);
+				// 1st attribute buffer : vertices
+				glEnableVertexAttribArray(0);
+				glBindVertexArray(VertexArrayID);
+				glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
+				glVertexAttribPointer(
+					0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+					3,                  // size
+					GL_FLOAT,           // type
+					GL_FALSE,           // normalized?
+					0,                  // stride
+					(void*)0            // array buffer offset
+				);
 
-			glUseProgram(programID);
-			// 1st attribute buffer : vertices
-			glEnableVertexAttribArray(0);
-			glBindVertexArray(VertexArrayID);
-			glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-			glVertexAttribPointer(
-				0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-				3,                  // size
-				GL_FLOAT,           // type
-				GL_FALSE,           // normalized?
-				0,                  // stride
-				(void*)0            // array buffer offset
-			);
-
-			if (mp[v->tag_id] == true) {
-				color.b = 1.0f;
-				name = "UNKNOWN";
-			}
-			else {
-				if (KNOWN_TAGS.count(v->tag_id) > 0) {
-					color = KNOWN_TAGS.at(v->tag_id).displayColor;
-					name = KNOWN_TAGS.at(v->tag_id).displayName;
-				}
-				else {
-					color.r = 1;
+				if (mp[v->tag_id] == true) {
+					color.b = 1.0f;
 					name = "UNKNOWN";
 				}
+				else {
+					if (KNOWN_TAGS.count(v->tag_id) > 0) {
+						color = KNOWN_TAGS.at(v->tag_id).displayColor;
+						name = KNOWN_TAGS.at(v->tag_id).displayName;
+					}
+					else {
+						color.r = 1;
+						name = "UNKNOWN";
+					}
+				}
+
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, modelPos);
+
+				model = glm::scale(model, glm::vec3(.01f, .01f, .01f));
+
+				// Our ModelViewProjection : multiplication of our 3 matrices
+				mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
+
+				// Send our transformation to the currently bound shader, in the "MVP" uniform
+				// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
+				glUniformMatrix4fv(glGetUniformLocation(programID, "MVP"), 1, GL_FALSE, &mvp[0][0]);
+				glUniform3f(glGetUniformLocation(programID, "fixedColor"), color.x, color.y, color.z);
+
+				// Draw the triangle !
+				//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
+				//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+				//float textScale = .001f * UIScale;
+
+				//std::stringstream ss;
+				//ss << name;
+				//ss << " [" << static_cast<void*>(v) << "]";
+				////ss << " (" << v->unit_x << "," << v->unit_y << "," << v->unit_z << ")";
+
+				//glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y - .05f, v->unit_z + .05f);
+				//glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
+
+				//model = trans;
+				//model = glm::scale(model, glm::vec3(textScale, textScale, textScale));
+				//model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+
+				//mvp = Projection * View * model;
+
+				//textRenderer->RenderText(ss.str(), 1.0f, color, mvp);
 			}
-
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, modelPos);
-
-			model = glm::scale(model, glm::vec3(.01f, .01f, .01f));
-
-			// Our ModelViewProjection : multiplication of our 3 matrices
-			mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
-
-			// Send our transformation to the currently bound shader, in the "MVP" uniform
-			// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-			glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-			glUniform3f(ColorID, color.x, color.y, color.z);
-
-			// Draw the triangle !
-			//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-			glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-			//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-			
-			float textScale = .00025f * UIScale;
-			
-			std::stringstream ss;
-			ss << name;
-			ss << " [" << static_cast<void*>(v) << "]";
-			//ss << " (" << v->unit_x << "," << v->unit_y << "," << v->unit_z << ")";
-
-			glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y - .05f, v->unit_z + .05f);
-			glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
-
-			model = trans;
-			model = glm::scale(model, glm::vec3(textScale, textScale, textScale));
-			model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
-
-			mvp = Projection * View * model;
-
-			textRenderer->RenderText(ss.str(), 1.0f, color, mvp);
 		}
+		
 		//{
 		//	glm::vec3 modelPos = glm::vec3(2.0f, -99.08f, 72.17f);
 		//	glm::vec3 color(0,0,1);
@@ -671,8 +716,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		//	glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
 		//}
 
-		
-
 		ImGui::End();
 
 		// Draw our UI
@@ -681,6 +724,9 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		
 		glfwSwapBuffers(window);
 	}
+
+	VirtualFree(LivesplitMemPool, 0, MEM_RELEASE);
+
 	
 	// Cleanup
 	ImGui_ImplGlfwGL3_Shutdown();

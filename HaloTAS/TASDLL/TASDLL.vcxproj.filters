@@ -45,6 +45,9 @@
     <ClCompile Include="render_text.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="render_cube.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h">
@@ -62,9 +65,6 @@
     <ClInclude Include="..\imgui\imgui.h">
       <Filter>imgui</Filter>
     </ClInclude>
-    <ClInclude Include="imgui_impl_glfw_gl3.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="render_text.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -72,6 +72,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="render_opengl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_glfw_gl3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="render_cube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

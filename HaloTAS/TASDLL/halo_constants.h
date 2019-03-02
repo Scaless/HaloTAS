@@ -7,7 +7,7 @@
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
 uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
-uint8_t PATCH_CUSTOM_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
@@ -20,16 +20,15 @@ uint8_t PATCH_CUSTOM_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x
 #if defined(HALO_VANILLA)
 
 	uintptr_t PrintHUD = 0x004AE180;
-	
+
 	uint32_t* ADDR_TAGS_ARRAY = reinterpret_cast<uint32_t*>(0x40000000);
-	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x440000;
+	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x1B40000;
 
 	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
 	uint16_t* ADDR_SIMULATION_TICK = reinterpret_cast<uint16_t*>(0x400002F4);
 	uint16_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<uint16_t*>(0x400002FC);
 	uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
 	uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
-	bool* ADDR_RUN_INJECTED_CODE = reinterpret_cast<bool*>(0x0071D1A4);
 	float* ADDR_LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);
 	float* ADDR_UPDOWNVIEW = reinterpret_cast<float*>(0x402AD4BC);
 	char* ADDR_MAP_STRING = reinterpret_cast<char*>(0x40000004);
@@ -47,7 +46,9 @@ uint8_t PATCH_CUSTOM_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x
 
 	// Patch point for allowing external directinput mouse movement
 	uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
-	uint8_t* ADDR_PATCH_CUSTOM_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
+	uint8_t* ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
+	uint32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<uint32_t*>(0x004C7798);
+	bool* ADDR_RUN_INJECTED_CODE = reinterpret_cast<bool*>(0x0071D1A4);
 
 	float* ADDR_CAMERA_POSITION = reinterpret_cast<float*>(0x006AC6D0);
 	float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
@@ -285,20 +286,63 @@ std::string KEY_PRINT_CODES[] = {
 	"NUM_.",
 };
 
+struct ObjectPoolObject
+{
+	uint32_t ObjectAddress;
+	uint32_t unk1;
+	uint32_t unk2;
+};
+
+byte MAGIC_DATAPOOLHEADER[] = {/* 0x00, 0x08, 0x0C, 0x00, 0x01, 0x00, 0x00, 0x00,*/
+	0x40, 0x74, 0x40, 0x64 };
+struct DataPool {
+	char Name[32];
+	uint32_t unk1; // 000C0800
+	uint32_t unk2; // 00000001
+	uint32_t DataHeader; // 0x64407440 @t@d
+	int16_t UnkCounter1;
+	int16_t ObjectCount;
+	int16_t UnkCounter3;
+	int16_t UnkCounter4; // Total objects ever?
+	uint32_t DataBeginAddress;
+	uint32_t unk3;
+	uint32_t unk4;
+
+	ObjectPoolObject ObjectPointers[8192];
+};
+
 struct GameObject {
-	uint32_t identifier; // "daeh"
+	uint32_t header_head; // "daeh"
 	uint32_t tag_id;
-	uint32_t padding1[10];
+	uint32_t ptr_a;
+	uint32_t ptr_next_object;
+	uint32_t ptr_previous_object;
+	uint32_t header_tail; // "liat"
+	uint32_t padding1[6];
 	uint32_t counter;
 	uint32_t padding2[16];
 	float unit_x;
 	float unit_y;
 	float unit_z;
-	uint32_t padding3[14];
+	uint32_t padding3[3];
+	glm::quat rotationQuaternion;
+	uint32_t padding3_2[7];
 	float unit_x_ineffective;
 	float unit_y_ineffective;
 	float unit_z_ineffective;
+	uint32_t padding4[13];
+	float health;
+	float shield;
 };
+
+GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
+	for (auto& v : objects) {
+		if (v->tag_id == 3588) {
+			return v;
+		}
+	}
+	return nullptr;
+}
 
 bool GameObject_Sort(const GameObject *l, const GameObject *r) {
 	return l->tag_id < r->tag_id;
@@ -330,7 +374,8 @@ std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
 { 1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }}, 
 { 1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }}, 
 { 1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle/Rockets"  }}, 
-{ 1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }}, 
+{ 1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }},
+{ 1616,Tag{ 1616, glm::vec3(0,1,0), "343 GS"  }},
 { 1668,Tag{ 1668, glm::vec3(0,1,0), "Pistol"  }},
 { 1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }}, 
 { 1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee" } },
@@ -344,7 +389,8 @@ std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
 { 3704,Tag{ 3704, glm::vec3(0,1,0), "Marine" } },
 { 3936,Tag{ 3936, glm::vec3(0,1,0), "Infection Form "  }},
 { 4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }}, 
-{ 4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }}, 
+{ 4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }},
+{ 4864,Tag{ 4864, glm::vec3(1,0,1), "Hunter"  }},
 { 5328,Tag{ 5328, glm::vec3(0,1,0), "Cpt. Keyes" } },
 { 5792,Tag{ 5792, glm::vec3(0,1,0), "Flood A" } },
 { 6024,Tag{ 6024, glm::vec3(0,1,0), "Flood B" }},
