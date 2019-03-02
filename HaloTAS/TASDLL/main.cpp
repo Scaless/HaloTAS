@@ -20,6 +20,7 @@
 
 #include "halo_constants.h"
 #include "render_text.h"
+#include "render_cube.h"
 #include "render_opengl.h"
 
 struct InputMoment {
@@ -198,8 +199,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
@@ -218,68 +219,12 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// Setup style
 	ImGui::StyleColorsDark();
 
-	// Set up OPENGL drawing stuff
-	// Our vertices. Three consecutive floats give a 3D vertex; Three consecutive vertices give a triangle.
-	// A cube has 6 faces with 2 triangles each, so this makes 6*2=12 triangles, and 12*3 vertices
-	static const GLfloat cube_vertex_buffer[] = {
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		-1.0f,-1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		-1.0f,-1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f,-1.0f,
-		1.0f,-1.0f,-1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f,-1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f,-1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f, 1.0f, 1.0f,
-		-1.0f, 1.0f, 1.0f,
-		1.0f,-1.0f, 1.0f
-	};
-
-	GLuint VertexArrayID;
-	glGenVertexArrays(1, &VertexArrayID);
-	glBindVertexArray(VertexArrayID);
-
-	// This will identify our vertex buffer
-	GLuint vertexbuffer;
-	// Generate 1 buffer, put the resulting identifier in vertexbuffer
-	glGenBuffers(1, &vertexbuffer);
-	// The following commands will talk about our 'vertexbuffer' buffer
-	glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-	// Give our vertices to OpenGL.
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cube_vertex_buffer), cube_vertex_buffer, GL_STATIC_DRAW);
-
-	GLuint programID = LoadShaders("SimpleVertexShader.vertexshader", "SimpleFragmentShader.fragmentshader");
-
 	float defaultFOV = 38;
 	float pistolZoomFOV = 18;
 	bool showPrimitives = false;
-	float cullDistance = 25;
-	std::unique_ptr<TextRenderer> textRenderer(new TextRenderer);
+	float cullDistance = 15;
+	std::unique_ptr<render_text> textRenderer(new render_text);
+	std::unique_ptr<render_cube> cubeRenderer(new render_cube);
 	std::vector<GameObject*> gameObjects;
 	static std::map<uint32_t, bool> mp;
 
@@ -589,44 +534,22 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		horizontalFOV = (horizontalFOV * height) / width;
 		glm::mat4 Projection = glm::perspectiveFov(glm::radians(horizontalFOV), (float)width, (float)height, 0.5f, cullDistance);
 
-
 		glm::vec3 playerPos(ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
 		glm::vec3 dir(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 		glm::vec3 lookAt = playerPos + dir;
 
 		// Camera matrix
-		glm::mat4 View = glm::lookAt(
-			playerPos, 
-			lookAt,
-			glm::vec3(0, 0, 1)
-		);
-
-		glm::mat4 model, mvp;
+		glm::mat4 View = glm::lookAt(playerPos, lookAt, glm::vec3(0, 0, 1));
 
 		if (showPrimitives) {
 			for (auto& v : gameObjects) {
 
 				glm::vec3 color;
 				std::string name;
-
 				glm::vec3 modelPos = glm::vec3(v->unit_x, v->unit_y, v->unit_z);
 
 				if (glm::distance(modelPos, playerPos) > cullDistance)
 					continue;
-
-				glUseProgram(programID);
-				// 1st attribute buffer : vertices
-				glEnableVertexAttribArray(0);
-				glBindVertexArray(VertexArrayID);
-				glBindBuffer(GL_ARRAY_BUFFER, vertexbuffer);
-				glVertexAttribPointer(
-					0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-					3,                  // size
-					GL_FLOAT,           // type
-					GL_FALSE,           // normalized?
-					0,                  // stride
-					(void*)0            // array buffer offset
-				);
 
 				if (mp[v->tag_id] == true) {
 					color.b = 1.0f;
@@ -643,78 +566,14 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 					}
 				}
 
-				model = glm::mat4(1.0f);
-				model = glm::translate(model, modelPos);
+				cubeRenderer->draw_cube(Projection, View, modelPos, .01f, color);
 
-				model = glm::scale(model, glm::vec3(.01f, .01f, .01f));
-
-				// Our ModelViewProjection : multiplication of our 3 matrices
-				mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
-
-				// Send our transformation to the currently bound shader, in the "MVP" uniform
-				// This is done in the main loop since each model will have a different MVP matrix (At least for the M part)
-				glUniformMatrix4fv(glGetUniformLocation(programID, "MVP"), 1, GL_FALSE, &mvp[0][0]);
-				glUniform3f(glGetUniformLocation(programID, "fixedColor"), color.x, color.y, color.z);
-
-				// Draw the triangle !
-				//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-				glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-				//glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
-				//float textScale = .001f * UIScale;
-
-				//std::stringstream ss;
-				//ss << name;
-				//ss << " [" << static_cast<void*>(v) << "]";
-				////ss << " (" << v->unit_x << "," << v->unit_y << "," << v->unit_z << ")";
-
-				//glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y - .05f, v->unit_z + .05f);
-				//glm::mat4 trans = glm::inverse(glm::lookAt(textPos, playerPos, glm::vec3(0, 0, 1)));
-
-				//model = trans;
-				//model = glm::scale(model, glm::vec3(textScale, textScale, textScale));
-				//model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
-
-				//mvp = Projection * View * model;
-
-				//textRenderer->RenderText(ss.str(), 1.0f, color, mvp);
+				std::stringstream ss;
+				ss << name << " [" << static_cast<void*>(v) << "]";
+				glm::vec3 textPos = glm::vec3(v->unit_x, v->unit_y - .05f, v->unit_z + .05f);
+				textRenderer->draw_text(ss.str(), UIScale, color, Projection, View, textPos, playerPos);
 			}
 		}
-		
-		//{
-		//	glm::vec3 modelPos = glm::vec3(2.0f, -99.08f, 72.17f);
-		//	glm::vec3 color(0,0,1);
-		//	model = glm::mat4(1.0f);
-		//	model = glm::translate(model, modelPos);
-
-		//	model = glm::scale(model, glm::vec3(1.0f));
-
-		//	// Our ModelViewProjection : multiplication of our 3 matrices
-		//	mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
-
-		//	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-		//	glUniform3f(ColorID, color.x, color.y, color.z);
-
-		//	// Draw the triangle !
-		//	glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-		//}
-		//{
-		//	glm::vec3 modelPos = glm::vec3(30.38f, 15.96f, 2.33f);
-		//	glm::vec3 color(0, 0, 1);
-		//	model = glm::mat4(1.0f);
-		//	model = glm::translate(model, modelPos);
-
-		//	model = glm::scale(model, glm::vec3(1.0f));
-
-		//	// Our ModelViewProjection : multiplication of our 3 matrices
-		//	mvp = Projection * View * model; // Remember, matrix multiplication is the other way around
-
-		//	glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp[0][0]);
-		//	glUniform3f(ColorID, color.x, color.y, color.z);
-
-		//	// Draw the triangle !
-		//	glDrawArrays(GL_TRIANGLES, 0, 12 * 3); // 12*3 indices starting at 0 -> 12 triangles -> 6 squares
-		//}
 
 		ImGui::End();
 
@@ -726,7 +585,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	}
 
 	VirtualFree(LivesplitMemPool, 0, MEM_RELEASE);
-
 	
 	// Cleanup
 	ImGui_ImplGlfwGL3_Shutdown();

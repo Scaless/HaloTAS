@@ -1,17 +1,19 @@
 
 #include "render_text.h"
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
-TextRenderer::TextRenderer()
+render_text::render_text()
 {
-	Initialize();
+	initialize();
 }
 
-TextRenderer::~TextRenderer()
+render_text::~render_text()
 {
 
 }
 
-void TextRenderer::Initialize()
+void render_text::initialize()
 {
 	FT_Library ft;
 	if (FT_Init_FreeType(&ft)) {
@@ -54,13 +56,13 @@ void TextRenderer::Initialize()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		// Now store character for later use
-		Character character = {
+		ft_character character = {
 			texture,
 			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
 			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-			face->glyph->advance.x
+			(GLuint)face->glyph->advance.x
 		};
-		Characters.insert(std::pair<GLchar, Character>(c, character));
+		Characters.insert(std::pair<GLchar, ft_character>(c, character));
 	}
 
 	glEnable(GL_BLEND);
@@ -79,13 +81,22 @@ void TextRenderer::Initialize()
 	TextProgram = LoadShaders("FreeType.vertexshader", "FreeType.fragmentshader");
 }
 
-void TextRenderer::RenderText(std::string text, GLfloat scale, glm::vec3 color, glm::mat4 proj)
+void render_text::draw_text(std::string text, GLfloat scale, glm::vec3 color,
+	glm::mat4 projection, glm::mat4 view, glm::vec3 pos, glm::vec3 playerPos)
 {
+	glm::mat4 model, mvp;
+	glm::mat4 trans = glm::inverse(glm::lookAt(pos, playerPos, glm::vec3(0, 0, 1)));
+
+	model = trans;
+	model = glm::scale(model, glm::vec3(scale * .001f));
+	model = glm::rotate(model, glm::radians(180.0f), glm::vec3(0, 1, 0));
+	mvp = projection * view * model;
+
 	glUseProgram(TextProgram);
-
+	
 	glUniform3f(glGetUniformLocation(TextProgram, "textColor"), color.x, color.y, color.z);
-	glUniformMatrix4fv(glGetUniformLocation(TextProgram, "projection"), 1, GL_FALSE, glm::value_ptr(proj));
-
+	glUniformMatrix4fv(glGetUniformLocation(TextProgram, "projection"), 1, GL_FALSE, glm::value_ptr(mvp));
+	
 	glActiveTexture(GL_TEXTURE0);
 	glBindVertexArray(VAO);
 
@@ -96,7 +107,7 @@ void TextRenderer::RenderText(std::string text, GLfloat scale, glm::vec3 color, 
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{
-		Character ch = Characters[*c];
+		ft_character ch = Characters[*c];
 
 		GLfloat xpos = x + ch.Bearing.x * scale;
 		GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;

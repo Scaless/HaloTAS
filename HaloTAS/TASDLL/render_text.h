@@ -8,24 +8,24 @@
 #include "render_opengl.h"
 #include <unordered_map>
 
-struct Character {
+struct ft_character {
 	GLuint     TextureID;  // ID handle of the glyph texture
 	glm::ivec2 Size;       // Size of glyph
 	glm::ivec2 Bearing;    // Offset from baseline to left/top of glyph
 	GLuint     Advance;    // Offset to advance to next glyph
 };
 
-class TextRenderer
+class render_text
 {
 private:
-	std::unordered_map<GLchar, Character> Characters;
+	std::unordered_map<GLchar, ft_character> Characters;
 	GLuint VAO, VBO;
 	GLuint TextProgram;
 
 public:
-	TextRenderer();
-	~TextRenderer();
+	render_text();
+	~render_text();
 
-	void Initialize();
-	void RenderText(std::string text, GLfloat scale, glm::vec3 color, glm::mat4 proj);
+	void initialize();
+	void draw_text(std::string text, GLfloat scale, glm::vec3 color, glm::mat4 projection, glm::mat4 view, glm::vec3 pos, glm::vec3 playerPos);
 };
