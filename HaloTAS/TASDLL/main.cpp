@@ -45,12 +45,17 @@ union InputKey {
 HWND g_HWND = NULL;
 BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 {
+	char wnd_title[256];
 	DWORD lpdwProcessId;
 	GetWindowThreadProcessId(hwnd, &lpdwProcessId);
 	if (lpdwProcessId == lParam)
 	{
-		g_HWND = hwnd;
-		return FALSE;
+		GetWindowText(hwnd, wnd_title, sizeof(wnd_title));
+
+		if (std::string(wnd_title) == "Halo") {
+			g_HWND = hwnd;
+			return FALSE;
+		}
 	}
 	return TRUE;
 }
@@ -198,8 +203,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 	float UIScale = 1;
 
-	EnumWindows(EnumWindowsProc, GetCurrentProcessId());
-	RECT rect;
 
 	// Setup window
 	glfwSetErrorCallback(glfw_error_callback);
@@ -255,6 +258,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
+		EnumWindows(EnumWindowsProc, GetCurrentProcessId());
+
 		gameObjects.clear();
 		mp.clear();
 
@@ -278,6 +283,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 		// Move window position/size to match Halo's
 		if (g_HWND) {
+			RECT rect;
 			if (GetWindowRect(g_HWND, &rect)) {
 
 				int width, height, x, y;

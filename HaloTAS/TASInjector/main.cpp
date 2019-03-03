@@ -7,6 +7,7 @@
 #include <boost/property_tree/json_parser.hpp>
 
 using boost::property_tree::ptree;
+namespace fs = std::experimental::filesystem;
 
 #define HALO_VANILLA
 //#define HALO_CUSTOMED
@@ -52,30 +53,59 @@ bool InjectDLL(DWORD ProcessId) {
 }
 
 int main() {
-
-	std::string working_dir = std::experimental::filesystem::current_path().string();
+	std::string working_dir = fs::current_path().string();
 	std::cout << "Checking for config in: " << working_dir << std::endl;
 	ptree conf;
 
 	std::string confPath = working_dir + "/config.json";
+	std::string halo_dir;
 
-	if (std::experimental::filesystem::exists(confPath)) {
-		read_json("config.json", conf);
-		dllpath = conf.get<std::string>("dllpath") + "/TASDLL.dll";
+	// Get Config
+	if (fs::exists(confPath)) {
+		read_json(confPath, conf);
+		auto dllpathVal = conf.get_optional<std::string>("dllpath");
+		if (dllpathVal.has_value()) {
+			dllpath = dllpathVal.value() + "/TASDLL.dll";
+		}
+		else {
+			dllpath = working_dir + "/TASDLL.dll";
+		}
+
+		auto halodirVal = conf.get_optional<std::string>("halo_dir");
+		if (halodirVal.has_value()) {
+			halo_dir = halodirVal.value();
+		}
+		else {
+			halo_dir = "C:/Program Files(x86)/Microsoft Games/Halo";
+		}
 	}
 	else
 	{
-		std::cout << "No config.json found, trying current working dir..." << std::endl;
+		std::cout << "No config.json found, using defaults..." << std::endl;
 		dllpath = working_dir + "/TASDLL.dll";
+		halo_dir = "C:/Program Files(x86)/Microsoft Games/Halo";
 	}
 
-	if (!std::experimental::filesystem::exists(dllpath)) {
+	// Verify TASDLL.dll exists
+	if (!fs::exists(dllpath)) {
 		std::cout << "DLL does not exist at path: " << dllpath << std::endl << "Press Enter to Close.";
 		std::cin.get();
 		return 0;
 	}
-
 	std::cout << "Found DLL at: " << dllpath << std::endl;
+
+	// Copy resources files to Halo directory
+	if (fs::exists(halo_dir + "/" + HaloProcess)) {
+		fs::copy("Resources", halo_dir, fs::copy_options::overwrite_existing);
+		std::cout << "Copied resources to " << halo_dir;
+	}
+	else {
+		std::cout << "Couldn't find halo.exe at path: " << halo_dir << std::endl
+			<< "Check your config.json" << std::endl
+			<< "Press Enter to Close.";
+		std::cin.get();
+		return 0;
+	}
 	
 	DWORD procId = NULL;
 	PROCESSENTRY32 pe32 = { sizeof(PROCESSENTRY32) };

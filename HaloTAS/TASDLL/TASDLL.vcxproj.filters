@@ -19,6 +19,9 @@
     <Filter Include="gl3w">
       <UniqueIdentifier>{5fa08140-d82e-4ef2-bf1e-48c01464d5ad}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Content">
+      <UniqueIdentifier>{46b7409e-e6fc-4f31-87b3-b625fc5cc00b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -80,5 +83,19 @@
     <ClInclude Include="render_cube.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="FreeType.fragmentshader">
+      <Filter>Content</Filter>
+    </None>
+    <None Include="FreeType.vertexshader">
+      <Filter>Content</Filter>
+    </None>
+    <None Include="SimpleFragmentShader.fragmentshader">
+      <Filter>Content</Filter>
+    </None>
+    <None Include="SimpleVertexShader.vertexshader">
+      <Filter>Content</Filter>
+    </None>
   </ItemGroup>
 </Project>
