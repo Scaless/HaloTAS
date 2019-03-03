@@ -17,6 +17,7 @@
 #include <fstream>
 #include <vector>
 #include <boost/math/constants/constants.hpp>
+#include <atomic>
 
 #include "halo_constants.h"
 #include "render_text.h"
@@ -28,7 +29,8 @@ struct InputMoment {
 	uint32_t tick;
 	uint8_t inputBuf[104];
 	int32_t inputMouseX, inputMouseY;
-	float yaw, pitch;
+	float cameraYaw, cameraPitch;
+	glm::vec3 cameraLocation;
 	uint8_t leftMouse,middleMouse,rightMouse;
 };
 
@@ -83,9 +85,10 @@ static bool tickStall = false;
 static uint16_t last_input_tick;
 static uint32_t last_frame;
 
-std::map<uint64_t, InputMoment> stored_inputs_map;
+static std::map<uint64_t, InputMoment> stored_inputs_map;
+static float drift = 0;
 
-extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
+extern "C" __declspec(dllexport) void WINAPI CustomFrameStart() {
 
 	const uint32_t frames = *ADDR_FRAMES_SINCE_LEVEL_START;
 	const uint16_t tick = *ADDR_SIMULATION_TICK;
@@ -121,11 +124,12 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 		im.tick = tick;
 		//im.inputMouseX = *ADDR_DINPUT_MOUSEX;
 		//im.inputMouseY = *ADDR_DINPUT_MOUSEY;
-		im.yaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
-		im.pitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
+		im.cameraYaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
+		im.cameraPitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
 		im.leftMouse = *ADDR_LEFTMOUSE;
 		im.middleMouse = *ADDR_MIDDLEMOUSE;
 		im.rightMouse = *ADDR_RIGHTMOUSE;
+		im.cameraLocation = *ADDR_CAMERA_POSITION;
 
 		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
 		logFile.close();
@@ -136,19 +140,21 @@ extern "C" __declspec(dllexport) void WINAPI RecordFrame() {
 		InputKey ik;
 		ik.subKey.subLevel = subLevel;
 		ik.subKey.inputCounter = tick;
-
 		if(stored_inputs_map.count(ik.fullKey))
 		{
 			InputMoment savedIM = stored_inputs_map[ik.fullKey];
 
 			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
-			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.yaw;
-			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.pitch;
+			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
+			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
 			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
 			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
 			*ADDR_LEFTMOUSE = savedIM.leftMouse;
 			*ADDR_MIDDLEMOUSE = savedIM.middleMouse;
 			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
+			//*ADDR_CAMERA_POSITION = savedIM.cameraLocation;
+
+			drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
 		}
 	}
 }
@@ -178,7 +184,7 @@ void load_inputs()
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
 	auto dllHandle = GetModuleHandle(TEXT("TASDLL"));
-	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_RecordFrame@0"));
+	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_CustomFrameStart@0"));
 	PATCH_FRAME_BEGIN_FUNC_BYTES[0] = 0xE8; // x86 CALL
 	addr -= (int)ADDR_FRAME_BEGIN_FUNC_OFFSET; // Call location
 	memcpy_s(&PATCH_FRAME_BEGIN_FUNC_BYTES[1], sizeof(addr), &addr, sizeof(addr));
@@ -332,13 +338,13 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			}
 			ImGui::SameLine();
 			ImGui::Checkbox("Playback", &playback);
+			ImGui::SameLine();
+			ImGui::Text("Drift: (%f)", drift);
 
 			if (showPrimitives) {
 				ImGui::SliderFloat("Cull Distance", &cullDistance, 1, 250);
 				ImGui::DragFloat("UI Scale", &UIScale, .1f, 1, 20);
 			}
-
-			ImGui::Checkbox("Tick Stall", &tickStall);
 
 			if (ImGui::Button("PatchMouse")) {
 				mouse_enable_manual_input();
@@ -449,11 +455,11 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
-				ImGui::Text("Camera Position: (%f,%f,%f)", ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
+				ImGui::Text("Camera Position: (%f,%f,%f)", ADDR_CAMERA_POSITION->x, ADDR_CAMERA_POSITION->y, ADDR_CAMERA_POSITION->z);
 				ImGui::SameLine();
 				ImGui::Text("Look Direction: (%f,%f,%f)", ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 
-				ImGui::DragFloat3("Camera Movement", ADDR_CAMERA_POSITION, .1f);
+				ImGui::DragFloat3("Camera Movement", glm::value_ptr(*ADDR_CAMERA_POSITION), .1f);
 				ImGui::DragFloat3("Camera Angle", ADDR_CAMERA_LOOK_VECTOR, .05f);
 				
 				int tempLeftMouse = *ADDR_LEFTMOUSE;
@@ -534,7 +540,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		horizontalFOV = (horizontalFOV * height) / width;
 		glm::mat4 Projection = glm::perspectiveFov(glm::radians(horizontalFOV), (float)width, (float)height, 0.5f, cullDistance);
 
-		glm::vec3 playerPos(ADDR_CAMERA_POSITION[0], ADDR_CAMERA_POSITION[1], ADDR_CAMERA_POSITION[2]);
+		glm::vec3 playerPos = *ADDR_CAMERA_POSITION;
 		glm::vec3 dir(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
 		glm::vec3 lookAt = playerPos + dir;
 

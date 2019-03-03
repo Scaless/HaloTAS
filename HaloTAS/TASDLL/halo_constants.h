@@ -50,7 +50,7 @@ uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x
 	uint32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<uint32_t*>(0x004C7798);
 	bool* ADDR_RUN_INJECTED_CODE = reinterpret_cast<bool*>(0x0071D1A4);
 
-	float* ADDR_CAMERA_POSITION = reinterpret_cast<float*>(0x006AC6D0);
+	glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
 	float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
 	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
 	float* ADDR_PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
