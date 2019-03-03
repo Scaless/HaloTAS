@@ -96,8 +96,8 @@ int main() {
 
 	// Copy resources files to Halo directory
 	if (fs::exists(halo_dir + "/" + HaloProcess)) {
-		fs::copy("Resources", halo_dir, fs::copy_options::overwrite_existing);
-		std::cout << "Copied resources to " << halo_dir;
+		fs::copy("Resources", halo_dir, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
+		std::cout << "Copied resources to " << halo_dir << std::endl;
 	}
 	else {
 		std::cout << "Couldn't find halo.exe at path: " << halo_dir << std::endl
