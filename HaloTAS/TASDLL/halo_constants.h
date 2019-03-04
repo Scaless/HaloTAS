@@ -25,8 +25,9 @@ uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x
 	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x1B40000;
 
 	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
-	uint16_t* ADDR_SIMULATION_TICK = reinterpret_cast<uint16_t*>(0x400002F4);
-	uint16_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<uint16_t*>(0x400002FC);
+	int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
+	int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
+
 	uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
 	uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
 	float* ADDR_LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);

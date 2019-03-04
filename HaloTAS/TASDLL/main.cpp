@@ -1,5 +1,3 @@
-#pragma warning(disable:4996)
-
 #define HALO_VANILLA
 //#define HALO_CUSTOMED
 
@@ -48,7 +46,7 @@ BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
 	char wnd_title[256];
 	DWORD lpdwProcessId;
 	GetWindowThreadProcessId(hwnd, &lpdwProcessId);
-	if (lpdwProcessId == lParam)
+	if (lpdwProcessId == (DWORD)lParam)
 	{
 		GetWindowText(hwnd, wnd_title, sizeof(wnd_title));
 
@@ -87,7 +85,7 @@ void patch_frame_begin_func() {
 static bool record = false;
 static bool playback = false;
 static bool tickStall = false;
-static uint16_t last_input_tick;
+static int32_t last_input_tick;
 static uint32_t last_frame;
 
 static std::map<uint64_t, InputMoment> stored_inputs_map;
@@ -96,7 +94,7 @@ static float drift = 0;
 extern "C" __declspec(dllexport) void WINAPI CustomFrameStart() {
 
 	const uint32_t frames = *ADDR_FRAMES_SINCE_LEVEL_START;
-	const uint16_t tick = *ADDR_SIMULATION_TICK;
+	const int32_t tick = *ADDR_SIMULATION_TICK;
 	const uint32_t subLevel = *ADDR_CHECKPOINT_INDICATOR;
 
 	if (playback) {
@@ -228,8 +226,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	// Setup style
 	ImGui::StyleColorsDark();
 
-	float defaultFOV = 38;
-	float pistolZoomFOV = 18;
 	bool showPrimitives = false;
 	float cullDistance = 15;
 	std::unique_ptr<render_text> textRenderer(new render_text);
@@ -255,10 +251,11 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		}
 	}
 
+	EnumWindows(EnumWindowsProc, GetCurrentProcessId());
+
 	// Main loop
 	while (!glfwWindowShouldClose(window))
 	{
-		EnumWindows(EnumWindowsProc, GetCurrentProcessId());
 
 		gameObjects.clear();
 		mp.clear();
@@ -456,8 +453,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 					ImGui::PopID();
 				}
 			}
-
-			GameObject* player = GetPlayerObject(gameObjects);
 
 			if (ImGui::CollapsingHeader("Manual Input"))
 			{
