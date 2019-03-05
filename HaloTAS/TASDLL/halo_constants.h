@@ -52,7 +52,7 @@ inline extern int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B181
 inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
 inline extern uint8_t* ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
 inline extern uint32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<uint32_t*>(0x004C7798);
-inline extern bool* ADDR_RUN_INJECTED_CODE = reinterpret_cast<bool*>(0x0071D1A4);
+inline extern bool* ADDR_RUN_FRAME_BEGIN_CODE = reinterpret_cast<bool*>(0x0071D1A4);
 			  
 inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
 inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
@@ -320,7 +320,7 @@ struct Tag {
 	std::string displayName;
 };
 
-inline extern std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
+const std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
 { 580, Tag{ 580, glm::vec3(0,1,0), "static prop" } },
 { 616, Tag{ 616, glm::vec3(0,1,0), "Terminal" }},
 { 628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }}, 

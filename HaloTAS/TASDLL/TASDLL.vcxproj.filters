@@ -57,6 +57,9 @@
     <ClCompile Include="halo_engine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="livesplit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h">
@@ -96,6 +99,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="gameobject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="livesplit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
