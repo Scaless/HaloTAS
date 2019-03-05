@@ -1,5 +1,3 @@
-#define HALO_VANILLA
-//#define HALO_CUSTOMED
 
 #include <string>
 #include <map>
@@ -17,10 +15,13 @@
 #include <boost/math/constants/constants.hpp>
 #include <atomic>
 
+#include "halo_engine.h"
 #include "halo_constants.h"
+#include "gameobject.h"
 #include "render_text.h"
 #include "render_cube.h"
 #include "render_opengl.h"
+#include "tas_overlay.h"
 
 struct InputMoment {
 	uint32_t checkpointId;
@@ -40,46 +41,8 @@ union InputKey {
 	} subKey;
 };
 
-HWND g_HWND = NULL;
-BOOL CALLBACK EnumWindowsProc(HWND hwnd, LPARAM lParam)
-{
-	char wnd_title[256];
-	DWORD lpdwProcessId;
-	GetWindowThreadProcessId(hwnd, &lpdwProcessId);
-	if (lpdwProcessId == (DWORD)lParam)
-	{
-		GetWindowText(hwnd, wnd_title, sizeof(wnd_title));
-
-		if (std::string(wnd_title) == "Halo") {
-			g_HWND = hwnd;
-			return FALSE;
-		}
-	}
-	return TRUE;
-}
-
-void patch_program_memory(LPVOID patch_address, uint8_t* patch_bytes, const int patch_size) {
-	unsigned long old_protection, unused;
-	//give that address read and write permissions and store the old permissions at oldProtection
-	VirtualProtect(patch_address, patch_size, PAGE_EXECUTE_READWRITE, &old_protection);
-
-	//write the memory into the program and overwrite previous value
-	std::copy_n(patch_bytes, patch_size, static_cast<uint8_t*>(patch_address));
-
-	//reset the permissions of the address back to oldProtection after writting memory
-	VirtualProtect(patch_address, patch_size, old_protection, &unused);
-}
-
-void mouse_enable_manual_input() {
-	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
-}
-
-void mouse_disable_manual_input() {
-	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
-}
-
-void patch_frame_begin_func() {
-	patch_program_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_FUNC_BYTES, 15);
+void patch_frame_begin_func(halo_engine& engine) {
+	engine.patch_program_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_FUNC_BYTES, 15);
 }
 
 static bool record = false;
@@ -186,58 +149,46 @@ void load_inputs()
 
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
+	std::unique_ptr<halo_engine> engine(new halo_engine);
+
 	auto dllHandle = GetModuleHandle(TEXT("TASDLL"));
 	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_CustomFrameStart@0"));
 	PATCH_FRAME_BEGIN_FUNC_BYTES[0] = 0xE8; // x86 CALL
 	addr -= (int)ADDR_FRAME_BEGIN_FUNC_OFFSET; // Call location
 	memcpy_s(&PATCH_FRAME_BEGIN_FUNC_BYTES[1], sizeof(addr), &addr, sizeof(addr));
-	patch_frame_begin_func();
+	patch_frame_begin_func(*engine);
 
 	LPVOID LivesplitMemPoolAddr = reinterpret_cast<LPVOID>(0x44000000);
 	SIZE_T LivesplitMemPoolSize = 1024;
 	void* LivesplitMemPool = VirtualAlloc(LivesplitMemPoolAddr, LivesplitMemPoolSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-	byte* heapSnapshot = new byte[0x1B40000];
-
-	float UIScale = 1;
-
-
-	// Setup window
+	// Setup GLFW
 	glfwSetErrorCallback(glfw_error_callback);
 	if (!glfwInit())
 		return 1;
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
-	GLFWwindow* window = glfwCreateWindow(800, 800, "Halo TAS Tools", NULL, NULL);
 
-	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0); //0 = no vsync, 1 = vsync
+	std::unique_ptr<tas_overlay> overlay(new tas_overlay);
+
 	gl3wInit();
 
 	// Setup ImGui binding
 	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	ImGui_ImplGlfwGL3_Init(window, true);
-
-	// Setup style
+	ImGui_ImplGlfwGL3_Init(overlay->glfw_window(), true, NULL);
 	ImGui::StyleColorsDark();
 
+	bool forceSimulate = true;
 	bool showPrimitives = false;
 	float cullDistance = 15;
+	float UIScale = 1;
 	std::unique_ptr<render_text> textRenderer(new render_text);
 	std::unique_ptr<render_cube> cubeRenderer(new render_cube);
 	std::vector<GameObject*> gameObjects;
-	static std::map<uint32_t, bool> mp;
-
+	std::map<uint32_t, bool> mp;
 	std::vector<DataPool*> dataPools;
 	DataPool* objectDataPool = nullptr;
 
 	int memOffset = 0;
-	// Scan memory for object references
+	// Scan memory for object pools
 	for (uint32_t i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
 		if (memcmp(&MAGIC_DATAPOOLHEADER, &(ADDR_TAGS_ARRAY[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
 			DataPool* pool = (DataPool*)(&ADDR_TAGS_ARRAY[i] - 10);
@@ -251,12 +202,12 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		}
 	}
 
-	EnumWindows(EnumWindowsProc, GetCurrentProcessId());
+	engine->update_window_handle();
 
 	// Main loop
-	while (!glfwWindowShouldClose(window))
+	while (!glfwWindowShouldClose(overlay->glfw_window()))
 	{
-
+		overlay->make_context_current();
 		gameObjects.clear();
 		mp.clear();
 
@@ -279,26 +230,28 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		}
 
 		// Move window position/size to match Halo's
-		if (g_HWND) {
-			RECT rect;
-			if (GetWindowRect(g_HWND, &rect)) {
+		HWND haloWindow = engine->window_handle();
+		RECT windowRect, clientRect;
+		if (haloWindow) {
+			if (GetWindowRect(haloWindow, &windowRect) && GetClientRect(haloWindow, &clientRect)) {
 
 				int width, height, x, y;
-				glfwGetWindowSize(window, &width, &height);
-				glfwGetWindowPos(window, &x, &y);
+				glfwGetWindowSize(overlay->glfw_window(), &width, &height);
+				glfwGetWindowPos(overlay->glfw_window(), &x, &y);
 
 				int targetWidth, targetHeight, targetX, targetY;
 
-				targetX = rect.left + 8;
-				targetY = rect.top + 30;
-				targetWidth = rect.right - rect.left - 16;
-				targetHeight = rect.bottom - rect.top - 38;
+				targetX = windowRect.left + 8;
+				targetY = windowRect.top + 30;
+
+				targetWidth = clientRect.right - clientRect.left;
+				targetHeight = clientRect.bottom - clientRect.top;
 
 				if (targetX != x || targetY != y) {
-					glfwSetWindowPos(window, targetX, targetY);
+					glfwSetWindowPos(overlay->glfw_window(), targetX, targetY);
 				}
 				if (targetWidth != width || targetHeight != height) {
-					glfwSetWindowSize(window, targetWidth, targetHeight);
+					glfwSetWindowSize(overlay->glfw_window(), targetWidth, targetHeight);
 				}
 			}
 		}
@@ -309,15 +262,16 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		glfwPollEvents();
 		ImGui_ImplGlfwGL3_NewFrame();
+		{ 
 
-		{ // ImGui Rendering
-			/*int width, height, x, y;
-			glfwGetWindowSize(window, &width, &height);
-			glfwGetWindowPos(window, &x, &y);
+			// ImGui Rendering
+			int width, height, x, y;
+			glfwGetWindowSize(overlay->glfw_window(), &width, &height);
+			glfwGetWindowPos(overlay->glfw_window(), &x, &y);
 			ImGui::SetNextWindowPos(ImVec2(0, 0));
-			ImGui::SetNextWindowSize(ImVec2(float(width), float(height)));*/
+			ImGui::SetNextWindowSize(ImVec2(float(width), float(height)));
 
-			ImGui::Begin("Halo TAS", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+			ImGui::Begin("Halo TAS", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings);
 
 			if (ImGui::Button("Close")) {
 				break;
@@ -350,37 +304,19 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			}
 
 			if (ImGui::Button("PatchMouse")) {
-				mouse_enable_manual_input();
+				engine->mouse_directinput_override_enable();
 			}
 			ImGui::SameLine();
 			if (ImGui::Button("UnPatchMouse")) {
-				mouse_disable_manual_input();
+				engine->mouse_directinput_override_disable();
 			}
 
 			if (ImGui::Button("Test HUD")) {
-				wchar_t copy[64];
-				wcscpy_s(copy, 64, L"Test");
-
-				__asm {
-					lea	eax, copy
-					push eax
-					mov	eax, 0 // player index
-					call PrintHUD
-					add	esp, 4
-				}
+				engine->print_hud_text(L"TE ST");
 			}
 
 			ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
 
-			if(ImGui::Button("Save Snapshot")) {
-				memcpy(heapSnapshot, (void*)0x40000000, 0x43FFFF);
-			}
-			ImGui::SameLine();
-			if (ImGui::Button("Load Snapshot")) {
-				memcpy((void*)0x40000000, heapSnapshot, 0x43FFFF);
-			}
-
-			static bool forceSimulate = true;
 			ImGui::Checkbox("Force Simulate", &forceSimulate);
 			*ADDR_SIMULATE = forceSimulate ? 0 : 1;
 			*ADDR_ALLOW_INPUT = (*ADDR_SIMULATE == 1 ? 0 : 1);
@@ -389,14 +325,11 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			ImGui::Checkbox("Show Primitives", &showPrimitives);
 
 			for (auto& v : gameObjects) {
-
 				auto val = v->tag_id;
-
 				if (!mp.count(val)) {
 					mp[val] = false;
 				}
 			}
-
 
 			if (ImGui::CollapsingHeader("Objects"))
 			{
@@ -523,7 +456,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 
 		// Rendering
 		int display_w, display_h;
-		glfwGetFramebufferSize(window, &display_w, &display_h);
+		glfwGetFramebufferSize(overlay->glfw_window(), &display_w, &display_h);
 		glViewport(0, 0, display_w, display_h);
 		glClearColor(0,0,0,0);
 		glEnable(GL_DEPTH_TEST);
@@ -532,14 +465,10 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// DRAW OUR GAME OVERLAY
-		int width, height;
-		glfwGetWindowSize(window, &width, &height);
-
-		float currentGameFOV_rad = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
-		float horizontalFOV = glm::degrees(currentGameFOV_rad);
-		horizontalFOV = (horizontalFOV * height) / width;
-		glm::mat4 Projection = glm::perspectiveFov(glm::radians(horizontalFOV), (float)width, (float)height, 0.5f, cullDistance);
+		float horizontalFovRadians = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
+		float verticalFov = horizontalFovRadians * (float)display_h / (float)display_w;
+		verticalFov -= .03f; // Have to offset by this to get correct ratio for 16:9, need to look into this further
+		glm::mat4 Projection = glm::perspectiveFov(verticalFov, (float)display_w, (float)display_h, 0.5f, cullDistance);
 
 		glm::vec3 playerPos = *ADDR_CAMERA_POSITION;
 		glm::vec3 dir(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
@@ -588,7 +517,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 		
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(overlay->glfw_window());
 	}
 
 	VirtualFree(LivesplitMemPool, 0, MEM_RELEASE);
@@ -597,7 +526,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	ImGui_ImplGlfwGL3_Shutdown();
 	ImGui::DestroyContext();
 
-	glfwDestroyWindow(window);
 	glfwTerminate();
 
 	FreeLibraryAndExitThread(hDLL, NULL);

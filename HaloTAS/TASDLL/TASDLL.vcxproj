@@ -85,6 +85,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_68_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -104,6 +105,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_68_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2010-32;$(SolutionDir)\lib\freetype;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -139,8 +141,10 @@
     <ClCompile Include="..\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
+    <ClCompile Include="halo_engine.cpp" />
     <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="tas_overlay.cpp" />
     <ClCompile Include="render_cube.cpp" />
     <ClCompile Include="render_opengl.cpp" />
     <ClCompile Include="render_text.cpp" />
@@ -151,8 +155,11 @@
     <ClInclude Include="..\imgui\imgui_internal.h" />
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h" />
     <ClInclude Include="..\lib\gl3w\GL\glcorearb.h" />
+    <ClInclude Include="gameobject.h" />
     <ClInclude Include="halo_constants.h" />
+    <ClInclude Include="halo_engine.h" />
     <ClInclude Include="imgui_impl_glfw_gl3.h" />
+    <ClInclude Include="tas_overlay.h" />
     <ClInclude Include="render_cube.h" />
     <ClInclude Include="render_opengl.h" />
     <ClInclude Include="render_text.h" />

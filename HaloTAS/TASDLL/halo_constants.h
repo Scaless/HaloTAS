@@ -1,13 +1,16 @@
 #pragma once
 
+#define HALO_VANILLA
+//#define HALO_CUSTOMED
+
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
 
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
-uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
-uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
-uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+inline extern uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+inline extern uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
+inline extern uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
@@ -19,75 +22,75 @@ uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x
 
 #if defined(HALO_VANILLA)
 
-	uintptr_t PrintHUD = 0x004AE180;
+inline extern uintptr_t PRINT_HUD_FUNC_PTR = 0x004AE180;
 
-	uint32_t* ADDR_TAGS_ARRAY = reinterpret_cast<uint32_t*>(0x40000000);
-	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x1B40000;
+inline extern uint32_t* ADDR_TAGS_ARRAY = reinterpret_cast<uint32_t*>(0x40000000);
+inline extern uint32_t TAG_ARRAY_LENGTH_BYTES = 0x1B40000;
 
-	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
-	int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
-	int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
+inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
+inline extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
+inline extern int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
 
-	uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
-	uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
-	float* ADDR_LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);
-	float* ADDR_UPDOWNVIEW = reinterpret_cast<float*>(0x402AD4BC);
-	char* ADDR_MAP_STRING = reinterpret_cast<char*>(0x40000004);
-	uint32_t* ADDR_CHECKPOINT_INDICATOR = reinterpret_cast<uint32_t*>(0x00746F90);
-	uint8_t* ADDR_KEYBOARD_INPUT = reinterpret_cast<uint8_t*>(0x006B1620);
-	uint8_t* ADDR_LEFTMOUSE = reinterpret_cast<uint8_t*>(0x006B1818);
-	uint8_t* ADDR_MIDDLEMOUSE = reinterpret_cast<uint8_t*>(0x006B1819);
-	uint8_t* ADDR_RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
-	bool* ADDR_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
-	bool* ADDR_ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
+inline extern uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
+inline extern uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
+inline extern float* ADDR_LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);
+inline extern float* ADDR_UPDOWNVIEW = reinterpret_cast<float*>(0x402AD4BC);
+inline extern char* ADDR_MAP_STRING = reinterpret_cast<char*>(0x40000004);
+inline extern uint32_t* ADDR_CHECKPOINT_INDICATOR = reinterpret_cast<uint32_t*>(0x00746F90);
+inline extern uint8_t* ADDR_KEYBOARD_INPUT = reinterpret_cast<uint8_t*>(0x006B1620);
+inline extern uint8_t* ADDR_LEFTMOUSE = reinterpret_cast<uint8_t*>(0x006B1818);
+inline extern uint8_t* ADDR_MIDDLEMOUSE = reinterpret_cast<uint8_t*>(0x006B1819);
+inline extern uint8_t* ADDR_RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
+inline extern bool* ADDR_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
+inline extern bool* ADDR_ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
 
-	int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
-	int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
-	int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
+inline extern int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
+inline extern int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
+inline extern int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
 
-	// Patch point for allowing external directinput mouse movement
-	uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
-	uint8_t* ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
-	uint32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<uint32_t*>(0x004C7798);
-	bool* ADDR_RUN_INJECTED_CODE = reinterpret_cast<bool*>(0x0071D1A4);
-
-	glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
-	float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
-	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
-	float* ADDR_PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
-	float* ADDR_PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
-
-	float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
+// Patch point for allowing external directinput mouse movement
+inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
+inline extern uint8_t* ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
+inline extern uint32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<uint32_t*>(0x004C7798);
+inline extern bool* ADDR_RUN_INJECTED_CODE = reinterpret_cast<bool*>(0x0071D1A4);
+			  
+inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
+inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
+inline extern float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
+inline extern float* ADDR_PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
+inline extern float* ADDR_PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
+			  
+inline extern float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
 
 #elif defined(HALO_CUSTOMED)
-	
-	uint32_t* ADDR_TAGS_ARRAY = (uint32_t*)0x40000000;
-	uint32_t TAG_ARRAY_LENGTH_BYTES = 0x440000;
 
-	int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
-	int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
-	float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
-	float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
-	char* ADDR_MAP_STRING = (char*)0x006A8174;
-	uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
-	uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
-	uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
-	uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
-	uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
-	bool* ADDR_SIMULATE = (bool*)0x006BD15C;
-	bool* ADDR_ALLOW_INPUT = (bool*)0x0064C528;
+inline extern uint32_t* ADDR_TAGS_ARRAY = (uint32_t*)0x40000000;
+inline extern uint32_t TAG_ARRAY_LENGTH_BYTES = 0x440000;
 
-	int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
-	int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
-	int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
+inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
+inline extern int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
+inline extern float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
+inline extern float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;
+inline extern char* ADDR_MAP_STRING = (char*)0x006A8174;
+inline extern uint32_t* ADDR_CHECKPOINT_INDICATOR = (uint32_t*)0x00746F90;
+inline extern uint8_t* ADDR_KEYBOARD_INPUT = (uint8_t*)0x006B1620;
+inline extern uint8_t* ADDR_LEFTMOUSE = (uint8_t*)0x006B1818;
+inline extern uint8_t* ADDR_MIDDLEMOUSE = (uint8_t*)0x006B1819;
+inline extern uint8_t* ADDR_RIGHTMOUSE = (uint8_t*)0x006B181A;
+inline extern bool* ADDR_SIMULATE = (bool*)0x006BD15C;
+inline extern bool* ADDR_ALLOW_INPUT = (bool*)0x0064C528;
 
-	// Patch point for allowing external directinput mouse movement
-	uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
-	float* ADDR_CAMERA_POSITION = (float*)0x00647600;
-	float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x0064765C;
-	float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00446280;
+inline extern int32_t* ADDR_DINPUT_MOUSEX = (int32_t*)0x006B180C;
+inline extern int32_t* ADDR_DINPUT_MOUSEY = (int32_t*)0x006B1810;
+inline extern int32_t* ADDR_DINPUT_MOUSEZ = (int32_t*)0x006B1814; // Scroll
 
-	float* ADDR_GAME_SPEED = (float*)0x40000300;
+// Patch point for allowing external directinput mouse movement
+inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = (uint8_t*)0x00490910;
+inline extern float* ADDR_CAMERA_POSITION = (float*)0x00647600;
+inline extern float* ADDR_CAMERA_LOOK_VECTOR = (float*)0x0064765C;
+inline extern float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = (float**)0x00446280;
+
+inline extern float* ADDR_GAME_SPEED = (float*)0x40000300;
 
 #endif
 
@@ -180,7 +183,7 @@ enum KEYS {
 };
 
 // Text to display for KEYS codes
-std::string KEY_PRINT_CODES[] = {
+inline extern std::string KEY_PRINT_CODES[] = {
 	"ESC",
 	"F1",
 	"F2",
@@ -294,8 +297,7 @@ struct ObjectPoolObject
 	uint32_t unk2;
 };
 
-byte MAGIC_DATAPOOLHEADER[] = {/* 0x00, 0x08, 0x0C, 0x00, 0x01, 0x00, 0x00, 0x00,*/
-	0x40, 0x74, 0x40, 0x64 };
+inline extern int8_t MAGIC_DATAPOOLHEADER[] = {/* 0x00, 0x08, 0x0C, 0x00, 0x01, 0x00, 0x00, 0x00,*/ 0x40, 0x74, 0x40, 0x64 };
 struct DataPool {
 	char Name[32];
 	uint32_t unk1; // 000C0800
@@ -312,50 +314,13 @@ struct DataPool {
 	ObjectPoolObject ObjectPointers[8192];
 };
 
-struct GameObject {
-	uint32_t header_head; // "daeh"
-	uint32_t tag_id;
-	uint32_t ptr_a;
-	uint32_t ptr_next_object;
-	uint32_t ptr_previous_object;
-	uint32_t header_tail; // "liat"
-	uint32_t padding1[6];
-	uint32_t counter;
-	uint32_t padding2[16];
-	float unit_x;
-	float unit_y;
-	float unit_z;
-	uint32_t padding3[3];
-	glm::quat rotationQuaternion;
-	uint32_t padding3_2[7];
-	float unit_x_ineffective;
-	float unit_y_ineffective;
-	float unit_z_ineffective;
-	uint32_t padding4[13];
-	float health;
-	float shield;
-};
-
-GameObject* GetPlayerObject(std::vector<GameObject*> objects) {
-	for (auto& v : objects) {
-		if (v->tag_id == 3588) {
-			return v;
-		}
-	}
-	return nullptr;
-}
-
-bool GameObject_Sort(const GameObject *l, const GameObject *r) {
-	return l->tag_id < r->tag_id;
-}
-
 struct Tag {
 	uint32_t id;
 	glm::vec3 displayColor;
 	std::string displayName;
 };
 
-std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
+inline extern std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
 { 580, Tag{ 580, glm::vec3(0,1,0), "static prop" } },
 { 616, Tag{ 616, glm::vec3(0,1,0), "Terminal" }},
 { 628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }}, 
