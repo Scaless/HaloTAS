@@ -1,8 +1,36 @@
 #include "halo_engine.h"
+#include <Windows.h>
+#include <Psapi.h>
+
+BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
+	char title[255];
+
+	if (IsWindowVisible(hWnd)) {
+		GetWindowText(hWnd, (LPSTR)title, 254);
+
+		if (std::string(title) == "Halo") {
+			DWORD processId;
+			GetWindowThreadProcessId(hWnd, &processId);
+			HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS | PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, processId);
+
+			char processName[255];
+			GetProcessImageFileNameA(hProcess, processName, sizeof(processName));
+
+			if (std::string(processName).find("halo.exe") != std::string::npos) {
+				auto engine = reinterpret_cast<halo_engine*>(lParam);
+				engine->set_window_handle(hWnd);
+				return FALSE;
+			}
+		}
+	}
+
+	return TRUE;
+}
 
 void halo_engine::update_window_handle()
 {
-	haloHWND = FindWindowA(nullptr, "Halo");
+	EnumWindows(&EnumWindowsProc, reinterpret_cast<LPARAM>(this));
+	//haloHWND = FindWindowA(nullptr, "Halo");
 }
 
 void halo_engine::patch_program_memory(LPVOID dest_address, uint8_t * src_address, size_t patch_size)
@@ -18,12 +46,17 @@ void halo_engine::patch_program_memory(LPVOID dest_address, uint8_t * src_addres
 	VirtualProtect(dest_address, patch_size, old_protection, &unused);
 }
 
+void halo_engine::set_window_handle(HWND handle)
+{
+	haloHWND = handle;
+}
+
 halo_engine::halo_engine()
 {
 	// Scan memory for object pools
-	for (uint32_t i = 0; i < TAG_ARRAY_LENGTH_BYTES / 4; i++) {
-		if (memcmp(&MAGIC_DATAPOOLHEADER, &(ADDR_TAGS_ARRAY[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
-			DataPool* pool = (DataPool*)(&ADDR_TAGS_ARRAY[i] - 10);
+	for (uint32_t i = 0; i < RUNTIME_DATA_SIZE / 4; i++) {
+		if (memcmp(&MAGIC_DATAPOOLHEADER, &(ADDR_RUNTIME_DATA_BEGIN[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
+			DataPool* pool = (DataPool*)(&ADDR_RUNTIME_DATA_BEGIN[i] - 10);
 			dataPools.push_back(pool);
 
 			if (std::string(pool->Name) == "object") {
@@ -31,11 +64,6 @@ halo_engine::halo_engine()
 			}
 		}
 	}
-}
-
-halo_engine::~halo_engine()
-{
-
 }
 
 HWND halo_engine::window_handle()

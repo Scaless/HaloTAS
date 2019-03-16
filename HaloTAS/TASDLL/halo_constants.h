@@ -24,8 +24,9 @@ inline extern uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x9
 
 inline extern uintptr_t PRINT_HUD_FUNC_PTR = 0x004AE180;
 
-inline extern uint32_t* ADDR_TAGS_ARRAY = reinterpret_cast<uint32_t*>(0x40000000);
-inline extern uint32_t TAG_ARRAY_LENGTH_BYTES = 0x1B40000;
+inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
+inline extern uint32_t RUNTIME_DATA_SIZE = 0x1B40000;
+inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
 
 inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
 inline extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "imgui.h"
-#include "imgui_impl_glfw_gl3.h"
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <memory>
@@ -9,36 +7,30 @@
 #include "render_cube.h"
 #include "render_text.h"
 
-struct tas_overlay_input
+struct tas_overlay_render_options
 {
-	bool overlayClose = false;
-	bool record = false;
-	bool playback = false;
-	bool loadPlayback = false;
-	bool showPrimitives = false;
-	bool forceSimulate = true;
-
-	float cullDistance = 15, UIScale = 1.5f;
+	bool enabled = true;
+	float cullDistance = 15.0f;
+	float uiScale = 1.5f;
+	bool showPrimitives = true;
+	HWND haloWindow = NULL;
 };
 
 class tas_overlay
 {
 private:
 	GLFWwindow* window;
-	ImGuiContext* imguiCtx;
 	std::unique_ptr<render_text> textRenderer;
 	std::unique_ptr<render_cube> cubeRenderer;
+	bool focused = false;
 
-	tas_overlay_input currentInput;
+	void glfwMouseButtonFunc(GLFWwindow* w, int button, int action, int mods);
+	void update_position(HWND haloWindow);
 
 public:
 	tas_overlay();
 	~tas_overlay();
 
-	GLFWwindow* glfw_window();
-	void make_context_current();
-	void update_position(HWND haloWindow);
-
-	const tas_overlay_input& render_and_get_input(halo_engine& engine);
+	void render(halo_engine& engine, const tas_overlay_render_options& options);
 };
 

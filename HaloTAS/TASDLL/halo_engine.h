@@ -17,10 +17,12 @@ private:
 
 	std::vector<DataPool*> dataPools;
 	DataPool* objectDataPool = nullptr;
+
+
 public:
 	halo_engine();
-	~halo_engine();
 
+	void set_window_handle(HWND handle);
 	void update_window_handle();
 	HWND window_handle();
 
