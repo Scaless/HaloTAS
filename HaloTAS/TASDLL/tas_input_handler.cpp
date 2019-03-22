@@ -53,12 +53,16 @@ void tas_input_handler::load_inputs_current_level()
 	std::string currentMap{ ADDR_MAP_STRING };
 	std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
 	
-	std::ifstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary);
+	std::ifstream logFile(currentMap + ".hbin", std::ios::in | std::ios::binary);
 	
 	char buf[sizeof(input_moment)];
 	while(!logFile.eof())
 	{
 		logFile.read(buf, sizeof(input_moment));
+		if (!logFile) {
+			break;
+		}
+
 		input_moment* im = reinterpret_cast<input_moment*>(&buf);
 
 		input_key ik;
@@ -67,7 +71,8 @@ void tas_input_handler::load_inputs_current_level()
 
 		if (stored_inputs_map.find(ik.fullKey) != stored_inputs_map.end()) {
 			std::string message = "File: " + currentMap + ".hbin\n" +
-				"Tick: " + std::to_string(ik.fullKey) + "\n" +
+				"Checkpoint: " + std::to_string(ik.subKey.subLevel) + "\n" +
+				"Tick: " + std::to_string(ik.subKey.inputCounter) + "\n" +
 				"Found duplicate input sequences for the same tick. Only one input sequence per tick allowed." +
 				"Alter the HBIN so that only one input line per tick exists.";
 
@@ -85,17 +90,6 @@ void tas_input_handler::load_inputs_current_level()
 
 extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 
-	//std::string tickMsg = "Tick:" + std::to_string(*ADDR_SIMULATION_TICK);
-	//MessageBox(NULL, tickMsg.c_str(), "", MB_OK);
-
-	__asm {
-		call ADDR_TICK_REPLACED_FUNC
-	}
-
-	return;
-}
-
-extern "C" __declspec(dllexport) void WINAPI CustomFrameStart() {
 	static int32_t last_input_tick;
 	static uint32_t last_frame;
 
@@ -160,4 +154,14 @@ extern "C" __declspec(dllexport) void WINAPI CustomFrameStart() {
 			//drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
 		}
 	}
+
+	__asm {
+		call ADDR_TICK_REPLACED_FUNC
+	}
+
+	return;
+}
+
+extern "C" __declspec(dllexport) void WINAPI CustomFrameStart() {
+	
 }
