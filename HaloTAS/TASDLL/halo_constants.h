@@ -52,8 +52,11 @@ inline extern int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B181
 // Patch point for allowing external directinput mouse movement
 inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
 inline extern uint8_t* ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
-inline extern uint32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<uint32_t*>(0x004C7798);
+inline extern int32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x004C7798);
 inline extern bool* ADDR_RUN_FRAME_BEGIN_CODE = reinterpret_cast<bool*>(0x0071D1A4);
+
+inline extern int32_t* ADDR_TICK_BEGIN_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x0045B79B);
+inline extern int32_t* ADDR_TICK_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x0045B590);
 			  
 inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
 inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);

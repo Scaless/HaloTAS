@@ -83,6 +83,18 @@ void tas_input_handler::load_inputs_current_level()
 }
 
 
+extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
+
+	//std::string tickMsg = "Tick:" + std::to_string(*ADDR_SIMULATION_TICK);
+	//MessageBox(NULL, tickMsg.c_str(), "", MB_OK);
+
+	__asm {
+		call ADDR_TICK_REPLACED_FUNC
+	}
+
+	return;
+}
+
 extern "C" __declspec(dllexport) void WINAPI CustomFrameStart() {
 	static int32_t last_input_tick;
 	static uint32_t last_frame;

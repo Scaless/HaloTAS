@@ -9,7 +9,7 @@
 
 struct tas_overlay_render_options
 {
-	bool enabled = true;
+	bool enabled = false;
 	float cullDistance = 15.0f;
 	float uiScale = 1.5f;
 	bool showPrimitives = true;

@@ -35,6 +35,7 @@ public:
 	void patch_program_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size);
 	void mouse_directinput_override_disable();
 	void mouse_directinput_override_enable();
-	void inject_frame_start_func();
+	void patch_frame_start_func();
+	void patch_tick_start_func();
 };
 

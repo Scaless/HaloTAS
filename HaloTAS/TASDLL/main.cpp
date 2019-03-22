@@ -15,7 +15,8 @@ void run() {
 	auto infoWindow = std::make_unique<tas_info_window>();
 	auto inputHandler = std::make_unique<tas_input_handler>();
 
-	engine->inject_frame_start_func();
+	engine->patch_frame_start_func();
+	engine->patch_tick_start_func();
 	engine->update_window_handle();
 
 	bool close = false;

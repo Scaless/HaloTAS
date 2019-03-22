@@ -116,7 +116,7 @@ void halo_engine::mouse_directinput_override_enable()
 	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
 }
 
-void halo_engine::inject_frame_start_func()
+void halo_engine::patch_frame_start_func()
 {
 	auto dllHandle = GetModuleHandle(TEXT("TASDLL"));
 	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_CustomFrameStart@0"));
@@ -125,4 +125,17 @@ void halo_engine::inject_frame_start_func()
 	memcpy_s(&PATCH_FRAME_BEGIN_FUNC_BYTES[1], sizeof(addr), &addr, sizeof(addr));
 
 	patch_program_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_FUNC_BYTES, 15);
+}
+
+void halo_engine::patch_tick_start_func()
+{
+	auto dllHandle = GetModuleHandle(TEXT("TASDLL"));
+	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_CustomTickStart@0"));
+	addr -= ((int)ADDR_TICK_BEGIN_FUNC_OFFSET) + 5; // Call location
+
+	uint8_t patchTickBeginBytes[5] = {0xE8, 0x00, 0x00, 0x00, 0x00};
+	memcpy_s(&patchTickBeginBytes[1], sizeof(addr), &addr, sizeof(addr));
+
+	patch_program_memory(ADDR_TICK_BEGIN_FUNC_OFFSET, patchTickBeginBytes, sizeof(patchTickBeginBytes));
+
 }
