@@ -14,7 +14,7 @@ tas_info_window::tas_info_window()
 	window = glfwCreateWindow(1280, 720, "Game Info", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
-	glfwSwapInterval(0);
+	glfwSwapInterval(1);
 
 	gl3wInit();
 
@@ -26,7 +26,6 @@ tas_info_window::tas_info_window()
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 
 	ImGui::StyleColorsDark();
-
 
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
 	ImGui_ImplOpenGL3_Init("#version 150");
@@ -233,7 +232,8 @@ void tas_info_window::render(halo_engine & engine)
 	glfwMakeContextCurrent(window);
 	ImGui::SetCurrentContext(imguiCtx);
 	glfwPollEvents();
-	
+	close = glfwWindowShouldClose(window);
+
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -283,7 +283,6 @@ void tas_info_window::render(halo_engine & engine)
 	glfwMakeContextCurrent(window);
 	glfwSwapBuffers(window);
 
-	close = glfwWindowShouldClose(window);
 }
 
 tas_info_input& tas_info_window::getInput()

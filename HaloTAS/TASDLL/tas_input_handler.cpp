@@ -1,12 +1,13 @@
 #include "tas_input_handler.h"
 
-#include <unordered_map>
+#include <vector>
+#include <filesystem>
 #include <algorithm>
 #include <fstream>
 #include <atomic>
 #include "halo_constants.h"
 
-static std::unordered_map<uint64_t, input_moment> stored_inputs_map;
+static std::vector<input_moment> inputs;
 static std::atomic_bool record = false;
 static std::atomic_bool playback = false;
 
@@ -17,13 +18,11 @@ void tas_input_handler::set_engine_run_frame_begin()
 
 tas_input_handler::tas_input_handler()
 {
+	set_engine_run_frame_begin();
 }
 
 tas_input_handler::~tas_input_handler()
 {
-	record = false;
-	playback = false;
-	set_engine_run_frame_begin();
 }
 
 void tas_input_handler::set_record(bool newRecord)
@@ -48,12 +47,15 @@ void tas_input_handler::set_playback(bool newPlayback)
 
 void tas_input_handler::load_inputs_current_level()
 {
-	stored_inputs_map.clear();
+	std::string currentMapFile{ ADDR_MAP_STRING };
+	std::replace(currentMapFile.begin(), currentMapFile.end(), '\\', '.');
+	currentMapFile += ".hbin";
+
+	inputs.clear();
+	auto estimatedElements = std::filesystem::file_size(currentMapFile) / sizeof(input_moment) + 1;
+	inputs.reserve(estimatedElements);
 	
-	std::string currentMap{ ADDR_MAP_STRING };
-	std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
-	
-	std::ifstream logFile(currentMap + ".hbin", std::ios::in | std::ios::binary);
+	std::ifstream logFile(currentMapFile, std::ios::in | std::ios::binary);
 	
 	char buf[sizeof(input_moment)];
 	while(!logFile.eof())
@@ -65,41 +67,25 @@ void tas_input_handler::load_inputs_current_level()
 
 		input_moment* im = reinterpret_cast<input_moment*>(&buf);
 
-		input_key ik;
-		ik.subKey.subLevel = im->checkpointId;
-		ik.subKey.inputCounter = im->tick;
-
-		if (stored_inputs_map.find(ik.fullKey) != stored_inputs_map.end()) {
-			std::string message = "File: " + currentMap + ".hbin\n" +
-				"Checkpoint: " + std::to_string(ik.subKey.subLevel) + "\n" +
-				"Tick: " + std::to_string(ik.subKey.inputCounter) + "\n" +
-				"Found duplicate input sequences for the same tick. Only one input sequence per tick allowed." +
-				"Alter the HBIN so that only one input line per tick exists.";
-
-			MessageBoxA(NULL, 
-				message.c_str(),
-				"Aborting Load: Multiple Input Sequences Found", MB_ICONWARNING | MB_OK);
-			stored_inputs_map.clear();
-			return;
-		}
-
-		stored_inputs_map[ik.fullKey] = *im;
+		inputs.push_back(*im);
 	}
 }
 
+static int32_t inputTickCounter = 0;
+static std::string last_level_name;
+static int32_t last_input_tick;
 
 extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
-
-	static int32_t last_input_tick;
-	static uint32_t last_frame;
-
-	const uint32_t frames = *ADDR_FRAMES_SINCE_LEVEL_START;
 	const int32_t tick = *ADDR_SIMULATION_TICK;
-	const uint32_t subLevel = *ADDR_CHECKPOINT_INDICATOR;
 
 	if (playback) {
 		*ADDR_DINPUT_MOUSEX = 0;
 		*ADDR_DINPUT_MOUSEY = 0;
+	}
+
+	if (last_level_name.compare(ADDR_MAP_STRING) != 0) {
+		last_level_name = ADDR_MAP_STRING;
+		inputTickCounter = 0;
 	}
 
 	if (tick == last_input_tick)
@@ -117,7 +103,6 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
 			im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
 		}
-		im.checkpointId = *ADDR_CHECKPOINT_INDICATOR;
 		im.tick = tick;
 		//im.inputMouseX = *ADDR_DINPUT_MOUSEX;
 		//im.inputMouseY = *ADDR_DINPUT_MOUSEY;
@@ -134,24 +119,21 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 
 	if (playback)
 	{
-		input_key ik;
-		ik.subKey.subLevel = subLevel;
-		ik.subKey.inputCounter = tick;
-		if (stored_inputs_map.count(ik.fullKey))
-		{
-			input_moment savedIM = stored_inputs_map[ik.fullKey];
+		if (inputs.size() > inputTickCounter) {
+			input_moment savedIM = inputs[inputTickCounter];
 
 			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
 			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
 			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
-			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
-			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
 			*ADDR_LEFTMOUSE = savedIM.leftMouse;
 			*ADDR_MIDDLEMOUSE = savedIM.middleMouse;
 			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
 			//*ADDR_CAMERA_POSITION = savedIM.cameraLocation;
-
+			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
+			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
 			//drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
+
+			inputTickCounter += 1;
 		}
 	}
 

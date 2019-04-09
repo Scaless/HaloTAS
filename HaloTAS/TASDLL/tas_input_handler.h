@@ -4,21 +4,12 @@
 #include <glm/glm.hpp>
 
 struct input_moment {
-	uint32_t checkpointId;
 	uint32_t tick;
 	uint8_t inputBuf[104];
 	int32_t inputMouseX, inputMouseY;
 	float cameraYaw, cameraPitch;
 	glm::vec3 cameraLocation;
 	uint8_t leftMouse, middleMouse, rightMouse;
-};
-
-union input_key {
-	uint64_t fullKey;
-	struct {
-		uint32_t subLevel;
-		uint32_t inputCounter;
-	} subKey;
 };
 
 class tas_input_handler

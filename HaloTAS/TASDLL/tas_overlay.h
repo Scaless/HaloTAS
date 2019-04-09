@@ -26,6 +26,7 @@ private:
 
 	void glfwMouseButtonFunc(GLFWwindow* w, int button, int action, int mods);
 	void update_position(HWND haloWindow);
+	void init_window();
 
 public:
 	tas_overlay();

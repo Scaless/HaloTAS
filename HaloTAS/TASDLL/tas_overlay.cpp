@@ -12,7 +12,18 @@ void tas_overlay::glfwMouseButtonFunc(GLFWwindow* w, int button, int action, int
 }
 
 tas_overlay::tas_overlay()
+	: window(nullptr)
 {
+	
+}
+
+tas_overlay::~tas_overlay()
+{
+	glfwMakeContextCurrent(window);
+	glfwDestroyWindow(window);
+}
+
+void tas_overlay::init_window() {
 	glfwDefaultWindowHints();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -28,22 +39,20 @@ tas_overlay::tas_overlay()
 
 	gl3wInit();
 
-	textRenderer = std::make_unique<render_text>();
-	cubeRenderer = std::make_unique<render_cube>();;
+	if (!textRenderer) {
+		textRenderer = std::make_unique<render_text>();
+	}
+	if (!cubeRenderer) {
+		cubeRenderer = std::make_unique<render_cube>();;
+	}
 
 	glfwSetWindowUserPointer(window, this);
 	auto func = [](GLFWwindow* w, int b, int a, int m)
 	{
-		static_cast<tas_overlay*>(glfwGetWindowUserPointer(w))->glfwMouseButtonFunc(w,b,a,m);
+		static_cast<tas_overlay*>(glfwGetWindowUserPointer(w))->glfwMouseButtonFunc(w, b, a, m);
 	};
 
 	glfwSetMouseButtonCallback(window, func);
-}
-
-tas_overlay::~tas_overlay()
-{
-	glfwMakeContextCurrent(window);
-	glfwDestroyWindow(window);
 }
 
 void tas_overlay::update_position(HWND haloWindow)
@@ -79,13 +88,22 @@ void tas_overlay::update_position(HWND haloWindow)
 
 void tas_overlay::render(halo_engine& engine, const tas_overlay_render_options& options)
 {
-	glfwMakeContextCurrent(window);
-	glfwPollEvents();
-	
 	if (!options.enabled) {
-		glfwSetWindowSize(window, 0, 0);
+		if (window != nullptr) {
+			textRenderer.reset();
+			cubeRenderer.reset();
+			glfwDestroyWindow(window);
+			window = nullptr;
+		}
 		return;
 	}
+
+	if (window == nullptr) {
+		init_window();
+	}
+
+	glfwMakeContextCurrent(window);
+	glfwPollEvents();
 
 	update_position(engine.window_handle());
 
