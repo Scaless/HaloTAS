@@ -1,11 +1,13 @@
+#include "globals.h"
 #include "tas_overlay.h"
 #include <unordered_set>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
+#include <chrono>
 
-void tas_overlay::glfwMouseButtonFunc(GLFWwindow* w, int button, int action, int mods) {
+void tas_overlay::glfwMouseButtonFunc(GLFWwindow* /*w*/, int button, int /*action*/, int /*mods*/) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
 		focused = true;
 	}
@@ -86,7 +88,9 @@ void tas_overlay::update_position(HWND haloWindow)
 	}
 }
 
-void tas_overlay::render(halo_engine& engine, const tas_overlay_render_options& options)
+
+
+void tas_overlay::render(const tas_overlay_render_options& options)
 {
 	if (!options.enabled) {
 		if (window != nullptr) {
@@ -105,10 +109,10 @@ void tas_overlay::render(halo_engine& engine, const tas_overlay_render_options& 
 	glfwMakeContextCurrent(window);
 	glfwPollEvents();
 
-	update_position(engine.window_handle());
+	update_position(gEngine->window_handle());
 
 	if (focused) {
-		SetForegroundWindow(engine.window_handle());
+		SetForegroundWindow(gEngine->window_handle());
 		focused = false;
 	}
 
@@ -116,7 +120,7 @@ void tas_overlay::render(halo_engine& engine, const tas_overlay_render_options& 
 	glfwGetFramebufferSize(window, &display_w, &display_h);
 
 	engine_snapshot snapshot = {};
-	engine.get_snapshot(snapshot);
+	gEngine->get_snapshot(snapshot);
 
 	std::unordered_set<uint32_t> objectCategories;
 	for (auto& v : snapshot.gameObjects) {

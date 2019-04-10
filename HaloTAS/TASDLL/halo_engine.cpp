@@ -33,7 +33,7 @@ void halo_engine::update_window_handle()
 	//haloHWND = FindWindowA(nullptr, "Halo");
 }
 
-void halo_engine::patch_program_memory(LPVOID dest_address, uint8_t * src_address, size_t patch_size)
+void halo_engine::patch_memory(LPVOID dest_address, uint8_t * src_address, size_t patch_size)
 {
 	unsigned long old_protection, unused;
 	//give that address read and write permissions and store the old permissions at oldProtection
@@ -64,6 +64,20 @@ halo_engine::halo_engine()
 			}
 		}
 	}
+}
+
+void halo_engine::initialize()
+{
+	patch_frame_start_func();
+	patch_tick_start_func();
+
+	update_window_handle();
+}
+
+void halo_engine::cleanup()
+{
+	unpatch_frame_start_func();
+	unpatch_tick_start_func();
 }
 
 HWND halo_engine::window_handle()
@@ -108,12 +122,12 @@ void halo_engine::print_hud_text(const std::wstring& input)
 
 void halo_engine::mouse_directinput_override_disable()
 {
-	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
+	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
 }
 
 void halo_engine::mouse_directinput_override_enable()
 {
-	patch_program_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
+	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
 }
 
 void halo_engine::patch_frame_start_func()
@@ -124,7 +138,10 @@ void halo_engine::patch_frame_start_func()
 	addr -= (int)ADDR_FRAME_BEGIN_FUNC_OFFSET; // Call location
 	memcpy_s(&PATCH_FRAME_BEGIN_FUNC_BYTES[1], sizeof(addr), &addr, sizeof(addr));
 
-	patch_program_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_FUNC_BYTES, 15);
+	// Copy original memory so we can restore it later
+	memcpy_s(&PATCH_FRAME_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_FRAME_BEGIN_ORIGINAL_BYTES), ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, sizeof(PATCH_FRAME_BEGIN_ORIGINAL_BYTES));
+
+	patch_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_FUNC_BYTES, sizeof(PATCH_FRAME_BEGIN_FUNC_BYTES));
 }
 
 void halo_engine::patch_tick_start_func()
@@ -136,6 +153,19 @@ void halo_engine::patch_tick_start_func()
 	uint8_t patchTickBeginBytes[5] = {0xE8, 0x00, 0x00, 0x00, 0x00};
 	memcpy_s(&patchTickBeginBytes[1], sizeof(addr), &addr, sizeof(addr));
 
-	patch_program_memory(ADDR_TICK_BEGIN_FUNC_OFFSET, patchTickBeginBytes, sizeof(patchTickBeginBytes));
+	// Copy original memory so we can restore it later
+	memcpy_s(&PATCH_TICK_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_TICK_BEGIN_ORIGINAL_BYTES), ADDR_TICK_BEGIN_FUNC_OFFSET, sizeof(PATCH_TICK_BEGIN_ORIGINAL_BYTES));
+
+	patch_memory(ADDR_TICK_BEGIN_FUNC_OFFSET, patchTickBeginBytes, sizeof(patchTickBeginBytes));
+}
+
+void halo_engine::unpatch_frame_start_func()
+{
+	patch_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_FRAME_BEGIN_ORIGINAL_BYTES));
+}
+
+void halo_engine::unpatch_tick_start_func()
+{
+	patch_memory(ADDR_TICK_BEGIN_FUNC_OFFSET, PATCH_TICK_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_TICK_BEGIN_ORIGINAL_BYTES));
 
 }

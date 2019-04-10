@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -142,6 +142,8 @@
     <ClCompile Include="..\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
+    <ClCompile Include="gameobject.cpp" />
+    <ClCompile Include="globals.cpp" />
     <ClCompile Include="halo_engine.cpp" />
     <ClCompile Include="imgui_impl_glfw.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
@@ -164,6 +166,7 @@
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h" />
     <ClInclude Include="..\lib\gl3w\GL\glcorearb.h" />
     <ClInclude Include="gameobject.h" />
+    <ClInclude Include="globals.h" />
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="halo_engine.h" />
     <ClInclude Include="imgui_impl_glfw.h" />

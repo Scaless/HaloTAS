@@ -28,15 +28,17 @@ private:
 
 	tas_info_input currentInput;
 
-	void render_overlay(halo_engine& engine);
-	void render_tas(halo_engine& engine);
-	void render_menubar(halo_engine& engine);
+	void render_overlay();
+	void render_tas();
+	void render_inputs();
+	void render_menubar();
+	void render_header();
 
 public:
 	tas_info_window();
 	~tas_info_window();
 
-	void render(halo_engine& engine);
+	void render();
 	tas_info_input& getInput();
 	bool shouldClose();
 };

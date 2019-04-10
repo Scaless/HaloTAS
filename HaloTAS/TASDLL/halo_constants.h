@@ -8,9 +8,14 @@
 #include <glm/glm.hpp>
 
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
-inline extern uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
-inline extern uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
-inline extern uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+static uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+static uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
+
+static uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
+static uint8_t PATCH_FRAME_BEGIN_ORIGINAL_BYTES[sizeof(PATCH_FRAME_BEGIN_FUNC_BYTES)];
+
+static uint8_t PATCH_TICK_BEGIN_ORIGINAL_BYTES[5];
+
 
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
@@ -22,6 +27,7 @@ inline extern uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x9
 
 #if defined(HALO_VANILLA)
 
+
 inline extern uintptr_t PRINT_HUD_FUNC_PTR = 0x004AE180;
 
 inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
@@ -31,6 +37,11 @@ inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000
 inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
 inline extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
 inline extern int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
+
+inline extern uint8_t* ADDR_LOAD_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973A);
+inline extern uint8_t* ADDR_SAVE_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973F);
+inline extern uint8_t* ADDR_RESTART_LEVEL = reinterpret_cast<uint8_t*>(0x719738);
+inline extern uint8_t* ADDR_RESTART_LEVEL_FULL = reinterpret_cast<uint8_t*>(0x719739);
 
 inline extern uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
 inline extern uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);

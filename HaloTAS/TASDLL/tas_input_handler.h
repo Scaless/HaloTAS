@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <vector>
 #include <glm/glm.hpp>
 
 struct input_moment {
@@ -15,6 +16,7 @@ struct input_moment {
 class tas_input_handler
 {
 private:
+	std::vector<input_moment> inputs;
 	void set_engine_run_frame_begin();
 
 public:
@@ -25,5 +27,9 @@ public:
 	void set_playback(bool newPlayback);
 
 	void load_inputs_current_level();
+	void save_inputs_current_level();
+	void reload_playback_buffer();
+	
+	std::vector<input_moment>* getInputs();
 };
 

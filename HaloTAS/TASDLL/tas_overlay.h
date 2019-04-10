@@ -32,6 +32,6 @@ public:
 	tas_overlay();
 	~tas_overlay();
 
-	void render(halo_engine& engine, const tas_overlay_render_options& options);
+	void render(const tas_overlay_render_options& options);
 };
 
