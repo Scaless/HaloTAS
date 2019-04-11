@@ -34,6 +34,8 @@ private:
 	void render_menubar();
 	void render_header();
 
+	void render_imgui();
+
 public:
 	tas_info_window();
 	~tas_info_window();

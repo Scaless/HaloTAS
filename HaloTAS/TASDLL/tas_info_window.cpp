@@ -366,13 +366,9 @@ void tas_info_window::render_header()
 	*ADDR_ALLOW_INPUT = (*ADDR_SIMULATE == 1 ? 0 : 1);
 }
 
-void tas_info_window::render()
+void tas_info_window::render_imgui()
 {
-	glfwMakeContextCurrent(window);
 	ImGui::SetCurrentContext(imguiCtx);
-	glfwPollEvents();
-	close = glfwWindowShouldClose(window);
-
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -408,10 +404,15 @@ void tas_info_window::render()
 	glClearColor(0, 0, 0, 0);
 	glClear(GL_COLOR_BUFFER_BIT);
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
 
-	glfwMakeContextCurrent(window);
+void tas_info_window::render()
+{
+	close = glfwWindowShouldClose(window);
+
+	render_imgui();
+
 	glfwSwapBuffers(window);
-
 }
 
 tas_info_input& tas_info_window::getInput()

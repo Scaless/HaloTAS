@@ -26,8 +26,10 @@ void run() {
 	// Main loop
 	while (!close)
 	{
+		glfwPollEvents();
+
 		auto now = std::chrono::system_clock::now();
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEngineUpdate) > std::chrono::milliseconds(100)) {
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEngineUpdate) > std::chrono::milliseconds(1000)) {
 			gEngine->update_window_handle();
 			lastEngineUpdate = now;
 		}
