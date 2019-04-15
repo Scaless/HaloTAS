@@ -1,15 +1,23 @@
 #include "tas_input_handler.h"
 
+#include <boost/algorithm/string/predicate.hpp> // for ends_with
 #include <vector>
-#include <filesystem>
 #include <algorithm>
 #include <fstream>
 #include <atomic>
 #include "halo_constants.h"
 
-static std::vector<input_moment> static_playback_buffer;
+using std::vector, std::string;
+
+// TODO: replace with tas_input object 
+static std::vector<input_moment> playback_buffer_current_level;
 static std::atomic_bool record = false;
 static std::atomic_bool playback = false;
+
+static int32_t inputTickCounter = 0;
+static std::string last_level_name;
+static int32_t last_input_tick;
+
 
 void tas_input_handler::set_engine_run_frame_begin()
 {
@@ -39,24 +47,21 @@ void tas_input_handler::set_playback(bool newPlayback)
 	set_engine_run_frame_begin();
 }
 
-void tas_input_handler::load_inputs_current_level()
-{
-	std::string currentMapFile{ ADDR_MAP_STRING };
-	std::replace(currentMapFile.begin(), currentMapFile.end(), '\\', '.');
-	currentMapFile += ".hbin";
-
-	if (!std::filesystem::exists(currentMapFile)) {
+void tas_input_handler::load_input_from_file(std::filesystem::path filePath) {
+	if (!std::filesystem::exists(filePath)) {
 		return;
 	}
 
-	inputs.clear();
-	auto estimatedElements = std::filesystem::file_size(currentMapFile) / sizeof(input_moment) + 1;
+	tas_input levelInput(filePath.filename().string());
+
+	std::vector<input_moment> inputs;
+	auto estimatedElements = std::filesystem::file_size(filePath) / sizeof(input_moment) + 1;
 	inputs.reserve(estimatedElements);
-	
-	std::ifstream logFile(currentMapFile, std::ios::in | std::ios::binary);
-	
+
+	std::ifstream logFile(filePath.string(), std::ios::in | std::ios::binary);
+
 	char buf[sizeof(input_moment)];
-	while(!logFile.eof())
+	while (!logFile.eof())
 	{
 		logFile.read(buf, sizeof(input_moment));
 		if (!logFile) {
@@ -68,34 +73,64 @@ void tas_input_handler::load_inputs_current_level()
 		inputs.push_back(*im);
 	}
 
-	static_playback_buffer = inputs;
+	levelInput.set_inputs(inputs);
+	
+	levelInputs[filePath.filename().string()] = levelInput;
 }
 
-void tas_input_handler::save_inputs_current_level()
+void tas_input_handler::get_inputs_from_files()
 {
-	std::string currentMap{ ADDR_MAP_STRING };
-	std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
-	std::ofstream logFile(currentMap + ".hbin", std::ios::trunc | std::ios::binary); // levels.a10.a10.hbin
-
-	for (auto& inp : inputs) {
-		logFile.write(reinterpret_cast<char*>(&inp), sizeof(inp));
+	levelInputs.clear();
+	for (const auto& file : std::filesystem::directory_iterator("")) {
+		if (boost::algorithm::ends_with(file.path().string(), ".hbin")) {
+			load_input_from_file(file.path());
+		}
 	}
-
-	logFile.close();
 }
 
-void tas_input_handler::reload_playback_buffer() {
-	static_playback_buffer = inputs;
-}
-
-std::vector<input_moment>* tas_input_handler::getInputs()
+void tas_input_handler::save_inputs()
 {
-	return &inputs;
+	for (auto& inputSet : levelInputs) {
+		std::ofstream logFile(inputSet.first, std::ios::trunc | std::ios::binary);
+
+		for (auto& inp : *inputSet.second.input_buffer()) {
+			logFile.write(reinterpret_cast<char*>(&inp), sizeof(inp));
+		}
+
+		logFile.close();
+	}
 }
 
-static int32_t inputTickCounter = 0;
-static std::string last_level_name;
-static int32_t last_input_tick;
+void tas_input_handler::reload_playback_buffer(tas_input* input) {
+
+	playback_buffer_current_level = *input->input_buffer();
+	//playback_buffer_current_level = inputs;
+}
+
+std::vector<std::string> tas_input_handler::get_loaded_levels()
+{
+	// TODO
+	vector<string> names;
+	names.reserve(levelInputs.size());
+	for (const auto& level : levelInputs) {
+		names.push_back(level.first);
+	}
+	return names;
+}
+
+tas_input* tas_input_handler::get_inputs(std::string levelName)
+{
+	if (levelInputs.count(levelName)) {
+		return &levelInputs[levelName];
+	}
+	return nullptr;
+}
+
+int32_t tas_input_handler::get_current_playback_tick()
+{
+	return inputTickCounter;
+}
+
 
 extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 	const int32_t tick = *ADDR_SIMULATION_TICK;
@@ -113,8 +148,8 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 	bool playedBackThisTick = false;
 	if (playback)
 	{
-		if (static_playback_buffer.size() > inputTickCounter) {
-			input_moment savedIM = static_playback_buffer[inputTickCounter];
+		if (playback_buffer_current_level.size() > inputTickCounter) {
+			input_moment savedIM = playback_buffer_current_level[inputTickCounter];
 
 			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
 			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
@@ -133,8 +168,11 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 			*ADDR_GAME_SPEED = 0;
 		}
 
-		if (tick != 0 && tick < last_input_tick) {
-			ADDR_KEYBOARD_INPUT[Enter] = 0;
+		// Fix for enter being stuck held down
+		if (inputTickCounter > 0) {
+			if (playback_buffer_current_level[inputTickCounter - 1].inputBuf[KEYS::Enter] > 0) {
+				ADDR_KEYBOARD_INPUT[Enter] = 0;
+			}
 		}
 	}
 

@@ -33,7 +33,6 @@ tas_info_window::tas_info_window()
 	ImGui_ImplOpenGL3_Init("#version 150");
 }
 
-
 tas_info_window::~tas_info_window()
 {
 	glfwMakeContextCurrent(window);
@@ -199,7 +198,7 @@ void tas_info_window::render_tas()
 	ImGui::Checkbox("Playback", &currentInput.playback);
 	ImGui::SameLine();
 	currentInput.loadPlayback = ImGui::Button("Load Playback");
-
+	ImGui::SameLine();
 	if (ImGui::Button("PatchMouse")) {
 		gEngine->mouse_directinput_override_enable();
 	}
@@ -215,6 +214,7 @@ void tas_info_window::render_tas()
 	if (ImGui::Button("Save Checkpoint")) {
 		*ADDR_SAVE_CHECKPOINT = 1;
 	}
+	ImGui::SameLine();
 	if (ImGui::Button("Restart Level (Full?)")) {
 		*ADDR_RESTART_LEVEL = 1;
 	}
@@ -230,11 +230,38 @@ void tas_info_window::render_tas()
 	if (ImGui::Button("PLAY")) {
 		*ADDR_GAME_SPEED = 1;
 	}
+
+	if (ImGui::Button("SAVE")) {
+		gInputHandler->save_inputs();
+	}
 }
 
 void tas_info_window::render_inputs()
 {
-	auto inputs = gInputHandler->getInputs();
+	static std::string current_item;
+	if (ImGui::BeginCombo("##levelSelect", current_item.c_str()))
+	{
+		for (const auto& level : gInputHandler->get_loaded_levels()) {
+
+			bool is_selected = level == current_item; // You can store your selection however you want, outside or inside your objects
+			const char* levelCstr = level.c_str();
+			if (ImGui::Selectable(levelCstr, is_selected))
+				current_item = level;
+			if (is_selected)
+				ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
+		}
+
+		ImGui::EndCombo();
+	}
+
+	if (current_item.empty()) {
+		return;
+	}
+
+	auto input = gInputHandler->get_inputs(current_item);
+	if (input == nullptr) {
+		return;
+	}
 
 	if (ImGui::CollapsingHeader("TAS Input")) {
 
@@ -261,33 +288,72 @@ void tas_info_window::render_inputs()
 		ImGui::SetColumnWidth(4, 200);
 
 		int count = 0;
-
-		for(auto it = inputs->begin(); it != inputs->end(); ++it) {
-			ImGui::PushID("##TAS INPUT" + count);
-			count++;
+		for(auto it = input->input_buffer()->begin(); it != input->input_buffer()->end(); ++it) {
+			ImGui::PushID(count);
 			
 			int styles = 0;
-
-			if (*ADDR_SIMULATION_TICK_2 == it->tick) {
+			if (gInputHandler->get_current_playback_tick() == count) {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 0, 0, 1));
 				styles += 2;
 			}
 
-			ImGui::Text("%d", it->tick);
+			ImGui::Text("%d", count);
+			//ImGui::Text("%d", it->tick);
 			ImGui::NextColumn();
 			ImGui::DragFloat("##Pitch", &(it->cameraPitch), .1f);
 			ImGui::NextColumn();
 			ImGui::DragFloat("##Yaw", &(it->cameraYaw), .1f);
 			ImGui::NextColumn();
 
-			// Inputs
+			// INPUTS
+			////////////////////////
+			if (ImGui::Button("+")) {
+				ImGui::OpenPopup("new_input");
+			}
+			if (ImGui::BeginPopup("new_input")) {
+
+				for (int key = 0; key < KEYS::KEY_COUNT; key++) {
+					// Add the key to the current input
+					if (ImGui::BeginMenu(KEY_PRINT_CODES[key].c_str()))
+					{
+						if (ImGui::MenuItem("x1")) {
+							// Add input
+							input->set_kb_input(count, (KEYS)key, 1);
+						}
+						if (ImGui::MenuItem("xX")) {
+							// Add input x times
+						}
+						ImGui::EndMenu();
+					}
+
+				}
+				ImGui::EndPopup();
+			}
+			ImGui::SameLine();
+
 			for (int key = 0; key < KEYS::KEY_COUNT; key++) {
 				if (it->inputBuf[key]) {
-					ImGui::Text(KEY_PRINT_CODES[key].c_str());
+					const char* btnId = KEY_PRINT_CODES[key].c_str();
+					ImGui::PushID(btnId);
+					if (ImGui::Button(btnId)) {
+						ImGui::OpenPopup("key_dialog");
+					}
+					if (ImGui::BeginPopup("key_dialog")) {
+						if (ImGui::MenuItem("Remove")) {
+							// Remove input
+							input->set_kb_input(count, (KEYS)key, 0);
+						}
+						if (ImGui::MenuItem("Remove Range")) {
+							// Remove input range
+						}
+						ImGui::EndPopup();
+					}
+					ImGui::PopID();
 					ImGui::SameLine();
 				}
 			}
+			
 			ImGui::NextColumn();
 
 			ImGui::PushItemWidth(50);
@@ -300,19 +366,24 @@ void tas_info_window::render_inputs()
 			}
 			else {
 				ImGui::DragScalar("##LMB", ImGuiDataType_U8, &(it->leftMouse), 1);
-
 			}
 			ImGui::SameLine();
+
 			ImGui::Text("RMB:");
 			ImGui::SameLine();
-			ImGui::DragScalar("##RMB", ImGuiDataType_U8, &(it->rightMouse), 1);
+			if (it->rightMouse > 0) {
+				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
+				ImGui::DragScalar("##RMB", ImGuiDataType_U8, &(it->rightMouse), 1);
+				ImGui::PopStyleColor();
+			}
+			else {
+				ImGui::DragScalar("##RMB", ImGuiDataType_U8, &(it->rightMouse), 1);
+			}
 			ImGui::PopItemWidth();
 			ImGui::NextColumn();
 
-			//ImGui::Separator();
-
 			if (*ADDR_SIMULATION_TICK_2 == it->tick && *ADDR_GAME_SPEED > 0) {
-				ImGui::SetScrollHereY();
+				//ImGui::SetScrollHereY();
 			}
 
 			if (styles > 0)
@@ -321,12 +392,17 @@ void tas_info_window::render_inputs()
 			}
 
 			ImGui::PopID();
+			count++;
 		}
 
 		ImGui::Columns(1);
 
 		ImGui::EndChild();
 	}
+
+	gInputHandler->reload_playback_buffer(input);
+
+
 }
 
 void tas_info_window::render_menubar()
@@ -345,10 +421,15 @@ void tas_info_window::render_menubar()
 			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
 			ImGui::EndMenu();
 		}
+		const char* appText = "App: %.0f ms/frame (%.0f FPS)";
+		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::CalcTextSize(appText).x);
+		ImGui::Text(appText, 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::EndMainMenuBar();
 	}
 }
 
+static float lockedGameSpeed = 1.0f;
+static bool lockSpeed = false;
 void tas_info_window::render_header()
 {
 	ImGui::Text("Map: %s\t", ADDR_MAP_STRING);
@@ -357,9 +438,19 @@ void tas_info_window::render_header()
 	ImGui::SameLine();
 	ImGui::Text("Frame: %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
 	ImGui::SameLine();
-	ImGui::Text("App: %.0f ms/frame (%.0f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+	ImGui::Text("RNG: %d", *ADDR_RNG);
 
+	ImGui::PushItemWidth(200);
 	ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
+	if (ImGui::Checkbox("Lock", &lockSpeed)) {
+		lockedGameSpeed = *ADDR_GAME_SPEED;
+	}
+
+	if (lockSpeed) {
+		*ADDR_GAME_SPEED = lockedGameSpeed;
+	}
 
 	ImGui::Checkbox("Force Simulate", &currentInput.forceSimulate);
 	*ADDR_SIMULATE = currentInput.forceSimulate ? 0 : 1;
@@ -381,7 +472,7 @@ void tas_info_window::render_imgui()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
 
-	ImGui::Begin("Main", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoTitleBar);
+	ImGui::Begin("Main", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 
 	render_menubar();
 	render_header();
@@ -390,7 +481,6 @@ void tas_info_window::render_imgui()
 	render_inputs();
 
 	//ImGui::ShowDemoWindow();
-
 
 	ImGui::End();
 	ImGui::PopStyleVar(2);

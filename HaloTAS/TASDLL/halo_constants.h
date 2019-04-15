@@ -72,10 +72,11 @@ inline extern int32_t* ADDR_TICK_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x00
 inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
 inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
 inline extern float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
-inline extern float* ADDR_PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
+inline extern float* ADDR_PLAYER_YAW_ROTATION_RADIANS   = reinterpret_cast<float*>(0x402AD4B8);
 inline extern float* ADDR_PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
 			  
 inline extern float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
+inline extern int32_t* ADDR_RNG = reinterpret_cast<int32_t*>(0x00719CD0);
 
 #elif defined(HALO_CUSTOMED)
 

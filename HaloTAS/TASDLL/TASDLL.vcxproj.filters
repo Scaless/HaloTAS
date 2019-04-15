@@ -78,6 +78,9 @@
     <ClCompile Include="gameobject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="tas_input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h">
@@ -141,6 +144,9 @@
       <Filter>imgui</Filter>
     </ClInclude>
     <ClInclude Include="globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tas_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

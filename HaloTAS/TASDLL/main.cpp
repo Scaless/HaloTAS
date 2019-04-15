@@ -18,6 +18,7 @@ void run() {
 	auto infoWindow = std::make_unique<tas_info_window>();
 
 	gEngine->initialize();
+	gInputHandler->get_inputs_from_files();
 
 	auto lastEngineUpdate = std::chrono::system_clock::now();
 	auto lastDisplayUpdate = std::chrono::system_clock::now();
@@ -35,7 +36,7 @@ void run() {
 		}
 
 		// Keep people honest
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastDisplayUpdate) > std::chrono::seconds(10)) {
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastDisplayUpdate) > std::chrono::seconds(20)) {
 			gEngine->print_hud_text(L"Official runs are invalid while HaloTAS is running!");
 			lastDisplayUpdate = now;
 		}
@@ -46,7 +47,7 @@ void run() {
 
 		auto input = infoWindow->getInput();
 		if (input.loadPlayback) {
-			gInputHandler->load_inputs_current_level();
+			gInputHandler->get_inputs_from_files();
 		}
 		if (input.overlayClose) {
 			close |= true;

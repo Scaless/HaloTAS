@@ -150,6 +150,7 @@
     <ClCompile Include="livesplit.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="tas_info_window.cpp" />
+    <ClCompile Include="tas_input.cpp" />
     <ClCompile Include="tas_input_handler.cpp" />
     <ClCompile Include="tas_overlay.cpp" />
     <ClCompile Include="render_cube.cpp" />
@@ -173,6 +174,7 @@
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="livesplit.h" />
     <ClInclude Include="tas_info_window.h" />
+    <ClInclude Include="tas_input.h" />
     <ClInclude Include="tas_input_handler.h" />
     <ClInclude Include="tas_overlay.h" />
     <ClInclude Include="render_cube.h" />
