@@ -1,5 +1,6 @@
 
 #include <chrono>
+#include <iostream>
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include "globals.h"
@@ -8,6 +9,27 @@
 #include "tas_info_window.h"
 #include "tas_input_handler.h"
 #include "livesplit.h"
+#include "helpers.h"
+
+uint32_t reviverRNG = 1'975'045'979;
+uint32_t KeyesRNGSeed = 4'112'291'920;
+
+void exportKeyesRNG() {
+	std::ofstream outfile;
+	outfile.open("keyes_rng.csv", std::ios::app);
+	int32_t currentRNG = (int32_t)KeyesRNGSeed;
+
+	for (int i = 0; i < 100'000; i++) {
+		outfile << currentRNG << "," << rng_to_double(currentRNG) << std::endl;
+		currentRNG = next_rng(currentRNG);
+	}
+	outfile.close();
+}
+
+// Entry point when compiled as EXE
+void main() {
+	exportKeyesRNG();
+}
 
 void run() {
 	gEngine = std::make_unique<halo_engine>();
@@ -30,7 +52,7 @@ void run() {
 		glfwPollEvents();
 
 		auto now = std::chrono::system_clock::now();
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEngineUpdate) > std::chrono::milliseconds(1000)) {
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEngineUpdate) > std::chrono::milliseconds(10000)) {
 			gEngine->update_window_handle();
 			lastEngineUpdate = now;
 		}

@@ -83,7 +83,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_68_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -103,7 +103,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_68_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -145,6 +145,7 @@
     <ClCompile Include="gameobject.cpp" />
     <ClCompile Include="globals.cpp" />
     <ClCompile Include="halo_engine.cpp" />
+    <ClCompile Include="helpers.cpp" />
     <ClCompile Include="imgui_impl_glfw.cpp" />
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="livesplit.cpp" />
@@ -170,6 +171,7 @@
     <ClInclude Include="globals.h" />
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="halo_engine.h" />
+    <ClInclude Include="helpers.h" />
     <ClInclude Include="imgui_impl_glfw.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="livesplit.h" />

@@ -236,9 +236,11 @@ void tas_info_window::render_tas()
 	}
 }
 
+static int32_t start = 0, end = 0;
+static std::string current_item;
+
 void tas_info_window::render_inputs()
 {
-	static std::string current_item;
 	if (ImGui::BeginCombo("##levelSelect", current_item.c_str()))
 	{
 		for (const auto& level : gInputHandler->get_loaded_levels()) {
@@ -264,6 +266,18 @@ void tas_info_window::render_inputs()
 	}
 
 	if (ImGui::CollapsingHeader("TAS Input")) {
+
+		ImGui::Text("Remove Ticks");
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputInt("##TickStart", &start);
+		ImGui::SameLine();
+		ImGui::InputInt("##TickEnd", &end);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		if (ImGui::Button("Delete Tick Range")) {
+			input->remove_tick_range(start, end);
+		}
 
 		ImGui::Columns(5);
 		ImGui::SetColumnWidth(0, 60);
@@ -438,7 +452,17 @@ void tas_info_window::render_header()
 	ImGui::SameLine();
 	ImGui::Text("Frame: %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
 	ImGui::SameLine();
-	ImGui::Text("RNG: %d", *ADDR_RNG);
+	ImGui::Text("RNG: %d\t", *ADDR_RNG);
+	ImGui::SameLine(540);
+	ImGui::Text("RNG Calls: %d", gInputHandler->get_rng_advances_since_last_tick());
+
+	auto histogram_data = gInputHandler->get_rng_histogram_data();
+
+	auto data_max = std::max_element(std::begin(histogram_data), std::end(histogram_data));
+
+	ImGui::PushItemWidth(ImGui::GetWindowContentRegionMax().x);
+	ImGui::PlotHistogram("##RNG Histogram", histogram_data.data(), histogram_data.size(), 0, NULL, 0.0f, *data_max, ImVec2(0,200));
+	ImGui::PopItemWidth();
 
 	ImGui::PushItemWidth(200);
 	ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
@@ -480,7 +504,7 @@ void tas_info_window::render_imgui()
 	render_tas();
 	render_inputs();
 
-	//ImGui::ShowDemoWindow();
+	ImGui::ShowDemoWindow();
 
 	ImGui::End();
 	ImGui::PopStyleVar(2);

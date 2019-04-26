@@ -56,5 +56,6 @@ void tas_input::append_tick()
 
 void tas_input::remove_tick_range(int32_t tick_begin, int32_t tick_end)
 {
-	// TODO
+	// TODO Bounds checking
+	inputs.erase(inputs.begin() + tick_begin, inputs.begin() + tick_end + 1);
 }

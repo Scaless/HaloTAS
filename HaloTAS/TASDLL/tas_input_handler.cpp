@@ -1,7 +1,9 @@
 #include "tas_input_handler.h"
 
 #include <boost/algorithm/string/predicate.hpp> // for ends_with
+#include <boost/circular_buffer.hpp>
 #include <vector>
+#include <queue>
 #include <algorithm>
 #include <fstream>
 #include <atomic>
@@ -18,6 +20,9 @@ static int32_t inputTickCounter = 0;
 static std::string last_level_name;
 static int32_t last_input_tick;
 
+static int32_t rng_count_since_last_tick;
+static int32_t last_rng;
+static boost::circular_buffer<float> rng_count_histogram_buffer(256);
 
 void tas_input_handler::set_engine_run_frame_begin()
 {
@@ -126,11 +131,44 @@ tas_input* tas_input_handler::get_inputs(std::string levelName)
 	return nullptr;
 }
 
+std::array<float, 256> tas_input_handler::get_rng_histogram_data()
+{
+	std::array<float, 256> data{};
+	
+	auto part1 = rng_count_histogram_buffer.array_one();
+	auto part2 = rng_count_histogram_buffer.array_two();
+
+	memcpy_s(data.data(), sizeof(data), part1.first, sizeof(data[0]) * part1.second);
+	memcpy_s(data.data() + part1.second, sizeof(data) - part1.second * sizeof(data[0]), part2.first, sizeof(data[0]) * part2.second);
+
+	return data;
+}
+
 int32_t tas_input_handler::get_current_playback_tick()
 {
 	return inputTickCounter;
 }
 
+int32_t tas_input_handler::get_rng_advances_since_last_tick()
+{
+	return rng_count_since_last_tick;
+}
+
+int32_t calc_rng_count(int32_t start_rng, int32_t end_rng, int32_t max_change = 5000) {
+	int32_t max_diff = max_change > 0 ? max_change : 5000;
+
+	int32_t count = 0;
+	int32_t current_rng = start_rng;
+	for (int i = 0; i < max_diff; i++) {
+		if (current_rng == end_rng) {
+			return count;
+		}
+		current_rng = 1664525 * current_rng + 1013904223;
+		count++;
+	}
+
+	return -1;
+}
 
 extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 	const int32_t tick = *ADDR_SIMULATION_TICK;
@@ -143,6 +181,7 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 	if (last_level_name.compare(ADDR_MAP_STRING) != 0 || tick == 0) {
 		last_level_name = ADDR_MAP_STRING;
 		inputTickCounter = 0;
+		rng_count_histogram_buffer.clear();
 	}
 
 	bool playedBackThisTick = false;
@@ -165,7 +204,7 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 			//drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
 		}
 		else {
-			*ADDR_GAME_SPEED = 0;
+		//	*ADDR_GAME_SPEED = 0;
 		}
 
 		// Fix for enter being stuck held down
@@ -181,6 +220,10 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 
 	last_input_tick = tick;
 	inputTickCounter += 1;
+
+	rng_count_since_last_tick = calc_rng_count(last_rng, *ADDR_RNG, 5000);
+	last_rng = *ADDR_RNG;
+	rng_count_histogram_buffer.push_back(rng_count_since_last_tick);
 
 	if (record && !playedBackThisTick)
 	{
