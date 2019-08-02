@@ -27,7 +27,7 @@ void exportKeyesRNG() {
 }
 
 // Entry point when compiled as EXE
-void main() {
+int main() {
 	exportKeyesRNG();
 }
 
@@ -59,7 +59,7 @@ void run() {
 
 		// Keep people honest
 		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastDisplayUpdate) > std::chrono::seconds(20)) {
-			gEngine->print_hud_text(L"Official runs are invalid while HaloTAS is running!");
+			//gEngine->print_hud_text(L"Official runs are invalid while HaloTAS is running!");
 			lastDisplayUpdate = now;
 		}
 

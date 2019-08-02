@@ -236,7 +236,10 @@ void tas_info_window::render_tas()
 	}
 }
 
-static int32_t start = 0, end = 0;
+static int32_t tick_delete_start = 0, tick_delete_end = 0;
+static int32_t tick_insert_start = 0, tick_insert_count = 0;
+static int32_t new_input_multiple_count = 0;
+static int32_t remove_input_multiple_count = 0;
 static std::string current_item;
 
 void tas_info_window::render_inputs()
@@ -270,13 +273,25 @@ void tas_info_window::render_inputs()
 		ImGui::Text("Remove Ticks");
 		ImGui::SameLine();
 		ImGui::PushItemWidth(100);
-		ImGui::InputInt("##TickStart", &start);
+		ImGui::InputInt("##DeleteTickStart", &tick_delete_start);
 		ImGui::SameLine();
-		ImGui::InputInt("##TickEnd", &end);
+		ImGui::InputInt("##DeleteTickEnd", &tick_delete_end);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		if (ImGui::Button("Delete Tick Range")) {
-			input->remove_tick_range(start, end);
+			input->remove_tick_range(tick_delete_start, tick_delete_end);
+		}
+
+		ImGui::Text("Insert Ticks");
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		ImGui::InputInt("##InsertTickStart", &tick_insert_start);
+		ImGui::SameLine();
+		ImGui::InputInt("##InsertTickEnd", &tick_insert_count);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		if (ImGui::Button("Insert Tick Range")) {
+			input->insert_tick_range(tick_insert_start, tick_insert_count);
 		}
 
 		ImGui::Columns(5);
@@ -335,8 +350,16 @@ void tas_info_window::render_inputs()
 							// Add input
 							input->set_kb_input(count, (KEYS)key, 1);
 						}
-						if (ImGui::MenuItem("xX")) {
-							// Add input x times
+						if (ImGui::BeginMenu("xX")) {
+							
+							ImGui::SliderInt("##new_input_count", &new_input_multiple_count, 1, 100);
+							ImGui::SameLine();
+							if (ImGui::Button("Add##new_input_count")) {
+								for (int i = count; i < count + new_input_multiple_count; i++) {
+									input->set_kb_input(i, (KEYS)key, 1);
+								}
+							}
+							ImGui::EndMenu();
 						}
 						ImGui::EndMenu();
 					}
@@ -358,8 +381,16 @@ void tas_info_window::render_inputs()
 							// Remove input
 							input->set_kb_input(count, (KEYS)key, 0);
 						}
-						if (ImGui::MenuItem("Remove Range")) {
-							// Remove input range
+						if (ImGui::BeginMenu("Remove #")) {
+
+							ImGui::SliderInt("##remove_input_count", &remove_input_multiple_count, 1, 100);
+							ImGui::SameLine();
+							if (ImGui::Button("Remove##remove_input_count")) {
+								for (int i = count; i < count + remove_input_multiple_count; i++) {
+									input->set_kb_input(i, (KEYS)key, 0);
+								}
+							}
+							ImGui::EndMenu();
 						}
 						ImGui::EndPopup();
 					}
@@ -452,9 +483,21 @@ void tas_info_window::render_header()
 	ImGui::SameLine();
 	ImGui::Text("Frame: %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
 	ImGui::SameLine();
-	ImGui::Text("RNG: %d\t", *ADDR_RNG);
-	ImGui::SameLine(540);
+	//ImGui::Text("RNG: %d\t", *ADDR_RNG);
+	//ImGui::SameLine();
+	ImGui::PushItemWidth(100);
+	ImGui::InputInt("RNG VAL", ADDR_RNG, INT_MIN, INT_MAX);
+	ImGui::PopItemWidth();
+	ImGui::SameLine();
 	ImGui::Text("RNG Calls: %d", gInputHandler->get_rng_advances_since_last_tick());
+	ImGui::SameLine();
+	if (ImGui::Button("Clear RNG Graph")) {
+		gInputHandler->clear_rng_histogram_data();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Dummy RNG Value")) {
+		gInputHandler->insert_dummy_rng_histogram_value();
+	}
 
 	auto histogram_data = gInputHandler->get_rng_histogram_data();
 

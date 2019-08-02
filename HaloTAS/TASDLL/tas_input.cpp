@@ -59,3 +59,9 @@ void tas_input::remove_tick_range(int32_t tick_begin, int32_t tick_end)
 	// TODO Bounds checking
 	inputs.erase(inputs.begin() + tick_begin, inputs.begin() + tick_end + 1);
 }
+
+void tas_input::insert_tick_range(int32_t tick_start, int32_t count)
+{
+	input_moment newInput = input_moment();
+	inputs.insert(inputs.begin() + tick_start, count, newInput);
+}

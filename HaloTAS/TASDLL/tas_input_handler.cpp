@@ -144,6 +144,16 @@ std::array<float, 256> tas_input_handler::get_rng_histogram_data()
 	return data;
 }
 
+void tas_input_handler::clear_rng_histogram_data()
+{
+	rng_count_histogram_buffer.clear();
+}
+
+void tas_input_handler::insert_dummy_rng_histogram_value()
+{
+	rng_count_histogram_buffer.push_back(0);
+}
+
 int32_t tas_input_handler::get_current_playback_tick()
 {
 	return inputTickCounter;
@@ -209,8 +219,10 @@ extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
 
 		// Fix for enter being stuck held down
 		if (inputTickCounter > 0) {
-			if (playback_buffer_current_level[inputTickCounter - 1].inputBuf[KEYS::Enter] > 0) {
-				ADDR_KEYBOARD_INPUT[Enter] = 0;
+			if (playback_buffer_current_level.size() > inputTickCounter - 1) {
+				if (playback_buffer_current_level[inputTickCounter - 1].inputBuf[KEYS::Enter] > 0) {
+					ADDR_KEYBOARD_INPUT[Enter] = 0;
+				}
 			}
 		}
 	}

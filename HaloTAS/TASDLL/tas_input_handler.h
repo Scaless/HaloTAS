@@ -32,6 +32,8 @@ public:
 	std::vector<std::string> get_loaded_levels();
 	tas_input* get_inputs(std::string levelName);
 	std::array<float, 256> get_rng_histogram_data();
+	void clear_rng_histogram_data();
+	void insert_dummy_rng_histogram_value();
 	int32_t get_current_playback_tick();
 	int32_t get_rng_advances_since_last_tick();
 
