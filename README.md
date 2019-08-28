@@ -1,12 +1,14 @@
 # HaloTAS
 Halo: Combat Evolved PC Speedrunning Tools
 
+[![Video](https://img.youtube.com/vi/AEBJUeXLTlo/0.jpg)](https://www.youtube.com/watch?v=AEBJUeXLTlo)
+
 #### Goals:
 - Have fun
 - Go fast
 - Beat [human world record](https://haloruns.com/records?lb=0100) time
 
-[![Video](https://img.youtube.com/vi/TddSvdb6Ri0/0.jpg)](https://www.youtube.com/watch?v=TddSvdb6Ri0)
+
 
 #### Requirements to compile yourself:
 - Windows 10 (Might still work on 7/8 I just haven't tried)
