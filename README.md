@@ -1,7 +1,9 @@
 # HaloTAS
 Halo: Combat Evolved PC Speedrunning Tools
 
-[![Video](https://img.youtube.com/vi/AEBJUeXLTlo/0.jpg)](https://www.youtube.com/watch?v=AEBJUeXLTlo)
+Video Demo: https://www.youtube.com/watch?v=AEBJUeXLTlo
+
+[Engine Documentation](https://docs.google.com/document/d/1ED6EnvpQ_c7rSdS5oY5-EKQLF_58TptMr9A5uNV8aSs/edit?usp=sharing)
 
 #### Goals:
 - Have fun
