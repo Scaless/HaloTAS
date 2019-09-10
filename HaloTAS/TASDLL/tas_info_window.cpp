@@ -1,4 +1,3 @@
-#include "globals.h"
 #include "tas_info_window.h"
 #include "tas_input_handler.h"
 #include <unordered_set>
@@ -42,19 +41,26 @@ tas_info_window::~tas_info_window()
 	glfwDestroyWindow(window);
 }
 
+static glm::vec3 camDistance;
+static bool camFollow = false;
 void tas_info_window::render_overlay()
 {
+	engine_snapshot snapshot = {};
+	auto& engine = halo_engine::get();
+	engine.get_snapshot(snapshot);
+
+	auto player = GetPlayerObject(snapshot.gameObjects);
+
+	auto debugA = reinterpret_cast<uint8_t*>(0x006AC568);
+	if (*debugA == 0x90 && player != nullptr) {
+		(*ADDR_CAMERA_POSITION).x = player->unit_x + camDistance.x;
+		(*ADDR_CAMERA_POSITION).y = player->unit_y + camDistance.y;
+		(*ADDR_CAMERA_POSITION).z = player->unit_z + camDistance.z;
+	}
+
 	if (!ImGui::CollapsingHeader("Overlay")) {
 		return;
 	}
-
-	ImGui::Checkbox("Enabled", &currentInput.overlayOptions.enabled);
-	ImGui::Checkbox("Show Primitives", &currentInput.overlayOptions.showPrimitives);
-	ImGui::SliderFloat("Cull Distance", &currentInput.overlayOptions.cullDistance, 1, 250);
-	ImGui::DragFloat("UI Scale", &currentInput.overlayOptions.uiScale, .1f, 1, 20);
-
-	engine_snapshot snapshot = {};
-	gEngine->get_snapshot(snapshot);
 
 	std::unordered_set<uint32_t> objectCategories;
 	for (auto& v : snapshot.gameObjects) {
@@ -62,7 +68,14 @@ void tas_info_window::render_overlay()
 			objectCategories.insert(v->tag_id);
 		}
 	}
-	auto player = GetPlayerObject(snapshot.gameObjects);
+
+	ImGui::Checkbox("Enabled", &currentInput.overlayOptions.enabled);
+	ImGui::Checkbox("Show Primitives", &currentInput.overlayOptions.showPrimitives);
+	ImGui::SliderFloat("Cull Distance", &currentInput.overlayOptions.cullDistance, 1, 250);
+	ImGui::DragFloat("UI Scale", &currentInput.overlayOptions.uiScale, .1f, 1, 20);
+
+	ImGui::Checkbox("Cam Follow", &camFollow);
+	ImGui::DragFloat3("Cam Distance", glm::value_ptr(camDistance) , .05f, -20.0f, 20.0f);
 
 	if (ImGui::CollapsingHeader("Objects"))
 	{
@@ -187,8 +200,41 @@ void tas_info_window::render_overlay()
 	}
 }
 
+static int advanceTickStart = 0;
+static bool advanceTick = false;
+static int32_t core_save_rng = 0;
+static int32_t int_handler_tick = 0;
 void tas_info_window::render_tas()
 {
+	auto debugA = reinterpret_cast<uint8_t*>(0x006AC568);
+	auto debugB = reinterpret_cast<uint8_t*>(0x006AC569);
+
+	if (ADDR_KEYBOARD_INPUT[KEYS::J] > 0) {
+		*debugA = 0x90;
+		*debugB = 0x6E;
+	}
+
+	if (ADDR_KEYBOARD_INPUT[KEYS::K] > 0) {
+		*debugA = 0x60;
+		*debugB = 0x6D;
+	}
+
+
+	if (ImGui::Button("Enter Debug Camera")) {
+		*debugA = 0x90;
+		*debugB = 0x6E;
+	}
+
+	if (ImGui::Button("Leave Debug Camera")) {
+		*debugA = 0x60;
+		*debugB = 0x6D;
+	}
+
+	if (advanceTick && *ADDR_SIMULATION_TICK_2 > advanceTickStart) {
+		*ADDR_GAME_SPEED = 0;
+		advanceTick = false;
+	}
+
 	if (!ImGui::CollapsingHeader("TAS")) {
 		return;
 	}
@@ -200,11 +246,13 @@ void tas_info_window::render_tas()
 	currentInput.loadPlayback = ImGui::Button("Load Playback");
 	ImGui::SameLine();
 	if (ImGui::Button("PatchMouse")) {
-		gEngine->mouse_directinput_override_enable();
+		auto& engine = halo_engine::get();
+		engine.mouse_directinput_override_enable();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("UnPatchMouse")) {
-		gEngine->mouse_directinput_override_disable();
+		auto& engine = halo_engine::get();
+		engine.mouse_directinput_override_disable();
 	}
 
 	if (ImGui::Button("Load Checkpoint")) {
@@ -215,13 +263,24 @@ void tas_info_window::render_tas()
 		*ADDR_SAVE_CHECKPOINT = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Restart Level (Full?)")) {
+	if (ImGui::Button("Restart Level")) {
 		*ADDR_RESTART_LEVEL = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Restart Level (Partial?)")) {
-		*ADDR_RESTART_LEVEL_FULL = 1;
+	if (ImGui::Button("CORE_SAVE") || GetAsyncKeyState(VK_NUMPAD4)) {
+		*ADDR_CORE_SAVE = 1;
+		core_save_rng = *ADDR_RNG;
+		int_handler_tick = tas_input_handler::inputTickCounter;
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("CORE_LOAD") || GetAsyncKeyState(VK_NUMPAD6)) {
+		*ADDR_CORE_LOAD = 1;
+		*ADDR_RNG = core_save_rng;
+		tas_input_handler::inputTickCounter = int_handler_tick;
+	}
+	/*if (ImGui::Button("Restart Level (Partial?)")) {
+		*ADDR_RESTART_LEVEL_FULL = 1;
+	}*/
 
 	if (ImGui::Button("PAUSE")) {
 		*ADDR_GAME_SPEED = 0;
@@ -230,9 +289,16 @@ void tas_info_window::render_tas()
 	if (ImGui::Button("PLAY")) {
 		*ADDR_GAME_SPEED = 1;
 	}
+	ImGui::SameLine();
+	if (ImGui::Button("ADVANCE 1 TICK")) {
+		*ADDR_GAME_SPEED = .1f;
+		advanceTickStart = *ADDR_SIMULATION_TICK_2;
+		advanceTick = true;
+	}
 
 	if (ImGui::Button("SAVE")) {
-		gInputHandler->save_inputs();
+		auto& gInputHandler = tas_input_handler::get();
+		gInputHandler.save_inputs();
 	}
 }
 
@@ -240,13 +306,27 @@ static int32_t tick_delete_start = 0, tick_delete_end = 0;
 static int32_t tick_insert_start = 0, tick_insert_count = 0;
 static int32_t new_input_multiple_count = 0;
 static int32_t remove_input_multiple_count = 0;
+static int32_t project_pitch_down_count = 0;
+static int32_t project_yaw_down_count = 0;
+static int32_t project_pitch_yaw_down_count = 0;
+static int32_t lerp_end_tick = -1;
 static std::string current_item;
+static bool pauseOnTick = false;
+static bool pausedThisRun = false;
+static int pauseOnTickCount = 0;
+static int fixEditorTickOffset = -2;
+
+float lerp(float a, float b, float frac) {
+	return (a * (1.0f - frac)) + (b * frac);
+}
 
 void tas_info_window::render_inputs()
 {
+	auto& gInputHandler = tas_input_handler::get();
+
 	if (ImGui::BeginCombo("##levelSelect", current_item.c_str()))
 	{
-		for (const auto& level : gInputHandler->get_loaded_levels()) {
+		for (const auto& level : gInputHandler.get_loaded_levels()) {
 
 			bool is_selected = level == current_item; // You can store your selection however you want, outside or inside your objects
 			const char* levelCstr = level.c_str();
@@ -263,12 +343,14 @@ void tas_info_window::render_inputs()
 		return;
 	}
 
-	auto input = gInputHandler->get_inputs(current_item);
+	auto input = gInputHandler.get_inputs(current_item);
 	if (input == nullptr) {
 		return;
 	}
 
 	if (ImGui::CollapsingHeader("TAS Input")) {
+
+		ImGui::SliderInt("Editor Tick Offset", &fixEditorTickOffset, -20, 20);
 
 		ImGui::Text("Remove Ticks");
 		ImGui::SameLine();
@@ -294,12 +376,14 @@ void tas_info_window::render_inputs()
 			input->insert_tick_range(tick_insert_start, tick_insert_count);
 		}
 
-		ImGui::Columns(5);
+		ImGui::Columns(6);
 		ImGui::SetColumnWidth(0, 60);
-		ImGui::SetColumnWidth(1, 100);
+		ImGui::SetColumnWidth(1, 60);
 		ImGui::SetColumnWidth(2, 100);
-		ImGui::SetColumnWidth(3, 200);
+		ImGui::SetColumnWidth(3, 100);
 		ImGui::SetColumnWidth(4, 200);
+		ImGui::SetColumnWidth(5, 200);
+		ImGui::Text("Pause"); ImGui::NextColumn();
 		ImGui::Text("Tick"); ImGui::NextColumn();
 		ImGui::Text("Pitch"); ImGui::NextColumn();
 		ImGui::Text("Yaw"); ImGui::NextColumn();
@@ -309,30 +393,128 @@ void tas_info_window::render_inputs()
 
 		ImGui::BeginChild("Inputs##TASINPUT", ImGui::GetContentRegionAvail(), true, ImGuiWindowFlags_HorizontalScrollbar);
 
-		ImGui::Columns(5);
+		ImGui::Columns(6);
 		ImGui::SetColumnWidth(0, 52);
-		ImGui::SetColumnWidth(1, 100);
+		ImGui::SetColumnWidth(1, 60);
 		ImGui::SetColumnWidth(2, 100);
-		ImGui::SetColumnWidth(3, 200);
+		ImGui::SetColumnWidth(3, 100);
 		ImGui::SetColumnWidth(4, 200);
+		ImGui::SetColumnWidth(5, 200);
 
 		int count = 0;
 		for(auto it = input->input_buffer()->begin(); it != input->input_buffer()->end(); ++it) {
 			ImGui::PushID(count);
 			
 			int styles = 0;
-			if (gInputHandler->get_current_playback_tick() == count) {
+			if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset)) {
+				//if (gInputHandler->get_current_playback_tick() == count) {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 0, 0, 1));
 				styles += 2;
 			}
 
+			if (ImGui::Checkbox("", &pauseOnTick)) {
+				pauseOnTickCount = count;
+			}
+			if (!pausedThisRun && pauseOnTick && pauseOnTickCount == tas_input_handler::inputTickCounter && *ADDR_SIMULATION_TICK_2 != 0) {
+				pausedThisRun = true;
+				*ADDR_GAME_SPEED = 0;
+			}
+			if (*ADDR_SIMULATION_TICK_2 == 0) {
+				pausedThisRun = false;
+			}
+			ImGui::NextColumn();
+
 			ImGui::Text("%d", count);
 			//ImGui::Text("%d", it->tick);
 			ImGui::NextColumn();
-			ImGui::DragFloat("##Pitch", &(it->cameraPitch), .1f);
+			if (ImGui::DragFloat("##Pitch", &(it->cameraPitch), .002f)) {
+				*ADDR_PLAYER_PITCH_ROTATION_RADIANS = it->cameraPitch;
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("*")) {
+				ImGui::OpenPopup("pitch_options");
+			}
+			if (ImGui::BeginPopup("pitch_options")) {
+				if (ImGui::BeginMenu("Project Down")) {
+					
+					if (ImGui::BeginMenu("Pitch")) {
+						ImGui::SliderInt("##project_pitch_down", &project_pitch_down_count, 1, 100);
+						ImGui::SameLine();
+						if (ImGui::Button("Add##project_pitch_down")) {
+							for (int i = count; i < count + project_pitch_down_count; i++) {
+								input->set_pitch(i, it->cameraPitch);
+							}
+						}
+						ImGui::EndMenu();
+					}
+
+					if (ImGui::BeginMenu("Yaw")) {
+						ImGui::SliderInt("##project_yaw_down", &project_yaw_down_count, 1, 100);
+						ImGui::SameLine();
+						if (ImGui::Button("Add##project_yaw_down")) {
+							for (int i = count; i < count + project_yaw_down_count; i++) {
+								input->set_yaw(i, it->cameraYaw);
+							}
+						}
+						ImGui::EndMenu();
+					}
+
+					if (ImGui::BeginMenu("Both")) {
+						ImGui::SliderInt("##project_pitch_yaw_down", &project_pitch_yaw_down_count, 1, 100);
+						ImGui::SameLine();
+						if (ImGui::Button("Add##project_pitch_yaw_down")) {
+							for (int i = count; i < count + project_pitch_yaw_down_count; i++) {
+								input->set_view_angle(i, it->cameraPitch, it->cameraYaw);
+							}
+						}
+						ImGui::EndMenu();
+					}
+					
+					ImGui::EndMenu();
+				}
+
+				if (ImGui::BeginMenu("LERP")) {
+					if (lerp_end_tick == -1)
+						lerp_end_tick = count;
+
+					ImGui::InputInt("End Tick", &lerp_end_tick);
+					
+					if (ImGui::Button("Lerp##lerp_mouse_input")) {
+
+						if (lerp_end_tick > count) {
+
+							int totalCount = lerp_end_tick - count;
+
+							float startPitch = it->cameraPitch;
+							float startYaw = it->cameraYaw;
+							float endPitch = input->input_buffer()->at(lerp_end_tick).cameraPitch;
+							float endYaw = input->input_buffer()->at(lerp_end_tick).cameraYaw;
+
+							for (int i = 1; i < totalCount; i++) {
+								float frac = (float)i / (float)totalCount;
+								float pitch = lerp(startPitch, endPitch, frac);
+								float yaw = lerp(startYaw, endYaw, frac);
+								input->set_view_angle(count + i, pitch, yaw);
+							}
+						}
+
+						lerp_end_tick = -1;
+					}
+
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndPopup();
+			}
+
 			ImGui::NextColumn();
-			ImGui::DragFloat("##Yaw", &(it->cameraYaw), .1f);
+			
+			if (ImGui::DragFloat("##Yaw", &(it->cameraYaw), .002f)) {
+				*ADDR_PLAYER_YAW_ROTATION_RADIANS = it->cameraYaw;
+			}
+
 			ImGui::NextColumn();
 
 			// INPUTS
@@ -427,8 +609,8 @@ void tas_info_window::render_inputs()
 			ImGui::PopItemWidth();
 			ImGui::NextColumn();
 
-			if (*ADDR_SIMULATION_TICK_2 == it->tick && *ADDR_GAME_SPEED > 0) {
-				//ImGui::SetScrollHereY();
+			if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset) && *ADDR_GAME_SPEED > 0) {
+				ImGui::SetScrollHereY();
 			}
 
 			if (styles > 0)
@@ -445,9 +627,7 @@ void tas_info_window::render_inputs()
 		ImGui::EndChild();
 	}
 
-	gInputHandler->reload_playback_buffer(input);
-
-
+	gInputHandler.reload_playback_buffer(input);
 }
 
 void tas_info_window::render_menubar()
@@ -483,30 +663,6 @@ void tas_info_window::render_header()
 	ImGui::SameLine();
 	ImGui::Text("Frame: %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
 	ImGui::SameLine();
-	//ImGui::Text("RNG: %d\t", *ADDR_RNG);
-	//ImGui::SameLine();
-	ImGui::PushItemWidth(100);
-	ImGui::InputInt("RNG VAL", ADDR_RNG, INT_MIN, INT_MAX);
-	ImGui::PopItemWidth();
-	ImGui::SameLine();
-	ImGui::Text("RNG Calls: %d", gInputHandler->get_rng_advances_since_last_tick());
-	ImGui::SameLine();
-	if (ImGui::Button("Clear RNG Graph")) {
-		gInputHandler->clear_rng_histogram_data();
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Dummy RNG Value")) {
-		gInputHandler->insert_dummy_rng_histogram_value();
-	}
-
-	auto histogram_data = gInputHandler->get_rng_histogram_data();
-
-	auto data_max = std::max_element(std::begin(histogram_data), std::end(histogram_data));
-
-	ImGui::PushItemWidth(ImGui::GetWindowContentRegionMax().x);
-	ImGui::PlotHistogram("##RNG Histogram", histogram_data.data(), histogram_data.size(), 0, NULL, 0.0f, *data_max, ImVec2(0,200));
-	ImGui::PopItemWidth();
-
 	ImGui::PushItemWidth(200);
 	ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
 	ImGui::PopItemWidth();
@@ -522,6 +678,33 @@ void tas_info_window::render_header()
 	ImGui::Checkbox("Force Simulate", &currentInput.forceSimulate);
 	*ADDR_SIMULATE = currentInput.forceSimulate ? 0 : 1;
 	*ADDR_ALLOW_INPUT = (*ADDR_SIMULATE == 1 ? 0 : 1);
+}
+
+void tas_info_window::render_rng() {
+	if (ImGui::CollapsingHeader("RNG")) {
+		auto& gInputHandler = tas_input_handler::get();
+		ImGui::PushItemWidth(100);
+		ImGui::InputInt("RNG VAL", ADDR_RNG, INT_MIN, INT_MAX);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		ImGui::Text("RNG Calls: %d", gInputHandler.get_rng_advances_since_last_tick());
+		ImGui::SameLine();
+		if (ImGui::Button("Clear RNG Graph")) {
+			gInputHandler.clear_rng_histogram_data();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Dummy RNG Value")) {
+			gInputHandler.insert_dummy_rng_histogram_value();
+		}
+
+		auto histogram_data = gInputHandler.get_rng_histogram_data();
+
+		auto data_max = std::max_element(std::begin(histogram_data), std::end(histogram_data));
+
+		ImGui::PushItemWidth(ImGui::GetWindowContentRegionMax().x);
+		ImGui::PlotHistogram("##RNG Histogram", histogram_data.data(), histogram_data.size(), 0, NULL, 0.0f, *data_max, ImVec2(0, 200));
+		ImGui::PopItemWidth();
+	}
 }
 
 void tas_info_window::render_imgui()
@@ -543,11 +726,12 @@ void tas_info_window::render_imgui()
 
 	render_menubar();
 	render_header();
+	render_rng();
 	render_overlay();
 	render_tas();
 	render_inputs();
 
-	ImGui::ShowDemoWindow();
+	//ImGui::ShowDemoWindow();
 
 	ImGui::End();
 	ImGui::PopStyleVar(2);

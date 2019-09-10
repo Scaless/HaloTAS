@@ -36,7 +36,24 @@ void tas_input::set_kb_input(int32_t tick, KEYS key, uint8_t value)
 
 void tas_input::set_view_angle(int32_t tick, float pitch, float yaw)
 {
-	// TODO
+	if (inputs.size() > tick) {
+		inputs[tick].cameraPitch = pitch;
+		inputs[tick].cameraYaw = yaw;
+	}
+}
+
+void tas_input::set_pitch(int32_t tick, float pitch)
+{
+	if (inputs.size() > tick) {
+		inputs[tick].cameraPitch = pitch;
+	}
+}
+
+void tas_input::set_yaw(int32_t tick, float yaw)
+{
+	if (inputs.size() > tick) {
+		inputs[tick].cameraYaw = yaw;
+	}
 }
 
 void tas_input::set_mouse_input(int32_t tick, bool leftMouseDown, bool rightMouseDown)

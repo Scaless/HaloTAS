@@ -1,4 +1,3 @@
-#include "globals.h"
 #include "tas_overlay.h"
 #include <unordered_set>
 #include <glm/glm.hpp>
@@ -6,6 +5,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <sstream>
 #include <chrono>
+#include <algorithm>
 
 void tas_overlay::glfwMouseButtonFunc(GLFWwindow* /*w*/, int button, int /*action*/, int /*mods*/) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
@@ -109,10 +109,11 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 	glfwMakeContextCurrent(window);
 	glfwPollEvents();
 
-	update_position(gEngine->window_handle());
+	auto& engine = halo_engine::get();
+	update_position(engine.window_handle());
 
 	if (focused) {
-		SetForegroundWindow(gEngine->window_handle());
+		SetForegroundWindow(engine.window_handle());
 		focused = false;
 	}
 
@@ -120,7 +121,7 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 	glfwGetFramebufferSize(window, &display_w, &display_h);
 
 	engine_snapshot snapshot = {};
-	gEngine->get_snapshot(snapshot);
+	engine.get_snapshot(snapshot);
 
 	std::unordered_set<uint32_t> objectCategories;
 	for (auto& v : snapshot.gameObjects) {
@@ -140,7 +141,7 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 
 	float horizontalFovRadians = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
 	float verticalFov = horizontalFovRadians * (float)display_h / (float)display_w;
-	verticalFov -= .03f; // Have to offset by this to get correct ratio for 16:9, need to look into this further
+	verticalFov = std::clamp(verticalFov - .03f, 0.001f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
 	glm::mat4 Projection = glm::perspectiveFov(verticalFov, (float)display_w, (float)display_h, 0.5f, options.cullDistance);
 
 	glm::vec3 playerPos = *ADDR_CAMERA_POSITION;

@@ -12,24 +12,23 @@ struct engine_snapshot {
 
 class halo_engine
 {
+public:
+	static halo_engine& get() {
+		static halo_engine instance;
+		return instance;
+	}
+
+private:
+	halo_engine();
+
 private:
 	HWND haloHWND = NULL;
 	std::vector<DataPool*> dataPools;
 	DataPool* objectDataPool = nullptr;
 
 	void patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size);
-	void patch_frame_start_func();
-	void patch_tick_start_func();
-
-	void unpatch_frame_start_func();
-	void unpatch_tick_start_func();
 
 public:
-	halo_engine();
-
-	void initialize();
-	void cleanup();
-
 	void set_window_handle(HWND handle);
 	void update_window_handle();
 	HWND window_handle();
@@ -42,6 +41,9 @@ public:
 	// Patching
 	void mouse_directinput_override_disable();
 	void mouse_directinput_override_enable();
-	
+
+public:
+	halo_engine(halo_engine const&) = delete;
+	void operator=(halo_engine const&) = delete;
 };
 

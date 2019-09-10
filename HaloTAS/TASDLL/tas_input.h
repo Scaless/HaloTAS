@@ -31,6 +31,8 @@ public:
 	void set_kb_input(int32_t tick, KEYS key, uint8_t value);
 	// Set view angle
 	void set_view_angle(int32_t tick, float pitch, float yaw);
+	void set_pitch(int32_t tick, float pitch);
+	void set_yaw(int32_t tick, float yaw);
 	// Set mouse input for tick
 	void set_mouse_input(int32_t tick, bool leftMouseDown, bool rightMouseDown);
 	// Set breakpoint on tick

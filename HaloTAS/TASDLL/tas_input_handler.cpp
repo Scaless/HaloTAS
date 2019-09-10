@@ -8,6 +8,7 @@
 #include <fstream>
 #include <atomic>
 #include "halo_constants.h"
+#include "helpers.h"
 
 using std::vector, std::string;
 
@@ -16,7 +17,6 @@ static std::vector<input_moment> playback_buffer_current_level;
 static std::atomic_bool record = false;
 static std::atomic_bool playback = false;
 
-static int32_t inputTickCounter = 0;
 static std::string last_level_name;
 static int32_t last_input_tick;
 
@@ -32,10 +32,6 @@ void tas_input_handler::set_engine_run_frame_begin()
 tas_input_handler::tas_input_handler()
 {
 	set_engine_run_frame_begin();
-}
-
-tas_input_handler::~tas_input_handler()
-{
 }
 
 void tas_input_handler::set_record(bool newRecord)
@@ -112,6 +108,106 @@ void tas_input_handler::reload_playback_buffer(tas_input* input) {
 	//playback_buffer_current_level = inputs;
 }
 
+void tas_input_handler::pre_tick()
+{
+	const int32_t tick = *ADDR_SIMULATION_TICK;
+
+	if (playback) {
+		*ADDR_DINPUT_MOUSEX = 0;
+		*ADDR_DINPUT_MOUSEY = 0;
+	}
+
+	if (last_level_name.compare(ADDR_MAP_STRING) != 0 || tick == 0) {
+		last_level_name = ADDR_MAP_STRING;
+		tas_input_handler::inputTickCounter = 0;
+		rng_count_histogram_buffer.clear();
+	}
+
+	bool playedBackThisTick = false;
+	if (playback)
+	{
+		if (playback_buffer_current_level.size() > tas_input_handler::inputTickCounter) {
+			input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
+
+			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
+			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
+			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
+			*ADDR_LEFTMOUSE = savedIM.leftMouse;
+			*ADDR_MIDDLEMOUSE = savedIM.middleMouse;
+			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
+
+			playedBackThisTick = true;
+			//*ADDR_CAMERA_POSITION = savedIM.cameraLocation;
+			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
+			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
+			//drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
+		}
+		else {
+			//	*ADDR_GAME_SPEED = 0;
+		}
+
+		// Fix for enter being stuck held down
+		if (tas_input_handler::inputTickCounter > 0) {
+			if (playback_buffer_current_level.size() > tas_input_handler::inputTickCounter - 1) {
+				if (playback_buffer_current_level[tas_input_handler::inputTickCounter - 1].inputBuf[KEYS::Enter] > 0) {
+					ADDR_KEYBOARD_INPUT[Enter] = 0;
+				}
+			}
+		}
+	}
+
+	if (tick == last_input_tick) {
+		return;
+	}
+
+	tas_input_handler::inputTickCounter += 1;
+
+	rng_count_since_last_tick = calc_rng_count(last_rng, *ADDR_RNG, 5000);
+	last_rng = *ADDR_RNG;
+	rng_count_histogram_buffer.push_back(rng_count_since_last_tick);
+}
+
+static int recordedTick = 0;
+void tas_input_handler::post_tick()
+{
+	const int32_t tick = *ADDR_SIMULATION_TICK - 1;
+
+	if (tick == 0) {
+		recordedTick = 0;
+	}
+
+	if (tick == last_input_tick) {
+		return;
+	}
+	last_input_tick = tick;
+
+	if (record && recordedTick > static_cast<int32_t>(playback_buffer_current_level.size()) - 1)
+	{
+		std::string currentMap{ ADDR_MAP_STRING };
+		std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
+		std::ofstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary); // levels.a10.a10.hbin
+
+		input_moment im;
+		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
+			im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
+		}
+		im.tick = tick;
+		//im.inputMouseX = *ADDR_DINPUT_MOUSEX;
+		//im.inputMouseY = *ADDR_DINPUT_MOUSEY;
+		im.cameraYaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
+		im.cameraPitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
+		im.leftMouse = *ADDR_LEFTMOUSE;
+		im.middleMouse = *ADDR_MIDDLEMOUSE;
+		im.rightMouse = *ADDR_RIGHTMOUSE;
+		im.cameraLocation = *ADDR_CAMERA_POSITION;
+
+		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
+		logFile.close();
+	}
+
+	recordedTick++;
+}
+
 std::vector<std::string> tas_input_handler::get_loaded_levels()
 {
 	// TODO
@@ -162,112 +258,4 @@ int32_t tas_input_handler::get_current_playback_tick()
 int32_t tas_input_handler::get_rng_advances_since_last_tick()
 {
 	return rng_count_since_last_tick;
-}
-
-int32_t calc_rng_count(int32_t start_rng, int32_t end_rng, int32_t max_change = 5000) {
-	int32_t max_diff = max_change > 0 ? max_change : 5000;
-
-	int32_t count = 0;
-	int32_t current_rng = start_rng;
-	for (int i = 0; i < max_diff; i++) {
-		if (current_rng == end_rng) {
-			return count;
-		}
-		current_rng = 1664525 * current_rng + 1013904223;
-		count++;
-	}
-
-	return -1;
-}
-
-extern "C" __declspec(dllexport) void WINAPI CustomTickStart() {
-	const int32_t tick = *ADDR_SIMULATION_TICK;
-
-	if (playback) {
-		*ADDR_DINPUT_MOUSEX = 0;
-		*ADDR_DINPUT_MOUSEY = 0;
-	}
-
-	if (last_level_name.compare(ADDR_MAP_STRING) != 0 || tick == 0) {
-		last_level_name = ADDR_MAP_STRING;
-		inputTickCounter = 0;
-		rng_count_histogram_buffer.clear();
-	}
-
-	bool playedBackThisTick = false;
-	if (playback)
-	{
-		if (playback_buffer_current_level.size() > inputTickCounter) {
-			input_moment savedIM = playback_buffer_current_level[inputTickCounter];
-
-			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
-			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
-			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
-			*ADDR_LEFTMOUSE = savedIM.leftMouse;
-			*ADDR_MIDDLEMOUSE = savedIM.middleMouse;
-			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
-
-			playedBackThisTick = true;
-			//*ADDR_CAMERA_POSITION = savedIM.cameraLocation;
-			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
-			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
-			//drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
-		}
-		else {
-		//	*ADDR_GAME_SPEED = 0;
-		}
-
-		// Fix for enter being stuck held down
-		if (inputTickCounter > 0) {
-			if (playback_buffer_current_level.size() > inputTickCounter - 1) {
-				if (playback_buffer_current_level[inputTickCounter - 1].inputBuf[KEYS::Enter] > 0) {
-					ADDR_KEYBOARD_INPUT[Enter] = 0;
-				}
-			}
-		}
-	}
-
-	if (tick == last_input_tick)
-		return;
-
-	last_input_tick = tick;
-	inputTickCounter += 1;
-
-	rng_count_since_last_tick = calc_rng_count(last_rng, *ADDR_RNG, 5000);
-	last_rng = *ADDR_RNG;
-	rng_count_histogram_buffer.push_back(rng_count_since_last_tick);
-
-	if (record && !playedBackThisTick)
-	{
-		std::string currentMap{ ADDR_MAP_STRING };
-		std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
-		std::ofstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary); // levels.a10.a10.hbin
-
-		input_moment im;
-		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
-			im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
-		}
-		im.tick = tick;
-		//im.inputMouseX = *ADDR_DINPUT_MOUSEX;
-		//im.inputMouseY = *ADDR_DINPUT_MOUSEY;
-		im.cameraYaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
-		im.cameraPitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
-		im.leftMouse = *ADDR_LEFTMOUSE;
-		im.middleMouse = *ADDR_MIDDLEMOUSE;
-		im.rightMouse = *ADDR_RIGHTMOUSE;
-		im.cameraLocation = *ADDR_CAMERA_POSITION;
-
-		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
-		logFile.close();
-	}
-
-	__asm {
-		call ADDR_TICK_REPLACED_FUNC
-	}
-
-	return;
-}
-
-extern "C" __declspec(dllexport) void WINAPI CustomFrameStart() {
-	
 }

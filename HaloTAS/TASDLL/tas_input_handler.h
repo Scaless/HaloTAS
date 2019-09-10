@@ -10,17 +10,22 @@
 
 class tas_input_handler
 {
+public:
+	static tas_input_handler& get() {
+		static tas_input_handler instance;
+		return instance;
+	}
+
+private:
+	tas_input_handler();
 
 private:
 	std::map<std::string,tas_input> levelInputs;
-	//std::vector<input_moment> inputs;
 	void set_engine_run_frame_begin();
-
 	void load_input_from_file(std::filesystem::path filePath);
-public:
 
-	tas_input_handler();
-	~tas_input_handler();
+public:
+	static inline int32_t inputTickCounter = 0;
 
 	void set_record(bool newRecord);
 	void set_playback(bool newPlayback);
@@ -28,6 +33,9 @@ public:
 	void get_inputs_from_files();
 	void save_inputs();
 	void reload_playback_buffer(tas_input* input);
+
+	void pre_tick();
+	void post_tick();
 
 	std::vector<std::string> get_loaded_levels();
 	tas_input* get_inputs(std::string levelName);

@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
 
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
 static uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
@@ -15,7 +16,14 @@ static uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,
 static uint8_t PATCH_FRAME_BEGIN_ORIGINAL_BYTES[sizeof(PATCH_FRAME_BEGIN_FUNC_BYTES)];
 
 static uint8_t PATCH_TICK_BEGIN_ORIGINAL_BYTES[5];
+static uint8_t PATCH_TICK_END_ORIGINAL_BYTES[5];
 
+namespace halo::constants {
+	static const float CAMERA_PITCH_MIN = -1.492f;
+	static const float CAMERA_PITCH_MAX = -1.492f;
+	static const float CAMERA_YAW_MIN = 0.0f;
+	static const float CAMERA_YAW_MAX = glm::pi<float>() * 2.0f;
+}
 
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
@@ -27,11 +35,16 @@ static uint8_t PATCH_TICK_BEGIN_ORIGINAL_BYTES[5];
 
 #if defined(HALO_VANILLA)
 
+namespace halo::function {
+	inline extern uintptr_t PRINT_HUD = 0x004AE180;
+}
 
-inline extern uintptr_t PRINT_HUD_FUNC_PTR = 0x004AE180;
+namespace halo::addr {
+
+}
+
 
 inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
-inline extern uint32_t RUNTIME_DATA_SIZE = 0x1B40000;
 inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
 
 inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
@@ -42,6 +55,8 @@ inline extern uint8_t* ADDR_LOAD_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973
 inline extern uint8_t* ADDR_SAVE_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973F);
 inline extern uint8_t* ADDR_RESTART_LEVEL = reinterpret_cast<uint8_t*>(0x719738);
 inline extern uint8_t* ADDR_RESTART_LEVEL_FULL = reinterpret_cast<uint8_t*>(0x719739);
+inline extern uint8_t* ADDR_CORE_SAVE = reinterpret_cast<uint8_t*>(0x719751);
+inline extern uint8_t* ADDR_CORE_LOAD = reinterpret_cast<uint8_t*>(0x719752);
 
 inline extern uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
 inline extern uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
@@ -66,9 +81,14 @@ inline extern uint8_t* ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC = reinterpret_cast<uint8
 inline extern int32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x004C7798);
 inline extern bool* ADDR_RUN_FRAME_BEGIN_CODE = reinterpret_cast<bool*>(0x0071D1A4);
 
+inline extern int32_t* ADDR_FRAME_BEGIN_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x004C6E80);
+
 inline extern int32_t* ADDR_TICK_BEGIN_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x0045B79B);
 inline extern int32_t* ADDR_TICK_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x0045B590);
 			  
+inline extern int32_t* ADDR_TICK_END_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x0045B837);
+inline extern int32_t* ADDR_TICK_END_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x00456730);
+
 inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
 inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
 inline extern float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);

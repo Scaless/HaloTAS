@@ -33,7 +33,7 @@ void halo_engine::update_window_handle()
 	//haloHWND = FindWindowA(nullptr, "Halo");
 }
 
-void halo_engine::patch_memory(LPVOID dest_address, uint8_t * src_address, size_t patch_size)
+void halo_engine::patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size)
 {
 	unsigned long old_protection, unused;
 	//give that address read and write permissions and store the old permissions at oldProtection
@@ -54,7 +54,9 @@ void halo_engine::set_window_handle(HWND handle)
 halo_engine::halo_engine()
 {
 	// Scan memory for object pools
-	for (uint32_t i = 0; i < RUNTIME_DATA_SIZE / 4; i++) {
+	uint32_t data_pool_size = 0x1B40000;
+
+	for (uint32_t i = 0; i < data_pool_size / 4; i++) {
 		if (memcmp(&MAGIC_DATAPOOLHEADER, &(ADDR_RUNTIME_DATA_BEGIN[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
 			DataPool* pool = (DataPool*)(&ADDR_RUNTIME_DATA_BEGIN[i] - 10);
 			dataPools.push_back(pool);
@@ -64,20 +66,8 @@ halo_engine::halo_engine()
 			}
 		}
 	}
-}
-
-void halo_engine::initialize()
-{
-	patch_frame_start_func();
-	patch_tick_start_func();
 
 	update_window_handle();
-}
-
-void halo_engine::cleanup()
-{
-	unpatch_frame_start_func();
-	unpatch_tick_start_func();
 }
 
 HWND halo_engine::window_handle()
@@ -115,7 +105,7 @@ void halo_engine::print_hud_text(const std::wstring& input)
 		lea	eax, copy
 		push eax
 		mov	eax, 0 // player index
-		call PRINT_HUD_FUNC_PTR
+		call halo::function::PRINT_HUD
 		add	esp, 4
 	}
 }
@@ -128,44 +118,4 @@ void halo_engine::mouse_directinput_override_disable()
 void halo_engine::mouse_directinput_override_enable()
 {
 	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
-}
-
-void halo_engine::patch_frame_start_func()
-{
-	auto dllHandle = GetModuleHandle(TEXT("TASDLL"));
-	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_CustomFrameStart@0"));
-	PATCH_FRAME_BEGIN_FUNC_BYTES[0] = 0xE8; // x86 CALL
-	addr -= (int)ADDR_FRAME_BEGIN_FUNC_OFFSET; // Call location
-	memcpy_s(&PATCH_FRAME_BEGIN_FUNC_BYTES[1], sizeof(addr), &addr, sizeof(addr));
-
-	// Copy original memory so we can restore it later
-	memcpy_s(&PATCH_FRAME_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_FRAME_BEGIN_ORIGINAL_BYTES), ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, sizeof(PATCH_FRAME_BEGIN_ORIGINAL_BYTES));
-
-	patch_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_FUNC_BYTES, sizeof(PATCH_FRAME_BEGIN_FUNC_BYTES));
-}
-
-void halo_engine::patch_tick_start_func()
-{
-	auto dllHandle = GetModuleHandle(TEXT("TASDLL"));
-	auto addr = reinterpret_cast<int>(GetProcAddress(dllHandle, "_CustomTickStart@0"));
-	addr -= ((int)ADDR_TICK_BEGIN_FUNC_OFFSET) + 5; // Call location
-
-	uint8_t patchTickBeginBytes[5] = {0xE8, 0x00, 0x00, 0x00, 0x00};
-	memcpy_s(&patchTickBeginBytes[1], sizeof(addr), &addr, sizeof(addr));
-
-	// Copy original memory so we can restore it later
-	memcpy_s(&PATCH_TICK_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_TICK_BEGIN_ORIGINAL_BYTES), ADDR_TICK_BEGIN_FUNC_OFFSET, sizeof(PATCH_TICK_BEGIN_ORIGINAL_BYTES));
-
-	patch_memory(ADDR_TICK_BEGIN_FUNC_OFFSET, patchTickBeginBytes, sizeof(patchTickBeginBytes));
-}
-
-void halo_engine::unpatch_frame_start_func()
-{
-	patch_memory(ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC, PATCH_FRAME_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_FRAME_BEGIN_ORIGINAL_BYTES));
-}
-
-void halo_engine::unpatch_tick_start_func()
-{
-	patch_memory(ADDR_TICK_BEGIN_FUNC_OFFSET, PATCH_TICK_BEGIN_ORIGINAL_BYTES, sizeof(PATCH_TICK_BEGIN_ORIGINAL_BYTES));
-
 }

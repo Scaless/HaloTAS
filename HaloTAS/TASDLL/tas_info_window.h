@@ -14,6 +14,7 @@ struct tas_info_input
 	bool playback = false;
 	bool loadPlayback = false;
 	bool forceSimulate = true;
+	bool updateViewPos = true;
 
 	tas_overlay_render_options overlayOptions;
 };
@@ -33,6 +34,7 @@ private:
 	void render_inputs();
 	void render_menubar();
 	void render_header();
+	void render_rng();
 
 	void render_imgui();
 
