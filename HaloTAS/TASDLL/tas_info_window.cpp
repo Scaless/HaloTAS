@@ -1,5 +1,6 @@
 #include "tas_info_window.h"
 #include "tas_input_handler.h"
+#include "render_d3d9.h"
 #include <unordered_set>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -230,6 +231,21 @@ void tas_info_window::render_tas()
 		*debugB = 0x6D;
 	}
 
+	static char fileText[256] = "sound\\dialog\\chief\\deathviolent";
+	ImGui::InputText("File Test", fileText, IM_ARRAYSIZE(fileText));
+
+	if (ImGui::Button("Play Sound")) {
+		auto& gEngine = halo_engine::get();
+		int tagIndex = gEngine.get_tag_index_from_path(0x736E6421, fileText);
+		if (tagIndex != -1) {
+			int16_t* f = new int16_t[2];
+			f[0] = 0;
+			f[1] = 0;
+			halo::function::PLAY_SOUND(tagIndex, f, 0xffffffff, 0, 0, 0, 0);
+			delete[] f;
+		}
+	}
+
 	if (advanceTick && *ADDR_SIMULATION_TICK_2 > advanceTickStart) {
 		*ADDR_GAME_SPEED = 0;
 		advanceTick = false;
@@ -300,6 +316,33 @@ void tas_info_window::render_tas()
 		auto& gInputHandler = tas_input_handler::get();
 		gInputHandler.save_inputs();
 	}
+}
+
+void tas_info_window::render_d3d()
+{
+	if (!ImGui::CollapsingHeader("D3D")) {
+		return;
+	}
+
+	auto& d3d = render_d3d9::get();
+
+	if (ImGui::Button("Enable")) {
+		d3d.Enable();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Disable")) {
+		d3d.Disable();
+	}
+
+	if (ImGui::Button("Wireframe")) {
+		d3d.SetFillModeWireframe();
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("Solid")) {
+		d3d.SetFillModeSolid();
+	}
+
+
 }
 
 static int32_t tick_delete_start = 0, tick_delete_end = 0;
@@ -661,7 +704,9 @@ void tas_info_window::render_header()
 	ImGui::SameLine();
 	ImGui::Text("Tick: %d\t", *ADDR_SIMULATION_TICK_2);
 	ImGui::SameLine();
-	ImGui::Text("Frame: %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
+	ImGui::Text("Frame: %d\t", *ADDR_FRAMES_ABSOLUTE);
+	ImGui::SameLine();
+	ImGui::Text("Frames Since Load: %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
 	ImGui::SameLine();
 	ImGui::PushItemWidth(200);
 	ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
@@ -727,6 +772,7 @@ void tas_info_window::render_imgui()
 	render_menubar();
 	render_header();
 	render_rng();
+	render_d3d();
 	render_overlay();
 	render_tas();
 	render_inputs();

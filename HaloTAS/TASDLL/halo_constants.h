@@ -25,6 +25,8 @@ namespace halo::constants {
 	static const float CAMERA_YAW_MAX = glm::pi<float>() * 2.0f;
 }
 
+
+
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
 #endif
@@ -36,7 +38,12 @@ namespace halo::constants {
 #if defined(HALO_VANILLA)
 
 namespace halo::function {
-	inline extern uintptr_t PRINT_HUD = 0x004AE180;
+	inline extern uintptr_t PRINT_HUD = 0x004AE180; // (int playerIndex, wchar_t* string)
+	inline extern uintptr_t GET_TAG_INDEX = 0x00442550; // (int tagTypeIdentifier, char* pathString)
+
+	inline extern uintptr_t PLAY_SOUND_PTR = 0x00549af0;
+	typedef uint32_t play_sound_actual_func(uint32_t sndIndex, int16_t*, int, int, int*, int, int);
+	inline extern  play_sound_actual_func* PLAY_SOUND = (play_sound_actual_func*)PLAY_SOUND_PTR;
 }
 
 namespace halo::addr {
@@ -47,7 +54,10 @@ namespace halo::addr {
 inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
 inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
 
-inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x00746F88);
+inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START_ANIMATION = reinterpret_cast<int32_t*>(0x00746F88);
+inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x008603CC);
+inline extern int32_t* ADDR_FRAMES_ABSOLUTE = reinterpret_cast<int32_t*>(0x007C3100);
+//inline extern int32_t* ADDR_FRAMES_ABSOLUTE_ALTERNATE = reinterpret_cast<int32_t*>(0x007C3104);
 inline extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
 inline extern int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
 
@@ -103,7 +113,7 @@ inline extern int32_t* ADDR_RNG = reinterpret_cast<int32_t*>(0x00719CD0);
 inline extern uint32_t* ADDR_TAGS_ARRAY = (uint32_t*)0x40000000;
 inline extern uint32_t TAG_ARRAY_LENGTH_BYTES = 0x440000;
 
-inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = (int32_t*)0x00746F88;
+inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START_ANIMATION = (int32_t*)0x00746F88;
 inline extern int32_t* ADDR_INPUT_TICK = (int32_t*)0x006F1D8C;
 inline extern float* ADDR_LEFTRIGHTVIEW = (float*)0x402AD4B8;
 inline extern float* ADDR_UPDOWNVIEW = (float*)0x402AD4BC;

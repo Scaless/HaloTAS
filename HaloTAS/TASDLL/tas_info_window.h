@@ -25,12 +25,13 @@ private:
 	GLFWwindow* window;
 	ImGuiContext* imguiCtx;
 	ImFontAtlas* atlas;
-	bool close;
+	bool close {false};
 
 	tas_info_input currentInput;
 
 	void render_overlay();
 	void render_tas();
+	void render_d3d();
 	void render_inputs();
 	void render_menubar();
 	void render_header();

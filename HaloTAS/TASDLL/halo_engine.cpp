@@ -110,6 +110,18 @@ void halo_engine::print_hud_text(const std::wstring& input)
 	}
 }
 
+int halo_engine::get_tag_index_from_path(int tagIdentifier, char* path)
+{
+	int index = -1;
+	__asm {
+		mov edi, tagIdentifier
+		call halo::function::GET_TAG_INDEX
+		mov index, eax
+		add esp, 4
+	}
+	return index;
+}
+
 void halo_engine::mouse_directinput_override_disable()
 {
 	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
