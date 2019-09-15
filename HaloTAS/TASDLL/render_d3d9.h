@@ -10,7 +10,6 @@ struct CUSTOMVERTEX
 {
 	D3DXVECTOR3 position;
 	D3DXVECTOR3 normal;
-	D3DCOLOR color;
 
 	static IDirect3DVertexDeclaration9* Decl;
 };
@@ -35,6 +34,11 @@ private:
 
 	bool enabled{ false };
 	DWORD fillMode{ D3DFILL_SOLID };
+	D3DCOLORVALUE materialColor{ 1,1,1,0.5f };
+	D3DCOLORVALUE lightColor{ 0.5f, 0.5f, 0.5f, 0.2f };
+	D3DCULL cullMode{ D3DCULL_CW };
+	float cullDistance{ 250.0f };
+	bool alphaModeColor{ true };
 
 	LPDIRECT3DVERTEXBUFFER9 v_buffer {NULL};
 	UINT v_bufferSize{ 0 };
@@ -43,10 +47,12 @@ public:
 	void render(IDirect3DDevice9* device);
 
 	// Functionality Toggles
-	void Enable();
-	void Disable();
-	void SetFillModeWireframe();
-	void SetFillModeSolid();
-
+	void SetEnabled(bool _enabled);
+	void SetFillMode(_D3DFILLMODE _mode);
+	void SetMaterialColor(D3DCOLORVALUE _materialColor);
+	void SetLightColor(D3DCOLORVALUE _lightColor);
+	void SetCullMode(D3DCULL _cullMode);
+	void ToggleTransparencyMode();
+	void SetCullDistance(float _cullDistance);
 };
 

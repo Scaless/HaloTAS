@@ -34,7 +34,6 @@ void loadModelToVector(const char* path, std::vector<CUSTOMVERTEX> &vec) {
 
 			// Loop over vertices in the face.
 			for (size_t v = 0; v < fv; v++) {
-				// access to vertex
 				tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
 				tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
 				tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
@@ -43,7 +42,7 @@ void loadModelToVector(const char* path, std::vector<CUSTOMVERTEX> &vec) {
 				tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
 				tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
 
-				CUSTOMVERTEX vert{ D3DXVECTOR3( vx, vy, vz), D3DXVECTOR3(nx, ny, nz), D3DCOLOR_ARGB(255,255,255,255) };
+				CUSTOMVERTEX vert{ D3DXVECTOR3( vx, vy, vz), D3DXVECTOR3(nx, ny, nz) };
 				vec.push_back(vert);
 			}
 			index_offset += fv;
@@ -56,16 +55,7 @@ void render_d3d9::initialize(IDirect3DDevice9* device)
 	initialized = true;
 
 	std::vector<CUSTOMVERTEX> vertexes {};
-	
 	loadModelToVector("d40_full.obj", vertexes);
-	/*loadModelToVector("d40b.obj", vertexes);
-	loadModelToVector("d40c.obj", vertexes);
-	loadModelToVector("d40d.obj", vertexes);
-	loadModelToVector("d40e.obj", vertexes);
-	loadModelToVector("d40f.obj", vertexes);
-	loadModelToVector("d40g.obj", vertexes);
-	loadModelToVector("d40h.obj", vertexes);*/
-	//loadModelToVector("d40_terrain.obj", vertexes);
 
 	// create the vertex and store the pointer into v_buffer, which is created globally
 	device->CreateVertexBuffer(vertexes.size() * sizeof(CUSTOMVERTEX),
@@ -77,18 +67,15 @@ void render_d3d9::initialize(IDirect3DDevice9* device)
 
 	v_bufferSize = vertexes.size();
 
-	VOID* pVoid;    // the void pointer
-
-	v_buffer->Lock(0, 0, (void**)& pVoid, 0);    // lock the vertex buffer
-	//memcpy(pVoid, vertices, sizeof(vertices));    // copy the vertices to the locked buffer
+	VOID* pVoid;
+	v_buffer->Lock(0, 0, (void**)& pVoid, 0);
 	memcpy(pVoid, vertexes.data(), v_bufferSize * sizeof(CUSTOMVERTEX));
-	v_buffer->Unlock();    // unlock the vertex buffer
+	v_buffer->Unlock();
 
 	D3DVERTEXELEMENT9 VertexElements[] =
 	{
 		{0,0,D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
 		{0,12,D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_NORMAL, 0},
-		{0,24,D3DDECLTYPE_D3DCOLOR, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_COLOR, 0},
 		D3DDECL_END()
 	};
 	device->CreateVertexDeclaration(VertexElements, &CUSTOMVERTEX::Decl);
@@ -96,6 +83,10 @@ void render_d3d9::initialize(IDirect3DDevice9* device)
 
 void render_d3d9::render(IDirect3DDevice9* device)
 {
+	if (!enabled) {
+		return;
+	}
+
 	if (!initialized) {
 		initialize(device);
 	}
@@ -103,6 +94,10 @@ void render_d3d9::render(IDirect3DDevice9* device)
 	glm::vec3 cam = *ADDR_CAMERA_POSITION;
 	glm::vec3 look{ ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2] };
 	look = cam + look;
+
+	IDirect3DStateBlock9* pStateBlock = NULL;
+	device->CreateStateBlock(D3DSBT_ALL, &pStateBlock);
+	pStateBlock->Capture();
 
 	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	device->SetRenderState(D3DRS_FOGCOLOR, 0);
@@ -222,21 +217,25 @@ void render_d3d9::render(IDirect3DDevice9* device)
 	
 	device->SetRenderState(D3DRS_FILLMODE, fillMode);
 	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
-	//device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
-	//device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 
-	device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
-	device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
+	if (alphaModeColor) {
+		device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR);
+		device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCCOLOR);
+	}
+	else {
+		device->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+		device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+	}
 
-	device->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+	device->SetRenderState(D3DRS_CULLMODE, cullMode);
 	device->SetRenderState(D3DRS_ZENABLE, TRUE);
 	device->SetRenderState(D3DRS_LIGHTING, TRUE);
-	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));    // ambient light
+	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
 
 	device->SetVertexDeclaration(CUSTOMVERTEX::Decl);
 
 
-	D3DXMATRIX matWorld{};    // a matrix to store the rotation information
+	D3DXMATRIX matWorld{};
 	D3DXMatrixTranslation(&matWorld, 0,0,0);
 	device->SetTransform(D3DTS_WORLD, &matWorld);
 
@@ -244,35 +243,35 @@ void render_d3d9::render(IDirect3DDevice9* device)
 	float verticalFov = horizontalFovRadians * (float)1080 / (float)1920;
 	//verticalFov = std::clamp(verticalFov - .03f, 0.001f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
 
-	D3DXMATRIX matView;    // the view transform matrix
+	D3DXMATRIX matView;
 	D3DXMatrixLookAtLH(&matView,
-		&D3DXVECTOR3(cam.x, cam.y, cam.z),    // the camera position
-		&D3DXVECTOR3(look.x, look.y, look.z),    // the look-at position
-		&D3DXVECTOR3(0.0f, 0.0f, 1.0f));    // the up direction
+		&D3DXVECTOR3(cam.x, cam.y, cam.z),
+		&D3DXVECTOR3(look.x, look.y, look.z),
+		&D3DXVECTOR3(0.0f, 0.0f, 1.0f));
 
-	device->SetTransform(D3DTS_VIEW, &matView);    // set the view transform to matView
+	device->SetTransform(D3DTS_VIEW, &matView);
 
-	D3DXMATRIX matProjection;     // the projection transform matrix
+	D3DXMATRIX matProjection;
 
 	D3DXMatrixPerspectiveFovLH(&matProjection,
-		verticalFov,    // the horizontal field of view
-		(FLOAT)1600 / (FLOAT)900, // aspect ratio
-		0.1f,    // the near view-plane
-		250.0f);    // the far view-plane
+		verticalFov,
+		(FLOAT)1600 / (FLOAT)900,
+		0.1f,
+		cullDistance); 
 
 	D3DXMATRIX matInvertX;
 	D3DXMatrixReflect(&matInvertX, &D3DXPLANE(1, 0, 0, 0));
 
 	D3DXMatrixMultiply(&matProjection, &matProjection, &matInvertX);
 
-	device->SetTransform(D3DTS_PROJECTION, &matProjection);    // set the projection
+	device->SetTransform(D3DTS_PROJECTION, &matProjection);
 
-	D3DLIGHT9 light;    // create the light struct
-	D3DMATERIAL9 material;    // create the material struct
+	D3DLIGHT9 light;
+	D3DMATERIAL9 material;
 
-	ZeroMemory(&light, sizeof(light));    // clear out the light struct for use
-	light.Type = D3DLIGHT_POINT;    // make the light type 'directional light'
-	light.Diffuse = D3DXCOLOR(0.5f, 0.5f, 0.5f, 0.2f);    // set the light's color
+	ZeroMemory(&light, sizeof(light)); 
+	light.Type = D3DLIGHT_POINT; 
+	light.Diffuse = lightColor;
 	light.Position = D3DXVECTOR3(cam.x, cam.y, cam.z);
 	light.Range = 10.0f;
 	light.Falloff = 1.0f;
@@ -280,39 +279,55 @@ void render_d3d9::render(IDirect3DDevice9* device)
 	light.Attenuation1 = 0.0f;
 	light.Attenuation2 = 0.0f;
 
-	device->SetLight(0, &light);    // send the light struct properties to light #0
-	device->LightEnable(0, TRUE);    // turn on light #0
+	device->SetLight(0, &light);
+	device->LightEnable(0, TRUE);
 
-	ZeroMemory(&material, sizeof(D3DMATERIAL9));    // clear out the struct for use
-	material.Diffuse = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);    // set diffuse color to white
-	material.Ambient = D3DXCOLOR(1.0f, 1.0f, 1.0f, 0.5f);    // set ambient color to white
-
-	device->SetMaterial(&material);    // set the globably-used material to &material
+	ZeroMemory(&material, sizeof(D3DMATERIAL9));
+	material.Diffuse = materialColor;
+	material.Ambient = materialColor;
+	device->SetMaterial(&material);
 
 	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-	if (enabled) {
-		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, v_bufferSize);
-		device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-		device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, v_bufferSize);
-	}
+	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, v_bufferSize);
+	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, v_bufferSize);
+
+	pStateBlock->Apply();
+	pStateBlock->Release();
+
 }
 
-void render_d3d9::Enable()
+void render_d3d9::SetEnabled(bool _enabled)
 {
-	enabled = true;
+	enabled = _enabled;
 }
 
-void render_d3d9::Disable()
+void render_d3d9::SetFillMode(_D3DFILLMODE _mode)
 {
-	enabled = false;
+	fillMode = _mode;
 }
 
-void render_d3d9::SetFillModeWireframe()
+void render_d3d9::SetMaterialColor(D3DCOLORVALUE _materialColor)
 {
-	fillMode = D3DFILL_WIREFRAME;
+	materialColor = _materialColor;
 }
 
-void render_d3d9::SetFillModeSolid()
+void render_d3d9::SetLightColor(D3DCOLORVALUE _lightColor)
 {
-	fillMode = D3DFILL_SOLID;
+	lightColor = _lightColor;
+}
+
+void render_d3d9::SetCullMode(D3DCULL _cullMode)
+{
+	cullMode = _cullMode;
+}
+
+void render_d3d9::ToggleTransparencyMode()
+{
+	alphaModeColor = !alphaModeColor;
+}
+
+void render_d3d9::SetCullDistance(float _cullDistance)
+{
+	cullDistance = _cullDistance;
 }

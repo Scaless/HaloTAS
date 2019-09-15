@@ -356,13 +356,7 @@ char hkAdvanceFrame(float deltaTime) {
 
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice)
 {
-	HRESULT result = originalD3D9BeginScene(pDevice);
-
-	auto& d3d9 = render_d3d9::get();
-	//d3d9.render(pDevice);
-
-
-	return result;
+	return originalD3D9BeginScene(pDevice);
 }
 
 HRESULT __stdcall hkD3D9EndScene(IDirect3DDevice9* pDevice)

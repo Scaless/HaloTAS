@@ -115,6 +115,7 @@ int halo_engine::get_tag_index_from_path(int tagIdentifier, char* path)
 	int index = -1;
 	__asm {
 		mov edi, tagIdentifier
+		push path
 		call halo::function::GET_TAG_INDEX
 		mov index, eax
 		add esp, 4

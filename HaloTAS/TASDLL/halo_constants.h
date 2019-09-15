@@ -3,6 +3,14 @@
 #define HALO_VANILLA
 //#define HALO_CUSTOMED
 
+#if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
+#error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
+#endif
+
+#if !defined(HALO_VANILLA) && !defined(HALO_CUSTOMED)
+#error "Either HALO_VANILLA or HALO_CUSTOMED has to be defined."
+#endif
+
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
@@ -20,20 +28,11 @@ static uint8_t PATCH_TICK_END_ORIGINAL_BYTES[5];
 
 namespace halo::constants {
 	static const float CAMERA_PITCH_MIN = -1.492f;
-	static const float CAMERA_PITCH_MAX = -1.492f;
+	static const float CAMERA_PITCH_MAX = 1.492f;
 	static const float CAMERA_YAW_MIN = 0.0f;
 	static const float CAMERA_YAW_MAX = glm::pi<float>() * 2.0f;
 }
 
-
-
-#if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
-#error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
-#endif
-
-#if !defined(HALO_VANILLA) && !defined(HALO_CUSTOMED)
-#error "Either HALO_VANILLA or HALO_CUSTOMED has to be defined."
-#endif
 
 #if defined(HALO_VANILLA)
 

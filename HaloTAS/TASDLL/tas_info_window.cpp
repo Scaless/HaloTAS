@@ -234,7 +234,7 @@ void tas_info_window::render_tas()
 	static char fileText[256] = "sound\\dialog\\chief\\deathviolent";
 	ImGui::InputText("File Test", fileText, IM_ARRAYSIZE(fileText));
 
-	if (ImGui::Button("Play Sound")) {
+	if (ImGui::Button("Play Sound") || GetAsyncKeyState(VK_CONTROL)) {
 		auto& gEngine = halo_engine::get();
 		int tagIndex = gEngine.get_tag_index_from_path(0x736E6421, fileText);
 		if (tagIndex != -1) {
@@ -326,23 +326,58 @@ void tas_info_window::render_d3d()
 
 	auto& d3d = render_d3d9::get();
 
-	if (ImGui::Button("Enable")) {
-		d3d.Enable();
+	// Enabled
+	static bool enabled = false;
+	if (ImGui::Checkbox("Enabled##D3D", &enabled)) {
+		d3d.SetEnabled(enabled);
 	}
+
+	// Fill Mode
+	ImGui::PushItemWidth(200);
+	const char* fillModeStr[] = {"WIREFRAME", "SOLID" };
+	_D3DFILLMODE fillModes[] = {D3DFILL_WIREFRAME, D3DFILL_SOLID};
+	static int selectedFillMode = 1;
+	if (ImGui::Combo("Fill Mode##D3D", &selectedFillMode, fillModeStr, IM_ARRAYSIZE(fillModeStr))) {
+		d3d.SetFillMode(fillModes[selectedFillMode]);
+	}
+	ImGui::PopItemWidth();
+
+	// Cull Mode
+	ImGui::PushItemWidth(200);
+	const char* cullModeStr[] = { "CW", "CCW", "NONE" };
+	D3DCULL cullModes[] = { D3DCULL_CW, D3DCULL_CCW, D3DCULL_NONE };
+	static int selectedCullMode = 0;
+	if (ImGui::Combo("Cull Mode##D3D", &selectedCullMode, cullModeStr, IM_ARRAYSIZE(cullModeStr))) {
+		d3d.SetCullMode(cullModes[selectedCullMode]);
+	}
+	ImGui::PopItemWidth();
+
+	// Material Color
+	ImGui::Text("Material Color:");
 	ImGui::SameLine();
-	if (ImGui::Button("Disable")) {
-		d3d.Disable();
+	static ImVec4 materialColor{1,1,1,0.5f};
+	if (ImGui::ColorEdit4("MaterialColor##D3D", (float*)& materialColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+		d3d.SetMaterialColor(D3DXCOLOR(materialColor.x, materialColor.y, materialColor.z, materialColor.w));
 	}
 
-	if (ImGui::Button("Wireframe")) {
-		d3d.SetFillModeWireframe();
-	}
+	// Light Color
+	ImGui::Text("Light Color:");
 	ImGui::SameLine();
-	if (ImGui::Button("Solid")) {
-		d3d.SetFillModeSolid();
+	static ImVec4 lightColor{ 0.5f, 0.5f, 0.5f, 0.2f };
+	if (ImGui::ColorEdit4("LightColor##D3D", (float*)& lightColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+		d3d.SetLightColor(D3DXCOLOR(lightColor.x, lightColor.y, lightColor.z, lightColor.w));
 	}
 
+	// Alpha Mode
+	if (ImGui::Button("Toggle Alpha Mode##D3D")) {
+		d3d.ToggleTransparencyMode();
+	}
 
+	// Cull Distance
+	static float cullDistance = 250.0f;
+	if (ImGui::DragFloat("Cull Distance#D3D", &cullDistance, 1.0f, 0.1f, 250.0f)) {
+		d3d.SetCullDistance(cullDistance);
+	}
 }
 
 static int32_t tick_delete_start = 0, tick_delete_end = 0;
