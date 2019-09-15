@@ -14,6 +14,7 @@
 #include "tas_overlay.h"
 #include "tas_info_window.h"
 #include "tas_input_handler.h"
+#include "tas_logger.h"
 #include "livesplit.h"
 #include "helpers.h"
 #include "render_d3d9.h"
@@ -43,8 +44,6 @@ DWORD GetDeviceStateOffset = 0x8CC0; // Offset from DirectInput8Create to CDIDev
 // 0x7F90 - WIN10 17134
 // 0x8B10 - WIN10 18362
 DWORD GetDeviceDataOffset = 0x8B10; // Offset from DirectInput8Create to CDIDev_GetDeviceData
-
-void add_log(const char* format, ...);
 
 GetDeviceState_t originalGetDeviceState;
 GetDeviceData_t originalGetDeviceData;
@@ -106,6 +105,14 @@ void hookD3D9()
 
 void run() {
 
+	glfwSetErrorCallback(glfw_error_callback);
+	if (!glfwInit()) {
+		tas_logger::fatal("Failed to initialize GLFW");
+		return;
+	}
+
+	hookD3D9();
+
 	auto liveSplit = std::make_unique<livesplit>();
 	auto overlay = std::make_unique<tas_overlay>();
 	auto infoWindow = std::make_unique<tas_info_window>();
@@ -132,8 +139,8 @@ void run() {
 
 		// Keep people honest
 		auto hudUpdateDuration = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastDisplayUpdate);
-		if (hudUpdateDuration > std::chrono::seconds(60)) {
-			//gEngine.print_hud_text(L"Official runs are invalid while HaloTAS is running!");
+		if (hudUpdateDuration > std::chrono::seconds(5)) {
+			gEngine.print_hud_text(L"Official runs are invalid while HaloTAS is running!");
 			lastDisplayUpdate = now;
 		}
 
@@ -160,22 +167,11 @@ void run() {
 
 }
 
-
-
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
-	glfwSetErrorCallback(glfw_error_callback);
-	if (!glfwInit()) {
-		return 1;
-	}
-
-	hookD3D9();
-
 	// Main execution happens in run() so that destructors are called properly before FreeLibraryAndExitThread gets called
 	run();
-
 	glfwTerminate();
-
 	FreeLibraryAndExitThread(hDLL, NULL);
 }
 
@@ -184,22 +180,19 @@ INT APIENTRY DllMain(HMODULE hDLL, DWORD Reason, LPVOID /*Reserved*/)
 {
 	DWORD dwThreadID;
 	if (Reason == DLL_PROCESS_ATTACH) {
-
-		add_log("==========LOG START==========");
-
-		CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)Main_Thread, hDLL, 0, &dwThreadID);
+		tas_logger::info("===== HaloTAS Started =====");
 
 		DetourRestoreAfterWith();
 
 		// Get Handles to necessary functions
 		HMODULE hDInput8 = GetModuleHandle("dinput8.dll");
 		if (hDInput8 == NULL) {
-			add_log("Couldn't get handle for dinput8.dll.");
+			tas_logger::fatal("Couldn't get handle for dinput8.dll.");
 			return 0;
 		}
 		FARPROC dwDirectInput8Create = GetProcAddress(hDInput8, "DirectInput8Create");
 		if (dwDirectInput8Create == NULL) {
-			add_log("GetProcAddress failed to find DirectInput8Create.");
+			tas_logger::fatal("GetProcAddress failed to find DirectInput8Create.");
 			return 0;
 		}
 
@@ -210,6 +203,8 @@ INT APIENTRY DllMain(HMODULE hDLL, DWORD Reason, LPVOID /*Reserved*/)
 		AttachFunc(&(PVOID&)originalGetDeviceData, hkGetDeviceData);
 		AttachFunc(&(PVOID&)originalSimulateTick, hkSimulateTick);
 		AttachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
+		
+		CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)Main_Thread, hDLL, 0, &dwThreadID);
 	}
 	else if (Reason == DLL_PROCESS_DETACH) {
 		DetachFunc(&(PVOID&)originalGetDeviceState, hkGetDeviceState);
@@ -218,25 +213,9 @@ INT APIENTRY DllMain(HMODULE hDLL, DWORD Reason, LPVOID /*Reserved*/)
 		DetachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
 		DetachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
 		DetachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
+		tas_logger::info("===== HaloTAS Closed =====");
 	}
 	return TRUE;
-}
-
-//Creates a Logfile in the Game Directory
-void add_log(const char* format, ...)
-{
-	HANDLE filehandle;
-	DWORD dwReadBytes;
-	char buffer[2048];
-	char writebuffer[2048];
-	va_list args;
-	va_start(args, format);
-	vsprintf_s(buffer, format, args);
-	filehandle = CreateFile("HaloTASLog.txt", GENERIC_WRITE, 0, 0, OPEN_ALWAYS, 0, 0);
-	SetFilePointer(filehandle, 0, 0, FILE_END);
-	sprintf_s(writebuffer, 2048, "Log Added: %s\r\n", buffer);
-	WriteFile(filehandle, writebuffer, strlen(writebuffer), &dwReadBytes, 0);
-	CloseHandle(filehandle);
 }
 
 static bool tab_down = true;

@@ -1,9 +1,10 @@
 #include "render_opengl.h"
+#include "tas_logger.h"
 
 void glfw_error_callback(int error, const char* description)
 {
 	fprintf(stderr, "Error %d: %s\n", error, description);
-	MessageBox(0, description, "", MB_OK);
+	tas_logger::error("GLFW Error %d: %s", error, description);
 }
 
 GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path) {
@@ -23,7 +24,6 @@ GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_pat
 	}
 	else {
 		printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_file_path);
-		getchar();
 		return 0;
 	}
 
