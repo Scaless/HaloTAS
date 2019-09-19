@@ -36,6 +36,7 @@ private:
 	void render_menubar();
 	void render_header();
 	void render_rng();
+	void render_other();
 
 	void render_imgui();
 

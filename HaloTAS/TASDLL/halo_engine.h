@@ -38,6 +38,7 @@ public:
 	// Engine Functions
 	void print_hud_text(const std::wstring& input);
 	int get_tag_index_from_path(int, char*);
+	void set_debug_camera(bool enabled);
 
 	// Patching
 	void mouse_directinput_override_disable();

@@ -207,45 +207,6 @@ static int32_t core_save_rng = 0;
 static int32_t int_handler_tick = 0;
 void tas_info_window::render_tas()
 {
-	auto debugA = reinterpret_cast<uint8_t*>(0x006AC568);
-	auto debugB = reinterpret_cast<uint8_t*>(0x006AC569);
-
-	if (ADDR_KEYBOARD_INPUT[KEYS::J] > 0) {
-		*debugA = 0x90;
-		*debugB = 0x6E;
-	}
-
-	if (ADDR_KEYBOARD_INPUT[KEYS::K] > 0) {
-		*debugA = 0x60;
-		*debugB = 0x6D;
-	}
-
-
-	if (ImGui::Button("Enter Debug Camera")) {
-		*debugA = 0x90;
-		*debugB = 0x6E;
-	}
-
-	if (ImGui::Button("Leave Debug Camera")) {
-		*debugA = 0x60;
-		*debugB = 0x6D;
-	}
-
-	static char fileText[256] = "sound\\dialog\\chief\\deathviolent";
-	ImGui::InputText("File Test", fileText, IM_ARRAYSIZE(fileText));
-
-	if (ImGui::Button("Play Sound") || GetAsyncKeyState(VK_CONTROL)) {
-		auto& gEngine = halo_engine::get();
-		int tagIndex = gEngine.get_tag_index_from_path(0x736E6421, fileText);
-		if (tagIndex != -1) {
-			int16_t* f = new int16_t[2];
-			f[0] = 0;
-			f[1] = 0;
-			halo::function::PLAY_SOUND(tagIndex, f, 0xffffffff, 0, 0, 0, 0);
-			delete[] f;
-		}
-	}
-
 	if (advanceTick && *ADDR_SIMULATION_TICK_2 > advanceTickStart) {
 		*ADDR_GAME_SPEED = 0;
 		advanceTick = false;
@@ -254,6 +215,8 @@ void tas_info_window::render_tas()
 	if (!ImGui::CollapsingHeader("TAS")) {
 		return;
 	}
+	
+	auto& gEngine = halo_engine::get();
 
 	ImGui::Checkbox("Record", &currentInput.record);
 	ImGui::SameLine();
@@ -262,13 +225,11 @@ void tas_info_window::render_tas()
 	currentInput.loadPlayback = ImGui::Button("Load Playback");
 	ImGui::SameLine();
 	if (ImGui::Button("PatchMouse")) {
-		auto& engine = halo_engine::get();
-		engine.mouse_directinput_override_enable();
+		gEngine.mouse_directinput_override_enable();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("UnPatchMouse")) {
-		auto& engine = halo_engine::get();
-		engine.mouse_directinput_override_disable();
+		gEngine.mouse_directinput_override_disable();
 	}
 
 	if (ImGui::Button("Load Checkpoint")) {
@@ -297,6 +258,12 @@ void tas_info_window::render_tas()
 	/*if (ImGui::Button("Restart Level (Partial?)")) {
 		*ADDR_RESTART_LEVEL_FULL = 1;
 	}*/
+
+	static bool enableDebugCamera{ false };
+
+	if (ImGui::Checkbox("Enable Debug Camera", &enableDebugCamera)) {
+		gEngine.set_debug_camera(enableDebugCamera);
+	}
 
 	if (ImGui::Button("PAUSE")) {
 		*ADDR_GAME_SPEED = 0;
@@ -332,52 +299,59 @@ void tas_info_window::render_d3d()
 		d3d.SetEnabled(enabled);
 	}
 
-	// Fill Mode
-	ImGui::PushItemWidth(200);
-	const char* fillModeStr[] = {"WIREFRAME", "SOLID" };
-	_D3DFILLMODE fillModes[] = {D3DFILL_WIREFRAME, D3DFILL_SOLID};
-	static int selectedFillMode = 1;
-	if (ImGui::Combo("Fill Mode##D3D", &selectedFillMode, fillModeStr, IM_ARRAYSIZE(fillModeStr))) {
-		d3d.SetFillMode(fillModes[selectedFillMode]);
-	}
-	ImGui::PopItemWidth();
+	if (ImGui::TreeNode("Options")) {
+		// Fill Mode
+		ImGui::PushItemWidth(200);
+		const char* fillModeStr[] = {"WIREFRAME", "SOLID" };
+		_D3DFILLMODE fillModes[] = {D3DFILL_WIREFRAME, D3DFILL_SOLID};
+		static int selectedFillMode = 1;
+		if (ImGui::Combo("Fill Mode##D3D", &selectedFillMode, fillModeStr, IM_ARRAYSIZE(fillModeStr))) {
+			d3d.SetFillMode(fillModes[selectedFillMode]);
+		}
+		ImGui::PopItemWidth();
 
-	// Cull Mode
-	ImGui::PushItemWidth(200);
-	const char* cullModeStr[] = { "CW", "CCW", "NONE" };
-	D3DCULL cullModes[] = { D3DCULL_CW, D3DCULL_CCW, D3DCULL_NONE };
-	static int selectedCullMode = 0;
-	if (ImGui::Combo("Cull Mode##D3D", &selectedCullMode, cullModeStr, IM_ARRAYSIZE(cullModeStr))) {
-		d3d.SetCullMode(cullModes[selectedCullMode]);
-	}
-	ImGui::PopItemWidth();
+		// Cull Mode
+		ImGui::PushItemWidth(200);
+		const char* cullModeStr[] = { "CW", "CCW", "NONE" };
+		D3DCULL cullModes[] = { D3DCULL_CW, D3DCULL_CCW, D3DCULL_NONE };
+		static int selectedCullMode = 0;
+		if (ImGui::Combo("Cull Mode##D3D", &selectedCullMode, cullModeStr, IM_ARRAYSIZE(cullModeStr))) {
+			d3d.SetCullMode(cullModes[selectedCullMode]);
+		}
+		ImGui::PopItemWidth();
 
-	// Material Color
-	ImGui::Text("Material Color:");
-	ImGui::SameLine();
-	static ImVec4 materialColor{1,1,1,0.5f};
-	if (ImGui::ColorEdit4("MaterialColor##D3D", (float*)& materialColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
-		d3d.SetMaterialColor(D3DXCOLOR(materialColor.x, materialColor.y, materialColor.z, materialColor.w));
+		// Material Color
+		ImGui::Text("Material Color:");
+		ImGui::SameLine();
+		static ImVec4 materialColor{1,1,1,0.5f};
+		if (ImGui::ColorEdit4("MaterialColor##D3D", (float*)& materialColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+			d3d.SetMaterialColor(D3DXCOLOR(materialColor.x, materialColor.y, materialColor.z, materialColor.w));
+		}
+
+		// Light Color
+		ImGui::Text("Light Color:");
+		ImGui::SameLine();
+		static ImVec4 lightColor{ 0.5f, 0.5f, 0.5f, 0.2f };
+		if (ImGui::ColorEdit4("LightColor##D3D", (float*)& lightColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
+			d3d.SetLightColor(D3DXCOLOR(lightColor.x, lightColor.y, lightColor.z, lightColor.w));
+		}
+
+		// Alpha Mode
+		if (ImGui::Button("Toggle Alpha Mode##D3D")) {
+			d3d.ToggleTransparencyMode();
+		}
+
+		// Cull Distance
+		static float cullDistance = 250.0f;
+		ImGui::PushItemWidth(200);
+		if (ImGui::DragFloat("Cull Distance##D3D", &cullDistance, 0.2f, 0.1f, 250.0f)) {
+			d3d.SetCullDistance(cullDistance);
+		}
+		ImGui::PopItemWidth();
+
+		ImGui::TreePop();
 	}
 
-	// Light Color
-	ImGui::Text("Light Color:");
-	ImGui::SameLine();
-	static ImVec4 lightColor{ 0.5f, 0.5f, 0.5f, 0.2f };
-	if (ImGui::ColorEdit4("LightColor##D3D", (float*)& lightColor, ImGuiColorEditFlags_NoInputs | ImGuiColorEditFlags_NoLabel)) {
-		d3d.SetLightColor(D3DXCOLOR(lightColor.x, lightColor.y, lightColor.z, lightColor.w));
-	}
-
-	// Alpha Mode
-	if (ImGui::Button("Toggle Alpha Mode##D3D")) {
-		d3d.ToggleTransparencyMode();
-	}
-
-	// Cull Distance
-	static float cullDistance = 250.0f;
-	if (ImGui::DragFloat("Cull Distance#D3D", &cullDistance, 1.0f, 0.1f, 250.0f)) {
-		d3d.SetCullDistance(cullDistance);
-	}
 }
 
 static int32_t tick_delete_start = 0, tick_delete_end = 0;
@@ -454,30 +428,33 @@ void tas_info_window::render_inputs()
 			input->insert_tick_range(tick_insert_start, tick_insert_count);
 		}
 
-		ImGui::Columns(6);
+		ImGui::Columns(7);
 		ImGui::SetColumnWidth(0, 60);
 		ImGui::SetColumnWidth(1, 60);
 		ImGui::SetColumnWidth(2, 100);
 		ImGui::SetColumnWidth(3, 100);
 		ImGui::SetColumnWidth(4, 200);
-		ImGui::SetColumnWidth(5, 200);
+		ImGui::SetColumnWidth(5, 300);
+		ImGui::SetColumnWidth(6, 100);
 		ImGui::Text("Pause"); ImGui::NextColumn();
 		ImGui::Text("Tick"); ImGui::NextColumn();
 		ImGui::Text("Pitch"); ImGui::NextColumn();
 		ImGui::Text("Yaw"); ImGui::NextColumn();
 		ImGui::Text("KB Input"); ImGui::NextColumn();
 		ImGui::Text("Mouse Input"); ImGui::NextColumn();
+		ImGui::Text("RNG"); ImGui::NextColumn();
 		ImGui::Columns(1);
 
 		ImGui::BeginChild("Inputs##TASINPUT", ImGui::GetContentRegionAvail(), true, ImGuiWindowFlags_HorizontalScrollbar);
 
-		ImGui::Columns(6);
+		ImGui::Columns(7);
 		ImGui::SetColumnWidth(0, 52);
 		ImGui::SetColumnWidth(1, 60);
 		ImGui::SetColumnWidth(2, 100);
 		ImGui::SetColumnWidth(3, 100);
 		ImGui::SetColumnWidth(4, 200);
-		ImGui::SetColumnWidth(5, 200);
+		ImGui::SetColumnWidth(5, 300);
+		ImGui::SetColumnWidth(6, 100);
 
 		int count = 0;
 		for(auto it = input->input_buffer()->begin(); it != input->input_buffer()->end(); ++it) {
@@ -684,7 +661,22 @@ void tas_info_window::render_inputs()
 			else {
 				ImGui::DragScalar("##RMB", ImGuiDataType_U8, &(it->rightMouse), 1);
 			}
+			ImGui::SameLine();
+
+			ImGui::Text("MMB:");
+			ImGui::SameLine();
+			if (it->middleMouse > 0) {
+				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
+				ImGui::DragScalar("##MMB", ImGuiDataType_U8, &(it->middleMouse), 1);
+				ImGui::PopStyleColor();
+			}
+			else {
+				ImGui::DragScalar("##MMB", ImGuiDataType_U8, &(it->middleMouse), 1);
+			}
 			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+
+			ImGui::Text("%d", it->rng);
 			ImGui::NextColumn();
 
 			if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset) && *ADDR_GAME_SPEED > 0) {
@@ -787,6 +779,32 @@ void tas_info_window::render_rng() {
 	}
 }
 
+void tas_info_window::render_other()
+{
+	if (ImGui::CollapsingHeader("Misc")) {
+		auto& gEngine = halo_engine::get();
+		
+		if (ImGui::TreeNode("Play Sound")) {
+			static char fileText[256] = "sound\\dialog\\chief\\deathviolent";
+			ImGui::InputText("File Test", fileText, IM_ARRAYSIZE(fileText));
+
+			if (ImGui::Button("Play Sound") || GetAsyncKeyState(VK_CONTROL)) {
+				int tagIndex = gEngine.get_tag_index_from_path(0x736E6421, fileText);
+				if (tagIndex != -1) {
+					int16_t* f = new int16_t[2];
+					f[0] = 0;
+					f[1] = 0;
+					halo::function::PLAY_SOUND(tagIndex, f, 0xffffffff, 0, 0, 0, 0);
+					delete[] f;
+				}
+			}
+
+			ImGui::TreePop();
+		}
+	}
+
+}
+
 void tas_info_window::render_imgui()
 {
 	ImGui::SetCurrentContext(imguiCtx);
@@ -809,6 +827,7 @@ void tas_info_window::render_imgui()
 	render_rng();
 	render_d3d();
 	render_overlay();
+	render_other();
 	render_tas();
 	render_inputs();
 

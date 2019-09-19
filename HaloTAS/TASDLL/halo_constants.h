@@ -33,7 +33,6 @@ namespace halo::constants {
 	static const float CAMERA_YAW_MAX = glm::pi<float>() * 2.0f;
 }
 
-
 #if defined(HALO_VANILLA)
 
 namespace halo::function {
@@ -48,7 +47,6 @@ namespace halo::function {
 namespace halo::addr {
 
 }
-
 
 inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
 inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
@@ -103,7 +101,9 @@ inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC7
 inline extern float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
 inline extern float* ADDR_PLAYER_YAW_ROTATION_RADIANS   = reinterpret_cast<float*>(0x402AD4B8);
 inline extern float* ADDR_PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
-			  
+inline extern uint8_t* ADDR_DEBUG_CAMERA_ENABLE = reinterpret_cast<uint8_t*>(0x006AC568);
+//inline extern uint8_t* debugB = reinterpret_cast<uint8_t*>(0x006AC569);
+
 inline extern float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
 inline extern int32_t* ADDR_RNG = reinterpret_cast<int32_t*>(0x00719CD0);
 

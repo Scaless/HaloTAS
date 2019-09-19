@@ -36,6 +36,7 @@ public:
 
 	void pre_tick();
 	void post_tick();
+	void pre_frame();
 
 	std::vector<std::string> get_loaded_levels();
 	tas_input* get_inputs(std::string levelName);
@@ -45,5 +46,9 @@ public:
 	int32_t get_current_playback_tick();
 	int32_t get_rng_advances_since_last_tick();
 
+	bool this_tick_enter();
+	bool this_tick_tab();
+	bool this_tick_g();
+	bool this_tick_mb(int btn);
 };
 

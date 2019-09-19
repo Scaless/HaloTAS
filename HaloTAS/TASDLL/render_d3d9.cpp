@@ -249,6 +249,10 @@ void render_d3d9::render(IDirect3DDevice9* device)
 		&D3DXVECTOR3(look.x, look.y, look.z),
 		&D3DXVECTOR3(0.0f, 0.0f, 1.0f));
 
+	//D3DXMATRIX matRotate;
+	//D3DXMatrixRotationYawPitchRoll(&matRotate, 0, 0, *ADDR_CAMERA_ROLL);
+	//D3DXMatrixMultiply(&matView, &matView, &matRotate);
+
 	device->SetTransform(D3DTS_VIEW, &matView);
 
 	D3DXMATRIX matProjection;

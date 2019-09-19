@@ -91,7 +91,7 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2017;$(SolutionDir)\lib\freetype;$(SolutionDir)\lib\detours;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\boost_1_70_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -109,7 +109,7 @@
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2017;$(SolutionDir)\lib\freetype;$(SolutionDir)\lib\detours;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\boost_1_70_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
     </Link>

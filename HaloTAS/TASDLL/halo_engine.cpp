@@ -123,6 +123,18 @@ int halo_engine::get_tag_index_from_path(int tagIdentifier, char* path)
 	return index;
 }
 
+void halo_engine::set_debug_camera(bool enabled)
+{
+	if (enabled) {
+		ADDR_DEBUG_CAMERA_ENABLE[0] = 0x90;
+		ADDR_DEBUG_CAMERA_ENABLE[1] = 0x6E;
+	}
+	else {
+		ADDR_DEBUG_CAMERA_ENABLE[0] = 0x60;
+		ADDR_DEBUG_CAMERA_ENABLE[1] = 0x6D;
+	}
+}
+
 void halo_engine::mouse_directinput_override_disable()
 {
 	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);

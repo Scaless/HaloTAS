@@ -11,6 +11,7 @@ struct input_moment {
 	float cameraYaw, cameraPitch;
 	glm::vec3 cameraLocation;
 	uint8_t leftMouse, middleMouse, rightMouse;
+	int32_t rng;
 };
 
 // Manages input for a level

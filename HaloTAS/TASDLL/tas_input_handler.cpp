@@ -108,10 +108,17 @@ void tas_input_handler::reload_playback_buffer(tas_input* input) {
 	//playback_buffer_current_level = inputs;
 }
 
+
 void tas_input_handler::pre_tick()
 {
 	const int32_t tick = *ADDR_SIMULATION_TICK;
 
+	
+	/*if(ADDR_KEYBOARD_INPUT[KEYS::Tab] == 1)
+		ADDR_KEYBOARD_INPUT[KEYS::Tab] = 2;
+	else
+		ADDR_KEYBOARD_INPUT[KEYS::Tab] = 1;
+*/
 	if (playback) {
 		*ADDR_DINPUT_MOUSEX = 0;
 		*ADDR_DINPUT_MOUSEY = 0;
@@ -123,7 +130,6 @@ void tas_input_handler::pre_tick()
 		rng_count_histogram_buffer.clear();
 	}
 
-	bool playedBackThisTick = false;
 	if (playback)
 	{
 		if (playback_buffer_current_level.size() > tas_input_handler::inputTickCounter) {
@@ -133,31 +139,31 @@ void tas_input_handler::pre_tick()
 			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
 			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
 			*ADDR_LEFTMOUSE = savedIM.leftMouse;
-			*ADDR_MIDDLEMOUSE = savedIM.middleMouse;
 			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
 
-			playedBackThisTick = true;
+			if (savedIM.middleMouse == 0) {
+				*ADDR_MIDDLEMOUSE = 0;
+			}
+			else {
+				if (*ADDR_MIDDLEMOUSE == 0) {
+					*ADDR_MIDDLEMOUSE = 1;
+				}
+			}
+
 			//*ADDR_CAMERA_POSITION = savedIM.cameraLocation;
 			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
 			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
 			//drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
 		}
-		else {
-			//	*ADDR_GAME_SPEED = 0;
-		}
 
 		// Fix for enter being stuck held down
-		if (tas_input_handler::inputTickCounter > 0) {
+		/*if (tas_input_handler::inputTickCounter > 0) {
 			if (playback_buffer_current_level.size() > tas_input_handler::inputTickCounter - 1) {
 				if (playback_buffer_current_level[tas_input_handler::inputTickCounter - 1].inputBuf[KEYS::Enter] > 0) {
 					ADDR_KEYBOARD_INPUT[Enter] = 0;
 				}
 			}
-		}
-	}
-
-	if (tick == last_input_tick) {
-		return;
+		}*/
 	}
 
 	tas_input_handler::inputTickCounter += 1;
@@ -170,16 +176,20 @@ void tas_input_handler::pre_tick()
 static int recordedTick = 0;
 void tas_input_handler::post_tick()
 {
+
+
 	const int32_t tick = *ADDR_SIMULATION_TICK - 1;
 
 	if (tick == 0) {
 		recordedTick = 0;
 	}
-
-	if (tick == last_input_tick) {
-		return;
+	
+	if (playback && *ADDR_SIMULATION_TICK > 10) {
+		if (playback_buffer_current_level.size() > recordedTick) {
+			input_moment savedIM = playback_buffer_current_level[recordedTick];
+			*ADDR_RNG = savedIM.rng;
+		}
 	}
-	last_input_tick = tick;
 
 	if (record && recordedTick > static_cast<int32_t>(playback_buffer_current_level.size()) - 1)
 	{
@@ -192,20 +202,29 @@ void tas_input_handler::post_tick()
 			im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
 		}
 		im.tick = tick;
-		//im.inputMouseX = *ADDR_DINPUT_MOUSEX;
-		//im.inputMouseY = *ADDR_DINPUT_MOUSEY;
+		im.inputMouseX = *ADDR_DINPUT_MOUSEX;
+		im.inputMouseY = *ADDR_DINPUT_MOUSEY;
 		im.cameraYaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
 		im.cameraPitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
 		im.leftMouse = *ADDR_LEFTMOUSE;
 		im.middleMouse = *ADDR_MIDDLEMOUSE;
 		im.rightMouse = *ADDR_RIGHTMOUSE;
 		im.cameraLocation = *ADDR_CAMERA_POSITION;
+		im.rng = *ADDR_RNG;
 
 		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
 		logFile.close();
 	}
 
 	recordedTick++;
+}
+
+	static bool justThisOnce = false;
+void tas_input_handler::pre_frame()
+{
+	if (*ADDR_MIDDLEMOUSE == 1) {
+		*ADDR_MIDDLEMOUSE = 2;
+	}
 }
 
 std::vector<std::string> tas_input_handler::get_loaded_levels()
@@ -258,4 +277,82 @@ int32_t tas_input_handler::get_current_playback_tick()
 int32_t tas_input_handler::get_rng_advances_since_last_tick()
 {
 	return rng_count_since_last_tick;
+}
+
+bool tas_input_handler::this_tick_enter()
+{
+	if (!playback)
+		return false;
+
+	if (!(playback_buffer_current_level.size() > tas_input_handler::inputTickCounter))
+		return false;
+
+	input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
+	if (savedIM.inputBuf[KEYS::Enter]) {
+		return true;
+	}
+	return false;
+}
+
+bool tas_input_handler::this_tick_tab()
+{
+	if (!playback)
+		return false;
+
+	if (!(playback_buffer_current_level.size() > tas_input_handler::inputTickCounter))
+		return false;
+
+	input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
+	if (savedIM.inputBuf[KEYS::Tab]) {
+		return true;
+	}
+	return false;
+}
+
+bool tas_input_handler::this_tick_g()
+{
+	if (!playback)
+		return false;
+
+	if (!(playback_buffer_current_level.size() > tas_input_handler::inputTickCounter))
+		return false;
+
+	input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
+	if (savedIM.inputBuf[KEYS::G]) {
+		return true;
+	}
+	return false;
+}
+
+bool tas_input_handler::this_tick_mb(int btn)
+{
+	if (!playback)
+		return false;
+
+	if (!(playback_buffer_current_level.size() > tas_input_handler::inputTickCounter))
+		return false;
+
+	input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
+
+	switch (btn) {
+	case 0:
+		if (savedIM.leftMouse > 0) {
+			return true;
+		}
+		break;
+	case 1:
+		if (savedIM.rightMouse > 0) {
+			return true;
+		}
+		break;
+	case 2:
+		if (savedIM.middleMouse > 0) {
+			return true;
+		}
+		break;
+	default:
+		return false;
+	}
+
+	return false;
 }

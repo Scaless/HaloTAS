@@ -22,33 +22,29 @@
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
+#pragma comment(lib, "dxguid.lib")
 
-typedef HRESULT(__stdcall* GetDeviceState_t)(LPDIRECTINPUTDEVICE, DWORD, LPVOID *);
-typedef HRESULT(__stdcall* GetDeviceData_t)(LPDIRECTINPUTDEVICE, DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
+typedef HRESULT(__stdcall* GetDeviceState_t)(LPDIRECTINPUTDEVICE*, DWORD, LPVOID *);
+typedef HRESULT(__stdcall* GetDeviceData_t)(LPDIRECTINPUTDEVICE*, DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
 typedef void(__cdecl* SimulateTick_t)(int);
 typedef char(__cdecl* AdvanceFrame_t)(float);
+typedef int(__cdecl* BeginLoop_t)();
 typedef HRESULT(__stdcall* D3D9BeginScene_t)(IDirect3DDevice9* pDevice);
 typedef HRESULT(__stdcall* D3D9EndScene_t)(IDirect3DDevice9* pDevice);
 
-HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE pDevice, DWORD cbData, LPVOID *lpvData);
-HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags);
+HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE *pDevice, DWORD cbData, LPVOID *lpvData);
+HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags);
 void __cdecl hkSimulateTick(int);
 char __cdecl hkAdvanceFrame(float);
+int __cdecl hkBeginLoop();
 HRESULT __stdcall hkD3D9EndScene(IDirect3DDevice9* pDevice);
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice);
-
-// 0x8150 - WIN10 17134
-// 0x8CC0 - WIN10 18362
-DWORD GetDeviceStateOffset = 0x8CC0; // Offset from DirectInput8Create to CDIDev_GetDeviceState
-
-// 0x7F90 - WIN10 17134
-// 0x8B10 - WIN10 18362
-DWORD GetDeviceDataOffset = 0x8B10; // Offset from DirectInput8Create to CDIDev_GetDeviceData
 
 GetDeviceState_t originalGetDeviceState;
 GetDeviceData_t originalGetDeviceData;
 SimulateTick_t originalSimulateTick = (SimulateTick_t)(0x45B780);
 AdvanceFrame_t originalAdvanceFrame = (AdvanceFrame_t)(0x470BF0);
+BeginLoop_t originalBeginLoop = (BeginLoop_t)(0x4C6E80);
 D3D9EndScene_t originalD3D9EndScene;
 D3D9BeginScene_t originalD3D9BeginScene;
 
@@ -72,37 +68,6 @@ void DetachFunc(PVOID* originalFunc, PVOID replacementFunc) {
 	DetourTransactionCommit();
 }
 
-void hookD3D9()
-{
-	IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-	if (!pD3D)
-		return;
-
-	D3DPRESENT_PARAMETERS d3dpp = { 0 };
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.hDeviceWindow = GetForegroundWindow();
-	d3dpp.Windowed = TRUE;
-
-	IDirect3DDevice9* pDummyDevice = nullptr;
-	HRESULT hr = pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &pDummyDevice);
-	if (FAILED(hr) || !pDummyDevice)
-	{
-		pD3D->Release();
-		return;
-	}
-
-	void** pVTable = *reinterpret_cast<void***>(pDummyDevice);
-	
-	originalD3D9BeginScene = (D3D9EndScene_t)(pVTable[41]);
-	AttachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
-
-	originalD3D9EndScene = (D3D9EndScene_t)(pVTable[42]);
-	AttachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
-
-	pDummyDevice->Release();
-	pD3D->Release();
-}
-
 void run() {
 
 	glfwSetErrorCallback(glfw_error_callback);
@@ -110,8 +75,6 @@ void run() {
 		tas_logger::fatal("Failed to initialize GLFW");
 		return;
 	}
-
-	hookD3D9();
 
 	auto liveSplit = std::make_unique<livesplit>();
 	auto overlay = std::make_unique<tas_overlay>();
@@ -139,7 +102,7 @@ void run() {
 
 		// Keep people honest
 		auto hudUpdateDuration = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastDisplayUpdate);
-		if (hudUpdateDuration > std::chrono::seconds(5)) {
+		if (hudUpdateDuration > std::chrono::seconds(60)) {
 			gEngine.print_hud_text(L"Official runs are invalid while HaloTAS is running!");
 			lastDisplayUpdate = now;
 		}
@@ -167,11 +130,93 @@ void run() {
 
 }
 
+void attach_hooks() {
+
+	DetourRestoreAfterWith();
+
+	// DIRECTINPUT8
+	LPDIRECTINPUT8 pDI8;
+	DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&pDI8, NULL);
+	if (!pDI8) {
+		tas_logger::fatal("Couldn't get dinput8 handle.");
+		exit(1);
+	}
+
+	LPDIRECTINPUTDEVICE8 pDI8Dev = nullptr;
+	pDI8->CreateDevice(GUID_SysKeyboard, &pDI8Dev, NULL);
+	if (!pDI8Dev) {
+		pDI8->Release();
+		tas_logger::fatal("Couldn't create dinput8 device.");
+		exit(1);
+	}
+	
+	void** dinputVTable = *reinterpret_cast<void***>(pDI8Dev);
+
+	originalGetDeviceState = (GetDeviceState_t)(dinputVTable[9]);
+	originalGetDeviceData = (GetDeviceData_t)(dinputVTable[10]);
+
+	pDI8Dev->Release();
+	pDI8->Release();
+
+	// DIRECTX9
+	IDirect3D9* pD3D = Direct3DCreate9(D3D_SDK_VERSION);
+	if (!pD3D) {
+		tas_logger::fatal("Couldn't get d3d9 handle.");
+		exit(1);
+	}
+
+	D3DPRESENT_PARAMETERS d3dpp = { 0 };
+	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
+	d3dpp.hDeviceWindow = GetForegroundWindow();
+	d3dpp.Windowed = TRUE;
+
+	IDirect3DDevice9* dummyD3D9Device = nullptr;
+	pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &dummyD3D9Device);
+	if (!dummyD3D9Device)
+	{
+		pD3D->Release();
+		return;
+	}
+
+	void** d3d9VTable = *reinterpret_cast<void***>(dummyD3D9Device);
+
+	originalD3D9BeginScene = (D3D9EndScene_t)(d3d9VTable[41]);
+	AttachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
+
+	originalD3D9EndScene = (D3D9EndScene_t)(d3d9VTable[42]);
+	AttachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
+
+	dummyD3D9Device->Release();
+	pD3D->Release();
+
+	AttachFunc(&(PVOID&)originalGetDeviceState, hkGetDeviceState);
+	AttachFunc(&(PVOID&)originalGetDeviceData, hkGetDeviceData);
+	AttachFunc(&(PVOID&)originalSimulateTick, hkSimulateTick);
+	AttachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
+	AttachFunc(&(PVOID&)originalBeginLoop, hkBeginLoop);
+}
+
+void detach_hooks() {
+	DetachFunc(&(PVOID&)originalGetDeviceState, hkGetDeviceState);
+	DetachFunc(&(PVOID&)originalGetDeviceData, hkGetDeviceData);
+	DetachFunc(&(PVOID&)originalSimulateTick, hkSimulateTick);
+	DetachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
+	DetachFunc(&(PVOID&)originalBeginLoop, hkBeginLoop);
+	DetachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
+	DetachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
+}
+
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
-	// Main execution happens in run() so that destructors are called properly before FreeLibraryAndExitThread gets called
+	tas_logger::info("===== HaloTAS Started =====");
+	attach_hooks();
+
 	run();
+
 	glfwTerminate();
+	detach_hooks();
+	tas_logger::info("===== HaloTAS Closed =====");
+	FreeLibrary(hDLL);
 	FreeLibraryAndExitThread(hDLL, NULL);
 }
 
@@ -180,67 +225,86 @@ INT APIENTRY DllMain(HMODULE hDLL, DWORD Reason, LPVOID /*Reserved*/)
 {
 	DWORD dwThreadID;
 	if (Reason == DLL_PROCESS_ATTACH) {
-		tas_logger::info("===== HaloTAS Started =====");
-
-		DetourRestoreAfterWith();
-
-		// Get Handles to necessary functions
-		HMODULE hDInput8 = GetModuleHandle("dinput8.dll");
-		if (hDInput8 == NULL) {
-			tas_logger::fatal("Couldn't get handle for dinput8.dll.");
-			return 0;
-		}
-		FARPROC dwDirectInput8Create = GetProcAddress(hDInput8, "DirectInput8Create");
-		if (dwDirectInput8Create == NULL) {
-			tas_logger::fatal("GetProcAddress failed to find DirectInput8Create.");
-			return 0;
-		}
-
-		originalGetDeviceState = (GetDeviceState_t)((DWORD)dwDirectInput8Create + GetDeviceStateOffset);
-		originalGetDeviceData = (GetDeviceData_t)((DWORD)dwDirectInput8Create + GetDeviceDataOffset);
-
-		AttachFunc(&(PVOID&)originalGetDeviceState, hkGetDeviceState);
-		AttachFunc(&(PVOID&)originalGetDeviceData, hkGetDeviceData);
-		AttachFunc(&(PVOID&)originalSimulateTick, hkSimulateTick);
-		AttachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
-		
 		CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)Main_Thread, hDLL, 0, &dwThreadID);
 	}
 	else if (Reason == DLL_PROCESS_DETACH) {
-		DetachFunc(&(PVOID&)originalGetDeviceState, hkGetDeviceState);
-		DetachFunc(&(PVOID&)originalGetDeviceData, hkGetDeviceData);
-		DetachFunc(&(PVOID&)originalSimulateTick, hkSimulateTick);
-		DetachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
-		DetachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
-		DetachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
-		tas_logger::info("===== HaloTAS Closed =====");
+		//MessageBox(NULL, "Detach", "", MB_OK);
 	}
 	return TRUE;
 }
 
-static bool tab_down = true;
-static bool tab_toggle = true;
-static int tab_toggle_count = 0;
+static int32_t pressedMouseTick = 0;
 
-HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE lpDevice, DWORD cbData, LPVOID *lpvData) // Mouse
+static bool btn_down[3] = { false, false, false };
+static bool btn_queued[3] = {false, false, false };
+
+HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE *lpDevice, DWORD cbData, LPVOID *lpvData) // Mouse
 {
 	HRESULT hResult = DI_OK;
-
 	hResult = originalGetDeviceState(lpDevice, cbData, lpvData);
-
 	return hResult;
 }
 
+static bool tab_down = false;
+static bool enter_down = false;
+static bool g_down = false;
 static DWORD lastsequence = 0;
-
-HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) // Keyboard
+static int32_t pressedTick = 0;
+static bool queuedEnter = false;
+static bool queuedTab = false;
+static bool queuedG = false;
+HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) // Keyboard
 {
+	//ADDR_KEYBOARD_INPUT[KEYS::Tab] = 1;
 	HRESULT hResult = DI_OK;
+	//return DIERR_INPUTLOST;
+	
+	auto& inputHandler = tas_input_handler::get();
+
+	if (inputHandler.this_tick_enter() && pressedTick != inputHandler.get_current_playback_tick()) {
+		queuedEnter = true;
+	}
+	if (inputHandler.this_tick_tab() && pressedTick != inputHandler.get_current_playback_tick()) {
+		queuedTab = true;
+	}
+	if (inputHandler.this_tick_g() && pressedTick != inputHandler.get_current_playback_tick()) {
+		queuedG = true;
+	}
+
+	pressedTick = inputHandler.get_current_playback_tick();
+
+	if (queuedTab){
+		if (tab_down) {
+			rgdod->dwData = 0x80;
+		}
+		else {
+			rgdod->dwData = 0x00;
+			queuedTab = false;
+		}
+		rgdod->dwOfs = DIK_TAB;
+		rgdod->dwTimeStamp = GetTickCount();
+		rgdod->dwSequence = ++lastsequence;
+		tab_down = !tab_down;
+		return hResult;
+	}
+
+	if (queuedG) {
+		if (g_down) {
+			rgdod->dwData = 0x80;
+		}
+		else {
+			rgdod->dwData = 0x00;
+			queuedG = false;
+		}
+		rgdod->dwOfs = DIK_G;
+		rgdod->dwTimeStamp = GetTickCount();
+		rgdod->dwSequence = ++lastsequence;
+		g_down = !g_down;
+		return hResult;
+	}
 
 	hResult = originalGetDeviceData(pDevice, cbObjectData, rgdod, pdwInOut, dwFlags);
 	return hResult;
-
-	
 	
 	///////////////////////////////////////////////////
 
@@ -325,12 +389,19 @@ void hkSimulateTick(int ticksAfterThis) {
 char hkAdvanceFrame(float deltaTime) {
 
 	// Pre-Frame
+	auto& gInputHandler = tas_input_handler::get();
+	gInputHandler.pre_frame();
 
 	char c = originalAdvanceFrame(deltaTime);
 
 	// Post-Frame
 
 	return c;
+}
+
+int __cdecl hkBeginLoop() {
+
+	return originalBeginLoop();
 }
 
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice)
