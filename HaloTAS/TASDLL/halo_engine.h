@@ -40,6 +40,8 @@ public:
 	int get_tag_index_from_path(int, char*);
 	void set_debug_camera(bool enabled);
 
+	std::string current_bsp_name();
+
 	// Patching
 	void mouse_directinput_override_disable();
 	void mouse_directinput_override_enable();

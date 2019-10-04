@@ -1,29 +1,29 @@
 #include "render_d3d9.h"
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
+#include "tas_logger.h"
 #include "halo_constants.h"
 #include <algorithm>
+#include <filesystem>
+#include <glm/gtx/normal.hpp>
+#include <thread>
+
+namespace fs = std::filesystem;
 
 IDirect3DVertexDeclaration9* CUSTOMVERTEX::Decl = NULL;
 
-void loadModelToVector(const char* path, std::vector<CUSTOMVERTEX> &vec) {
+bool obj_to_vertex_vector(const char* path, std::vector<CUSTOMVERTEX> &vecOut) {
 
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
 	std::vector<tinyobj::material_t> materials;
 
-	std::string warn;
-	std::string err;
+	std::string warn, err;
 
 	bool ret = tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path);
-	if (!warn.empty()) {
-		exit(1);
-	}
-	if (!err.empty()) {
-		exit(1);
-	}
-	if (!ret) {
-		exit(1);
+	if (!warn.empty() || !err.empty() || !ret) {
+		tas_logger::error("obj loader error: %s", warn.c_str());
+		return false;
 	}
 
 	for (size_t s = 0; s < shapes.size(); s++) {
@@ -33,45 +33,70 @@ void loadModelToVector(const char* path, std::vector<CUSTOMVERTEX> &vec) {
 			int fv = shapes[s].mesh.num_face_vertices[f];
 
 			// Loop over vertices in the face.
+			
+			//glm::vec3 vtx[3];
 			for (size_t v = 0; v < fv; v++) {
 				tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
-				tinyobj::real_t vx = attrib.vertices[3 * idx.vertex_index + 0];
-				tinyobj::real_t vy = attrib.vertices[3 * idx.vertex_index + 1];
-				tinyobj::real_t vz = attrib.vertices[3 * idx.vertex_index + 2];
+
+				// Position
+				float vx = attrib.vertices[3 * idx.vertex_index + 0];
+				float vy = attrib.vertices[3 * idx.vertex_index + 1];
+				float vz = attrib.vertices[3 * idx.vertex_index + 2];
+				// Normals
 				tinyobj::real_t nx = attrib.normals[3 * idx.normal_index + 0];
 				tinyobj::real_t ny = attrib.normals[3 * idx.normal_index + 1];
 				tinyobj::real_t nz = attrib.normals[3 * idx.normal_index + 2];
-
-				CUSTOMVERTEX vert{ D3DXVECTOR3( vx, vy, vz), D3DXVECTOR3(nx, ny, nz) };
-				vec.push_back(vert);
+				
+				CUSTOMVERTEX vtx{ D3DXVECTOR3(vx, vy, vz), D3DXVECTOR3(nx, ny, nz) };
+				vecOut.push_back(vtx);
 			}
+			
+			/*auto nrm = glm::triangleNormal(vtx[0], vtx[1], vtx[2]);
+
+			CUSTOMVERTEX vert2{ D3DXVECTOR3(vtx[1].x, vtx[1].y, vtx[1].z), D3DXVECTOR3(nrm.x, nrm.y, nrm.z) };
+			CUSTOMVERTEX vert3{ D3DXVECTOR3(vtx[2].x, vtx[2].y, vtx[2].z), D3DXVECTOR3(nrm.x, nrm.y, nrm.z) };*/
+
+			/*vecOut.push_back(vert2);
+			vecOut.push_back(vert3);
+*/
 			index_offset += fv;
 		}
+	}
+
+	return true;
+}
+
+void render_d3d9::load_all_models(IDirect3DDevice9* device) {
+	// Get files in $(HaloDir)\HaloTASFiles\Models
+	auto modelsDirectory = fs::current_path();
+	modelsDirectory += "/HaloTASFiles/Models";
+
+	if (fs::exists(modelsDirectory) && fs::is_directory(modelsDirectory)) {
+		for (auto& entry : fs::directory_iterator(modelsDirectory)) {
+			if (!entry.is_regular_file())
+				continue;
+
+			if (entry.path().extension() == ".obj") {
+				try {
+					load_model(device, entry.path());
+					tas_logger::debug("Loaded model: %s", entry.path().string());
+				}
+				catch (...) {
+					tas_logger::debug("Failed to load model: %s", entry.path().string());
+				}
+			}
+		}
+	}
+	else {
+		// No models folder
 	}
 }
 
 void render_d3d9::initialize(IDirect3DDevice9* device)
 {
 	initialized = true;
-
-	std::vector<CUSTOMVERTEX> vertexes {};
-	loadModelToVector("d40_full.obj", vertexes);
-
-	// create the vertex and store the pointer into v_buffer, which is created globally
-	device->CreateVertexBuffer(vertexes.size() * sizeof(CUSTOMVERTEX),
-		0,
-		0,
-		D3DPOOL_MANAGED,
-		&v_buffer,
-		NULL);
-
-	v_bufferSize = vertexes.size();
-
-	VOID* pVoid;
-	v_buffer->Lock(0, 0, (void**)& pVoid, 0);
-	memcpy(pVoid, vertexes.data(), v_bufferSize * sizeof(CUSTOMVERTEX));
-	v_buffer->Unlock();
-
+	
+	// Initialize vertex format once
 	D3DVERTEXELEMENT9 VertexElements[] =
 	{
 		{0,0,D3DDECLTYPE_FLOAT3, D3DDECLMETHOD_DEFAULT, D3DDECLUSAGE_POSITION, 0},
@@ -79,10 +104,54 @@ void render_d3d9::initialize(IDirect3DDevice9* device)
 		D3DDECL_END()
 	};
 	device->CreateVertexDeclaration(VertexElements, &CUSTOMVERTEX::Decl);
+
+	// fix this later to load in the background without hitching
+	//std::thread model_loader (&render_d3d9::load_all_models, device);
+	load_all_models(device);
+}
+
+void render_d3d9::load_model(IDirect3DDevice9* device, std::filesystem::path path)
+{
+	D3DModel d3dModel{};
+	
+	std::vector<CUSTOMVERTEX> vertexes{};
+	auto str = path.string();
+	auto filename = path.filename().string();
+	if (!obj_to_vertex_vector(str.c_str(), vertexes)) {
+		return;
+	}
+
+	// create the vertex and store the pointer into v_buffer, which is created globally
+	device->CreateVertexBuffer(vertexes.size() * sizeof(CUSTOMVERTEX),
+		0,
+		0,
+		D3DPOOL_MANAGED,
+		&d3dModel.v_buffer,
+		NULL);
+
+	d3dModel.v_bufferSize = vertexes.size();
+
+	VOID* pVoid;
+	d3dModel.v_buffer->Lock(0, 0, (void**)& pVoid, 0);
+	memcpy(pVoid, vertexes.data(), d3dModel.v_bufferSize * sizeof(CUSTOMVERTEX));
+	d3dModel.v_buffer->Unlock();
+
+	models[filename] = d3dModel;
+}
+
+void render_d3d9::renderModel(IDirect3DDevice9* device, D3DModel model)
+{
+	device->SetRenderState(D3DRS_FILLMODE, fillMode);
+	device->SetRenderState(D3DRS_CULLMODE, cullMode);
+	device->SetStreamSource(0, model.v_buffer, 0, sizeof(CUSTOMVERTEX));
+	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, model.v_bufferSize);
+	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
+	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, model.v_bufferSize);
 }
 
 void render_d3d9::render(IDirect3DDevice9* device)
 {
+
 	if (!enabled) {
 		return;
 	}
@@ -215,7 +284,6 @@ void render_d3d9::render(IDirect3DDevice9* device)
 	device->SetVertexShader(NULL);
 	device->SetPixelShader(NULL);
 	
-	device->SetRenderState(D3DRS_FILLMODE, fillMode);
 	device->SetRenderState(D3DRS_ALPHABLENDENABLE, TRUE);
 
 	if (alphaModeColor) {
@@ -227,7 +295,6 @@ void render_d3d9::render(IDirect3DDevice9* device)
 		device->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
 	}
 
-	device->SetRenderState(D3DRS_CULLMODE, cullMode);
 	device->SetRenderState(D3DRS_ZENABLE, TRUE);
 	device->SetRenderState(D3DRS_LIGHTING, TRUE);
 	device->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(50, 50, 50));
@@ -241,7 +308,7 @@ void render_d3d9::render(IDirect3DDevice9* device)
 
 	float horizontalFovRadians = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
 	float verticalFov = horizontalFovRadians * (float)1080 / (float)1920;
-	//verticalFov = std::clamp(verticalFov - .03f, 0.001f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
+	verticalFov = std::clamp(verticalFov + fovOffset, 0.001f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
 
 	D3DXMATRIX matView;
 	D3DXMatrixLookAtLH(&matView,
@@ -259,7 +326,7 @@ void render_d3d9::render(IDirect3DDevice9* device)
 
 	D3DXMatrixPerspectiveFovLH(&matProjection,
 		verticalFov,
-		(FLOAT)1600 / (FLOAT)900,
+		(FLOAT)1920 / (FLOAT)1080,
 		0.1f,
 		cullDistance); 
 
@@ -291,14 +358,14 @@ void render_d3d9::render(IDirect3DDevice9* device)
 	material.Ambient = materialColor;
 	device->SetMaterial(&material);
 
-	device->SetStreamSource(0, v_buffer, 0, sizeof(CUSTOMVERTEX));
-	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, v_bufferSize);
-	device->SetRenderState(D3DRS_FILLMODE, D3DFILL_WIREFRAME);
-	device->DrawPrimitive(D3DPT_TRIANGLELIST, 0, v_bufferSize);
+	// foreach model that is active, render
+	for (auto& [key, model] : models) {
+		if (model.active)
+			renderModel(device, model);
+	}
 
 	pStateBlock->Apply();
 	pStateBlock->Release();
-
 }
 
 void render_d3d9::SetEnabled(bool _enabled)
@@ -326,6 +393,11 @@ void render_d3d9::SetCullMode(D3DCULL _cullMode)
 	cullMode = _cullMode;
 }
 
+void render_d3d9::SetFoVOffset(float _offset)
+{
+	fovOffset = _offset;
+}
+
 void render_d3d9::ToggleTransparencyMode()
 {
 	alphaModeColor = !alphaModeColor;
@@ -335,3 +407,25 @@ void render_d3d9::SetCullDistance(float _cullDistance)
 {
 	cullDistance = _cullDistance;
 }
+
+std::map<std::string, D3DModel>& render_d3d9::Models()
+{
+	return models;
+}
+
+//std::vector<std::string> render_d3d9::ModelNames()
+//{
+//	std::vector<std::string> modelNames;
+//	for (auto& [key, value] : models) {
+//		modelNames.push_back(key);
+//	}
+//	return modelNames;
+//}
+//
+//void render_d3d9::SetModelVisibility(std::string modelName, bool enabled)
+//{
+//	auto keyVal = models.find(modelName);
+//	if (keyVal != models.end()) {
+//		keyVal->second.active = enabled;
+//	}
+//}

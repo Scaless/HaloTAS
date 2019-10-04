@@ -37,6 +37,9 @@ public:
 	void pre_tick();
 	void post_tick();
 	void pre_frame();
+	void post_frame();
+	void pre_loop();
+	void post_loop();
 
 	std::vector<std::string> get_loaded_levels();
 	tas_input* get_inputs(std::string levelName);

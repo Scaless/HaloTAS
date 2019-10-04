@@ -209,6 +209,14 @@ void detach_hooks() {
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
 	tas_logger::info("===== HaloTAS Started =====");
+	auto current_path = std::filesystem::current_path().string();
+	tas_logger::info("Current working directory: %s",current_path.c_str());
+
+	// Wait for program to init
+	while (*ADDR_SIMULATION_TICK <= 0) {
+		
+	}
+	
 	attach_hooks();
 
 	run();
@@ -395,13 +403,19 @@ char hkAdvanceFrame(float deltaTime) {
 	char c = originalAdvanceFrame(deltaTime);
 
 	// Post-Frame
+	gInputHandler.post_frame();
 
 	return c;
 }
 
 int __cdecl hkBeginLoop() {
+	auto& gInputHandler = tas_input_handler::get();
 
-	return originalBeginLoop();
+	gInputHandler.pre_loop();
+	auto ret = originalBeginLoop();
+	gInputHandler.post_loop();
+
+	return ret;
 }
 
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice)

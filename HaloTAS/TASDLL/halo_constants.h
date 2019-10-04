@@ -15,6 +15,7 @@
 #include <unordered_map>
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#include <boost/functional/hash.hpp>
 
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
 static uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
@@ -25,6 +26,14 @@ static uint8_t PATCH_FRAME_BEGIN_ORIGINAL_BYTES[sizeof(PATCH_FRAME_BEGIN_FUNC_BY
 
 static uint8_t PATCH_TICK_BEGIN_ORIGINAL_BYTES[5];
 static uint8_t PATCH_TICK_END_ORIGINAL_BYTES[5];
+
+enum class HUD_TIMER_LOCATION : int16_t
+{
+	TOP_LEFT = 0,
+	TOP_RIGHT = 1,
+	BOTTOM_LEFT = 2,
+	BOTTOM_RIGHT = 3
+};
 
 namespace halo::constants {
 	static const float CAMERA_PITCH_MIN = -1.492f;
@@ -55,8 +64,8 @@ inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START_ANIMATION = reinterpret_cas
 inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x008603CC);
 inline extern int32_t* ADDR_FRAMES_ABSOLUTE = reinterpret_cast<int32_t*>(0x007C3100);
 //inline extern int32_t* ADDR_FRAMES_ABSOLUTE_ALTERNATE = reinterpret_cast<int32_t*>(0x007C3104);
-inline extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
-inline extern int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
+inline volatile extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
+inline volatile extern int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
 
 inline extern uint8_t* ADDR_LOAD_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973A);
 inline extern uint8_t* ADDR_SAVE_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973F);
@@ -70,6 +79,7 @@ inline extern uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002
 inline extern float* ADDR_LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);
 inline extern float* ADDR_UPDOWNVIEW = reinterpret_cast<float*>(0x402AD4BC);
 inline extern char* ADDR_MAP_STRING = reinterpret_cast<char*>(0x40000004);
+inline extern uint8_t* ADDR_CURRENT_BSP_INDEX = reinterpret_cast<uint8_t*>(0x69E8D8);
 inline extern uint32_t* ADDR_CHECKPOINT_INDICATOR = reinterpret_cast<uint32_t*>(0x00746F90);
 inline extern uint8_t* ADDR_KEYBOARD_INPUT = reinterpret_cast<uint8_t*>(0x006B1620);
 inline extern uint8_t* ADDR_LEFTMOUSE = reinterpret_cast<uint8_t*>(0x006B1818);
@@ -78,9 +88,19 @@ inline extern uint8_t* ADDR_RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
 inline extern bool* ADDR_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
 inline extern bool* ADDR_ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
 
+// HUD Stuff
+inline extern bool* ADDR_HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
+inline extern bool* ADDR_HUD_TIMER_VISIBLE = reinterpret_cast<bool*>(0x40000847);
+inline extern int32_t* ADDR_HUD_TIMER_START_TICK = reinterpret_cast<int32_t*>(0x40000838);
+inline extern int32_t* ADDR_HUD_TIMER_TOTAL_TIME_TICKS = reinterpret_cast<int32_t*>(0x4000083C);
+inline extern int16_t* ADDR_HUD_TIMER_OFFSET_X = reinterpret_cast<int16_t*>(0x40000840);
+inline extern int16_t* ADDR_HUD_TIMER_OFFSET_Y = reinterpret_cast<int16_t*>(0x40000842);
+inline extern HUD_TIMER_LOCATION* ADDR_HUD_TIMER_LOCATION = reinterpret_cast<HUD_TIMER_LOCATION*>(0x40000844); // use HUD_TIMER_LOCATION
+
 inline extern int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
 inline extern int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
 inline extern int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
+inline extern char* ADDR_INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
 
 // Patch point for allowing external directinput mouse movement
 inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
@@ -332,7 +352,7 @@ inline extern std::string KEY_PRINT_CODES[] = {
 	"NUM_-",
 	"NUM_+",
 	"NUM_ENTER",
-	"NUM_.",
+	"NUM_."
 };
 
 struct ObjectPoolObject
@@ -363,6 +383,54 @@ struct Tag {
 	uint32_t id;
 	glm::vec3 displayColor;
 	std::string displayName;
+};
+
+
+
+const std::unordered_map<std::pair<std::string, uint8_t>, std::string, boost::hash<std::pair<std::string, uint8_t>>> LEVEL_BSP_NAME{
+		{{"levels\\a10\\a10", 0}, "a10a"},
+		{{"levels\\a10\\a10", 1}, "a10b"},
+		{{"levels\\a10\\a10", 2}, "a10c"},
+		{{"levels\\a10\\a10", 3}, "a10d"},
+		{{"levels\\a10\\a10", 4}, "a10e"},
+		{{"levels\\a10\\a10", 5}, "a10f"},
+		{{"levels\\a10\\a10", 6}, "a10g"},
+		{{"levels\\a10\\a10", 7}, "a10_space"},
+		{{"levels\\a10\\a10", 8}, "x10hangar"},
+
+		{{"levels\\a30\\a30", 0}, "a30_a"},
+		{{"levels\\a30\\a30", 1}, "a30_b"},
+
+		{{"levels\\a50\\a50", 0}, "a50_exterior"},
+		{{"levels\\a50\\a50", 1}, "a50_muster"},
+		{{"levels\\a50\\a50", 2}, "a50_hangar"},
+		{{"levels\\a50\\a50", 3}, "a50_control"},
+
+		{{"levels\\b30\\b30", 0}, "b30a"},
+		{{"levels\\b30\\b30", 1}, "b30b"},
+
+		{{"levels\\c20\\c20", 0}, "c20_1"},
+		{{"levels\\c20\\c20", 1}, "c20_2"},
+		{{"levels\\c20\\c20", 2}, "c20_3"},
+		{{"levels\\c20\\c20", 3}, "c20_4"},
+
+		{{"levels\\d20\\d20", 0}, "d20_start"},
+		{{"levels\\d20\\d20", 1}, "d20_exterior"},
+		{{"levels\\d20\\d20", 2}, "d20_muster"},
+		{{"levels\\d20\\d20", 3}, "d20_hangar"},
+		{{"levels\\d20\\d20", 4}, "d20_control"},
+
+		{{"levels\\d40\\d40", 0}, "d40a"},
+		{{"levels\\d40\\d40", 1}, "d40b"},
+		{{"levels\\d40\\d40", 2}, "d40c"},
+		{{"levels\\d40\\d40", 3}, "d40d"},
+		{{"levels\\d40\\d40", 4}, "d40e"},
+		{{"levels\\d40\\d40", 5}, "d40f"},
+		{{"levels\\d40\\d40", 6}, "d40g"},
+		{{"levels\\d40\\d40", 7}, "d40h"},
+		{{"levels\\d40\\d40", 8}, "d40_terrain"},
+
+
 };
 
 const std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {

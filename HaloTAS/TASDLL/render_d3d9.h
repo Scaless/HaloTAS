@@ -4,7 +4,14 @@
 #include <d3d9.h>
 #include <d3dx9.h>
 #include <atomic>
+#include <filesystem>
+#include <map>
 
+struct D3DModel {
+	LPDIRECT3DVERTEXBUFFER9 v_buffer{ NULL };
+	UINT v_bufferSize{ 0 };
+	bool active{ false };
+};
 
 struct CUSTOMVERTEX
 {
@@ -32,16 +39,21 @@ private:
 	bool initialized {false};
 	void initialize(IDirect3DDevice9* device);
 
+	void load_model(IDirect3DDevice9* device, std::filesystem::path path);
+	void load_all_models(IDirect3DDevice9* device);
+	
+	void renderModel(IDirect3DDevice9* device, D3DModel model);
+
 	bool enabled{ false };
 	DWORD fillMode{ D3DFILL_SOLID };
 	D3DCOLORVALUE materialColor{ 1,1,1,0.5f };
 	D3DCOLORVALUE lightColor{ 0.5f, 0.5f, 0.5f, 0.2f };
 	D3DCULL cullMode{ D3DCULL_CW };
 	float cullDistance{ 250.0f };
+	float fovOffset{ 0.0f };
 	bool alphaModeColor{ true };
 
-	LPDIRECT3DVERTEXBUFFER9 v_buffer {NULL};
-	UINT v_bufferSize{ 0 };
+	std::map<std::string, D3DModel> models {};
 
 public:
 	void render(IDirect3DDevice9* device);
@@ -52,7 +64,16 @@ public:
 	void SetMaterialColor(D3DCOLORVALUE _materialColor);
 	void SetLightColor(D3DCOLORVALUE _lightColor);
 	void SetCullMode(D3DCULL _cullMode);
+	void SetFoVOffset(float _offset);
 	void ToggleTransparencyMode();
 	void SetCullDistance(float _cullDistance);
+
+	//// Returns a list of loaded model names
+	//std::vector<std::string> ModelNames();
+	//// Sets if model is visible or not
+	//void SetModelVisibility(std::string modelName, bool enabled);
+
+	std::map<std::string, D3DModel>& Models();
+
 };
 

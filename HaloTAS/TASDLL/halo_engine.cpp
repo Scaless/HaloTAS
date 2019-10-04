@@ -135,6 +135,19 @@ void halo_engine::set_debug_camera(bool enabled)
 	}
 }
 
+// Gets the name of a BSP from the level name and index
+std::string halo_engine::current_bsp_name()
+{
+	std::string currentMap = std::string(ADDR_MAP_STRING);
+
+	auto keyVal = LEVEL_BSP_NAME.find(std::make_pair(currentMap, *ADDR_CURRENT_BSP_INDEX));
+	if (keyVal != LEVEL_BSP_NAME.end()) {
+		return keyVal->second;
+	}
+
+	return std::string();
+}
+
 void halo_engine::mouse_directinput_override_disable()
 {
 	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);

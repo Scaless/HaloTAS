@@ -42,7 +42,7 @@ public:
 	// Appends tick to the end of the current input range
 	void append_tick();
 	// Removes ticks from the current input range
-	void remove_tick_range(int32_t tick_begin, int32_t tick_end);
+	void remove_tick_range(size_t tick_begin, size_t tick_end);
 	// Inserts count # of ticks after the starting tick location
 	void insert_tick_range(int32_t tick_start, int32_t count);
 };
