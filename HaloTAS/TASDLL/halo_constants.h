@@ -27,7 +27,7 @@ static uint8_t PATCH_FRAME_BEGIN_ORIGINAL_BYTES[sizeof(PATCH_FRAME_BEGIN_FUNC_BY
 static uint8_t PATCH_TICK_BEGIN_ORIGINAL_BYTES[5];
 static uint8_t PATCH_TICK_END_ORIGINAL_BYTES[5];
 
-enum class HUD_TIMER_LOCATION : int16_t
+enum class HUD_LOCATION : int16_t
 {
 	TOP_LEFT = 0,
 	TOP_RIGHT = 1,
@@ -95,7 +95,7 @@ inline extern int32_t* ADDR_HUD_TIMER_START_TICK = reinterpret_cast<int32_t*>(0x
 inline extern int32_t* ADDR_HUD_TIMER_TOTAL_TIME_TICKS = reinterpret_cast<int32_t*>(0x4000083C);
 inline extern int16_t* ADDR_HUD_TIMER_OFFSET_X = reinterpret_cast<int16_t*>(0x40000840);
 inline extern int16_t* ADDR_HUD_TIMER_OFFSET_Y = reinterpret_cast<int16_t*>(0x40000842);
-inline extern HUD_TIMER_LOCATION* ADDR_HUD_TIMER_LOCATION = reinterpret_cast<HUD_TIMER_LOCATION*>(0x40000844); // use HUD_TIMER_LOCATION
+inline extern HUD_LOCATION* ADDR_HUD_TIMER_LOCATION = reinterpret_cast<HUD_LOCATION*>(0x40000844);
 
 inline extern int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
 inline extern int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);

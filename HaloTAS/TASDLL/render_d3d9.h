@@ -32,11 +32,12 @@ public:
 	render_d3d9(render_d3d9 const&) = delete;
 	void operator=(render_d3d9 const&) = delete;
 private:
-	render_d3d9() = default;
+	render_d3d9();
 #pragma endregion
 
 private:
 	bool initialized {false};
+	void load_options();
 	void initialize(IDirect3DDevice9* device);
 
 	void load_model(IDirect3DDevice9* device, std::filesystem::path path);
@@ -45,7 +46,7 @@ private:
 	void renderModel(IDirect3DDevice9* device, D3DModel model);
 
 	bool enabled{ false };
-	DWORD fillMode{ D3DFILL_SOLID };
+	D3DFILLMODE fillMode{ D3DFILL_SOLID };
 	D3DCOLORVALUE materialColor{ 1,1,1,0.5f };
 	D3DCOLORVALUE lightColor{ 0.5f, 0.5f, 0.5f, 0.2f };
 	D3DCULL cullMode{ D3DCULL_CW };
@@ -67,6 +68,10 @@ public:
 	void SetFoVOffset(float _offset);
 	void ToggleTransparencyMode();
 	void SetCullDistance(float _cullDistance);
+
+	bool& Enabled() { return enabled; }
+	D3DFILLMODE& FillMode() { return fillMode; }
+	float& CullDistance() { return cullDistance; }
 
 	//// Returns a list of loaded model names
 	//std::vector<std::string> ModelNames();

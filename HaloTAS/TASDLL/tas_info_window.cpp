@@ -1,5 +1,6 @@
 #include "tas_info_window.h"
 #include "tas_input_handler.h"
+#include "tas_options.h"
 #include "render_d3d9.h"
 #include <unordered_set>
 #include <glm/glm.hpp>
@@ -383,10 +384,9 @@ void tas_info_window::render_d3d()
 		}
 
 		// Cull Distance
-		static float cullDistance = 250.0f;
 		ImGui::PushItemWidth(200);
-		if (ImGui::DragFloat("Cull Distance##D3D", &cullDistance, 0.2f, 0.1f, 250.0f)) {
-			d3d.SetCullDistance(cullDistance);
+		if (ImGui::DragFloat("Cull Distance##D3D", &d3d.CullDistance(), 0.2f, 0.1f, 1000.0f)) {
+			tas_options::set_value("d3d9::cullDistance", d3d.CullDistance());
 		}
 		ImGui::PopItemWidth();
 
@@ -752,11 +752,13 @@ void tas_info_window::render_menubar()
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Edit"))
-		{
-			if (ImGui::MenuItem("Paste", "CTRL+V")) {}
+		if (ImGui::BeginMenu("Options")) {
+			if (ImGui::MenuItem("Save Config")) {
+				tas_options::save_config();
+			}
 			ImGui::EndMenu();
 		}
+
 		const char* appText = "App: %.0f ms/frame (%.0f FPS)";
 		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::CalcTextSize(appText).x);
 		ImGui::Text(appText, 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

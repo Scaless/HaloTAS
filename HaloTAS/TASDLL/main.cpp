@@ -14,6 +14,7 @@
 #include "tas_overlay.h"
 #include "tas_info_window.h"
 #include "tas_input_handler.h"
+#include "tas_options.h"
 #include "tas_logger.h"
 #include "livesplit.h"
 #include "helpers.h"
@@ -224,7 +225,6 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	glfwTerminate();
 	detach_hooks();
 	tas_logger::info("===== HaloTAS Closed =====");
-	FreeLibrary(hDLL);
 	FreeLibraryAndExitThread(hDLL, NULL);
 }
 

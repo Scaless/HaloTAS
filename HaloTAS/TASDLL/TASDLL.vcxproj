@@ -156,6 +156,7 @@
     <ClCompile Include="tas_input.cpp" />
     <ClCompile Include="tas_input_handler.cpp" />
     <ClCompile Include="tas_logger.cpp" />
+    <ClCompile Include="tas_options.cpp" />
     <ClCompile Include="tas_overlay.cpp" />
     <ClCompile Include="render_cube.cpp" />
     <ClCompile Include="render_opengl.cpp" />
@@ -183,6 +184,7 @@
     <ClInclude Include="tas_input.h" />
     <ClInclude Include="tas_input_handler.h" />
     <ClInclude Include="tas_logger.h" />
+    <ClInclude Include="tas_options.h" />
     <ClInclude Include="tas_overlay.h" />
     <ClInclude Include="render_cube.h" />
     <ClInclude Include="render_opengl.h" />

@@ -2,6 +2,7 @@
 #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 #include "tas_logger.h"
+#include "tas_options.h"
 #include "halo_constants.h"
 #include <algorithm>
 #include <filesystem>
@@ -92,10 +93,23 @@ void render_d3d9::load_all_models(IDirect3DDevice9* device) {
 	}
 }
 
+render_d3d9::render_d3d9()
+{
+	load_options();
+}
+
+void render_d3d9::load_options()
+{
+	auto optCullDistance = tas_options::get_value<float>("d3d9::cullDistance");
+	if (optCullDistance.has_value()) {
+		cullDistance = optCullDistance.get();
+	}
+}
+
 void render_d3d9::initialize(IDirect3DDevice9* device)
 {
 	initialized = true;
-	
+
 	// Initialize vertex format once
 	D3DVERTEXELEMENT9 VertexElements[] =
 	{
@@ -406,6 +420,7 @@ void render_d3d9::ToggleTransparencyMode()
 void render_d3d9::SetCullDistance(float _cullDistance)
 {
 	cullDistance = _cullDistance;
+	tas_options::set_value("d3d9::cullDistance", cullDistance);
 }
 
 std::map<std::string, D3DModel>& render_d3d9::Models()
