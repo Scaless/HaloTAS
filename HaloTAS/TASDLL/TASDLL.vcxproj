@@ -151,6 +151,7 @@
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="livesplit.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="randomizer.cpp" />
     <ClCompile Include="render_d3d9.cpp" />
     <ClCompile Include="tas_info_window.cpp" />
     <ClCompile Include="tas_input.cpp" />
@@ -179,6 +180,7 @@
     <ClInclude Include="imgui_impl_glfw.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="livesplit.h" />
+    <ClInclude Include="randomizer.h" />
     <ClInclude Include="render_d3d9.h" />
     <ClInclude Include="tas_info_window.h" />
     <ClInclude Include="tas_input.h" />

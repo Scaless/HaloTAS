@@ -790,7 +790,7 @@ void tas_info_window::render_header()
 		*ADDR_GAME_SPEED = lockedGameSpeed;
 	}
 
-	ImGui::Checkbox("Force Simulate", &currentInput.forceSimulate);
+	//ImGui::Checkbox("Force Simulate", &currentInput.forceSimulate);
 	*ADDR_SIMULATE = currentInput.forceSimulate ? 0 : 1;
 	*ADDR_ALLOW_INPUT = (*ADDR_SIMULATE == 1 ? 0 : 1);
 }

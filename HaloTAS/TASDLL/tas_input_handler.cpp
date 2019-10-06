@@ -115,14 +115,14 @@ void tas_input_handler::pre_tick()
 {
 	const int32_t tick = *ADDR_SIMULATION_TICK;
 
-	if (tick == 0) {
+	/*if (tick == 0) {
 		*ADDR_HUD_TIMER_PAUSED = 0;
 		*ADDR_HUD_TIMER_VISIBLE = 1;
 		*ADDR_HUD_TIMER_TOTAL_TIME_TICKS = 18000;
 		*ADDR_HUD_TIMER_LOCATION = HUD_LOCATION::TOP_RIGHT;
 		*ADDR_HUD_TIMER_OFFSET_X = 0;
 		*ADDR_HUD_TIMER_OFFSET_Y = 50;
-	}
+	}*/
 
 	
 	/*if(ADDR_KEYBOARD_INPUT[KEYS::Tab] == 1)
@@ -193,11 +193,11 @@ void tas_input_handler::post_tick()
 		recordedTick = 0;
 	}
 
-	if (tick > 0) {
+	/*if (tick > 0) {
 		*ADDR_HUD_TIMER_VISIBLE = 1;
 		*ADDR_HUD_TIMER_TOTAL_TIME_TICKS = tick;
 		*ADDR_HUD_TIMER_START_TICK = tick;
-	}
+	}*/
 	
 	if (playback && *ADDR_SIMULATION_TICK > 10) {
 		if (playback_buffer_current_level.size() > recordedTick) {

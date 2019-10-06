@@ -96,6 +96,9 @@ inline extern int32_t* ADDR_HUD_TIMER_TOTAL_TIME_TICKS = reinterpret_cast<int32_
 inline extern int16_t* ADDR_HUD_TIMER_OFFSET_X = reinterpret_cast<int16_t*>(0x40000840);
 inline extern int16_t* ADDR_HUD_TIMER_OFFSET_Y = reinterpret_cast<int16_t*>(0x40000842);
 inline extern HUD_LOCATION* ADDR_HUD_TIMER_LOCATION = reinterpret_cast<HUD_LOCATION*>(0x40000844);
+inline extern float* ADDR_HUD_PLAYER_SHIELD = reinterpret_cast<float*>(0x40000848);
+inline extern float* ADDR_HUD_PLAYER_HEALTH = reinterpret_cast<float*>(0x4000084C);
+inline extern uint8_t* ADDR_HUD_FLAGS = reinterpret_cast<uint8_t*>(0x400008A0);
 
 inline extern int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
 inline extern int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
