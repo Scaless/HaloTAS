@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TASDLL", "TASDLL\TASDLL.vcx
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "PhantomBSPDetector", "PhantomBSPDetector\PhantomBSPDetector.vcxproj", "{78232A61-FAF5-4C57-9870-C8D9108573E6}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HaloTAS_SAFE", "HaloTAS_SAFE\HaloTAS_SAFE.vcxproj", "{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,16 @@ Global
 		{78232A61-FAF5-4C57-9870-C8D9108573E6}.Release|x64.Build.0 = Release|x64
 		{78232A61-FAF5-4C57-9870-C8D9108573E6}.Release|x86.ActiveCfg = Release|Win32
 		{78232A61-FAF5-4C57-9870-C8D9108573E6}.Release|x86.Build.0 = Release|Win32
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Debug|x64.ActiveCfg = Debug|x64
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Debug|x64.Build.0 = Debug|x64
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Debug|x86.ActiveCfg = Debug|Win32
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Debug|x86.Build.0 = Debug|Win32
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Release|Any CPU.ActiveCfg = Release|Win32
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Release|x64.ActiveCfg = Release|x64
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Release|x64.Build.0 = Release|x64
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Release|x86.ActiveCfg = Release|Win32
+		{804920E1-553B-4F29-AF87-BCA8AE7D4AA2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

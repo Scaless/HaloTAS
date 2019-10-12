@@ -30,6 +30,7 @@ typedef HRESULT(__stdcall* GetDeviceData_t)(LPDIRECTINPUTDEVICE*, DWORD, LPDIDEV
 typedef void(__cdecl* SimulateTick_t)(int);
 typedef char(__cdecl* AdvanceFrame_t)(float);
 typedef int(__cdecl* BeginLoop_t)();
+typedef void(__cdecl* GetMouseKeyboardGamepadInput_t)();
 typedef HRESULT(__stdcall* D3D9BeginScene_t)(IDirect3DDevice9* pDevice);
 typedef HRESULT(__stdcall* D3D9EndScene_t)(IDirect3DDevice9* pDevice);
 
@@ -38,6 +39,7 @@ HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectDa
 void __cdecl hkSimulateTick(int);
 char __cdecl hkAdvanceFrame(float);
 int __cdecl hkBeginLoop();
+void __cdecl hkGetMouseKeyboardGamepadInput();
 HRESULT __stdcall hkD3D9EndScene(IDirect3DDevice9* pDevice);
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice);
 
@@ -46,6 +48,7 @@ GetDeviceData_t originalGetDeviceData;
 SimulateTick_t originalSimulateTick = (SimulateTick_t)(0x45B780);
 AdvanceFrame_t originalAdvanceFrame = (AdvanceFrame_t)(0x470BF0);
 BeginLoop_t originalBeginLoop = (BeginLoop_t)(0x4C6E80);
+GetMouseKeyboardGamepadInput_t originalGetMouseKeyboardGamepadInput = (GetMouseKeyboardGamepadInput_t)(0x490760);
 D3D9EndScene_t originalD3D9EndScene;
 D3D9BeginScene_t originalD3D9BeginScene;
 
@@ -69,6 +72,8 @@ void DetachFunc(PVOID* originalFunc, PVOID replacementFunc) {
 	DetourTransactionCommit();
 }
 
+std::unique_ptr<tas_info_window> infoWindow{ nullptr };
+
 void run() {
 
 	glfwSetErrorCallback(glfw_error_callback);
@@ -79,7 +84,7 @@ void run() {
 
 	auto liveSplit = std::make_unique<livesplit>();
 	auto overlay = std::make_unique<tas_overlay>();
-	auto infoWindow = std::make_unique<tas_info_window>();
+	infoWindow = std::make_unique<tas_info_window>();
 
 	auto& gEngine = halo_engine::get();
 	auto& gInputHandler = tas_input_handler::get();
@@ -195,6 +200,7 @@ void attach_hooks() {
 	AttachFunc(&(PVOID&)originalSimulateTick, hkSimulateTick);
 	AttachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
 	AttachFunc(&(PVOID&)originalBeginLoop, hkBeginLoop);
+	AttachFunc(&(PVOID&)originalGetMouseKeyboardGamepadInput, hkGetMouseKeyboardGamepadInput);
 }
 
 void detach_hooks() {
@@ -203,6 +209,7 @@ void detach_hooks() {
 	DetachFunc(&(PVOID&)originalSimulateTick, hkSimulateTick);
 	DetachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
 	DetachFunc(&(PVOID&)originalBeginLoop, hkBeginLoop);
+	DetachFunc(&(PVOID&)originalGetMouseKeyboardGamepadInput, hkGetMouseKeyboardGamepadInput);
 	DetachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
 	DetachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
 }
@@ -391,7 +398,6 @@ void hkSimulateTick(int ticksAfterThis) {
 
 	// Post-Tick
 	gInputHandler.post_tick();
-
 }
 
 char hkAdvanceFrame(float deltaTime) {
@@ -410,12 +416,30 @@ char hkAdvanceFrame(float deltaTime) {
 
 int __cdecl hkBeginLoop() {
 	auto& gInputHandler = tas_input_handler::get();
+	
+	auto& gEngine = halo_engine::get();
+	while (gEngine.locked()) {
+		gEngine.internal_tick_advance();
+	}
 
 	gInputHandler.pre_loop();
 	auto ret = originalBeginLoop();
 	gInputHandler.post_loop();
 
 	return ret;
+}
+
+void __cdecl hkGetMouseKeyboardGamepadInput() {
+	bool playback = false;
+	if (infoWindow != nullptr) {
+		auto input = infoWindow->getInput();
+		playback = input.playback;
+	}
+
+	if (!playback) {
+	}
+
+	originalGetMouseKeyboardGamepadInput();
 }
 
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice)

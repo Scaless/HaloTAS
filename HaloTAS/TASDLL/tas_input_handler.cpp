@@ -114,22 +114,7 @@ void tas_input_handler::reload_playback_buffer(tas_input* input) {
 void tas_input_handler::pre_tick()
 {
 	const int32_t tick = *ADDR_SIMULATION_TICK;
-
-	/*if (tick == 0) {
-		*ADDR_HUD_TIMER_PAUSED = 0;
-		*ADDR_HUD_TIMER_VISIBLE = 1;
-		*ADDR_HUD_TIMER_TOTAL_TIME_TICKS = 18000;
-		*ADDR_HUD_TIMER_LOCATION = HUD_LOCATION::TOP_RIGHT;
-		*ADDR_HUD_TIMER_OFFSET_X = 0;
-		*ADDR_HUD_TIMER_OFFSET_Y = 50;
-	}*/
-
 	
-	/*if(ADDR_KEYBOARD_INPUT[KEYS::Tab] == 1)
-		ADDR_KEYBOARD_INPUT[KEYS::Tab] = 2;
-	else
-		ADDR_KEYBOARD_INPUT[KEYS::Tab] = 1;
-*/
 	if (playback) {
 		*ADDR_DINPUT_MOUSEX = 0;
 		*ADDR_DINPUT_MOUSEY = 0;
@@ -160,21 +145,7 @@ void tas_input_handler::pre_tick()
 					*ADDR_MIDDLEMOUSE = 1;
 				}
 			}
-
-			//*ADDR_CAMERA_POSITION = savedIM.cameraLocation;
-			//*ADDR_DINPUT_MOUSEX = savedIM.inputMouseX;
-			//*ADDR_DINPUT_MOUSEY = savedIM.inputMouseY;
-			//drift = glm::distance(*ADDR_CAMERA_POSITION,savedIM.cameraLocation);
 		}
-
-		// Fix for enter being stuck held down
-		/*if (tas_input_handler::inputTickCounter > 0) {
-			if (playback_buffer_current_level.size() > tas_input_handler::inputTickCounter - 1) {
-				if (playback_buffer_current_level[tas_input_handler::inputTickCounter - 1].inputBuf[KEYS::Enter] > 0) {
-					ADDR_KEYBOARD_INPUT[Enter] = 0;
-				}
-			}
-		}*/
 	}
 
 	tas_input_handler::inputTickCounter += 1;
@@ -191,21 +162,6 @@ void tas_input_handler::post_tick()
 
 	if (tick == 0) {
 		recordedTick = 0;
-	}
-
-	/*if (tick > 0) {
-		*ADDR_HUD_TIMER_VISIBLE = 1;
-		*ADDR_HUD_TIMER_TOTAL_TIME_TICKS = tick;
-		*ADDR_HUD_TIMER_START_TICK = tick;
-	}*/
-	
-	if (playback && *ADDR_SIMULATION_TICK > 10) {
-		if (playback_buffer_current_level.size() > recordedTick) {
-			input_moment savedIM = playback_buffer_current_level[recordedTick];
-			if (*ADDR_RNG == savedIM.rng) {
-
-			}
-		}
 	}
 
 	if (record && recordedTick > static_cast<int32_t>(playback_buffer_current_level.size()) - 1)
@@ -271,7 +227,6 @@ void tas_input_handler::post_loop()
 
 std::vector<std::string> tas_input_handler::get_loaded_levels()
 {
-	// TODO
 	vector<string> names;
 	names.reserve(levelInputs.size());
 	for (const auto& level : levelInputs) {

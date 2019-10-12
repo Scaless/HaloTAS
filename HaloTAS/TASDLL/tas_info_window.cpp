@@ -206,17 +206,10 @@ void tas_info_window::render_overlay()
 	}
 }
 
-static int advanceTickStart = 0;
-static bool advanceTick = false;
 static int32_t core_save_rng = 0;
 static int32_t int_handler_tick = 0;
 void tas_info_window::render_tas()
 {
-	if (advanceTick && *ADDR_SIMULATION_TICK_2 > advanceTickStart) {
-		*ADDR_GAME_SPEED = 0;
-		advanceTick = false;
-	}
-
 	if (!ImGui::CollapsingHeader("TAS")) {
 		return;
 	}
@@ -245,17 +238,17 @@ void tas_info_window::render_tas()
 		*ADDR_SAVE_CHECKPOINT = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Restart Level") || GetAsyncKeyState(VK_OEM_MINUS)) {
+	if (ImGui::Button("Restart Level")) {
 		*ADDR_RESTART_LEVEL = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("CORE_SAVE") || GetAsyncKeyState(VK_NUMPAD4)) {
+	if (ImGui::Button("CORE_SAVE")) {
 		*ADDR_CORE_SAVE = 1;
 		core_save_rng = *ADDR_RNG;
 		int_handler_tick = tas_input_handler::inputTickCounter;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("CORE_LOAD") || GetAsyncKeyState(VK_NUMPAD6)) {
+	if (ImGui::Button("CORE_LOAD")) {
 		*ADDR_CORE_LOAD = 1;
 		*ADDR_RNG = core_save_rng;
 		tas_input_handler::inputTickCounter = int_handler_tick;
@@ -265,12 +258,15 @@ void tas_info_window::render_tas()
 	}*/
 
 	static bool enableDebugCamera{ false };
-
 	if (ImGui::Checkbox("Enable Debug Camera", &enableDebugCamera)) {
 		gEngine.set_debug_camera(enableDebugCamera);
 	}
 	ImGui::Checkbox("Cam Follow", &camFollow);
 	ImGui::DragFloat3("Cam Distance", glm::value_ptr(camDistance), .05f, -20.0f, 20.0f);
+
+
+	static int advanceTicks = 1;
+	ImGui::DragInt("Ticks To Advance", &advanceTicks, 1, 1, 100);
 
 	if (ImGui::Button("PAUSE")) {
 		*ADDR_GAME_SPEED = 0;
@@ -280,10 +276,8 @@ void tas_info_window::render_tas()
 		*ADDR_GAME_SPEED = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("ADVANCE 1 TICK")) {
-		*ADDR_GAME_SPEED = .1f;
-		advanceTickStart = *ADDR_SIMULATION_TICK_2;
-		advanceTick = true;
+	if (ImGui::Button("ADVANCE X TICK") || GetAsyncKeyState(VK_RIGHT)) {
+		gEngine.request_tick_advance(advanceTicks);
 	}
 
 	if (ImGui::Button("SAVE")) {
@@ -407,7 +401,7 @@ static std::string current_item;
 static bool pauseOnTick = false;
 static bool pausedThisRun = false;
 static int pauseOnTickCount = 0;
-static int fixEditorTickOffset = -2;
+static int fixEditorTickOffset = 1;
 
 float lerp(float a, float b, float frac) {
 	return (a * (1.0f - frac)) + (b * frac);

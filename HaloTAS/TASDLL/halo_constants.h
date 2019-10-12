@@ -47,6 +47,7 @@ namespace halo::constants {
 namespace halo::function {
 	inline extern uintptr_t PRINT_HUD = 0x004AE180; // (int playerIndex, wchar_t* string)
 	inline extern uintptr_t GET_TAG_INDEX = 0x00442550; // (int tagTypeIdentifier, char* pathString)
+	inline extern uintptr_t ADVANCE_TICK = 0x0045B780; // (int ticksRemaining)
 
 	inline extern uintptr_t PLAY_SOUND_PTR = 0x00549af0;
 	typedef uint32_t play_sound_actual_func(uint32_t sndIndex, int16_t*, int, int, int*, int, int);
