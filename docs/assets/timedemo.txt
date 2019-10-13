@@ -1,0 +1,31 @@
+Date / Time: 10/11/2019 12:27:09 PM (1404905515ms)
+3500MHz, 1024MB, 2048M nVidia Unknown (DeviceID=0x1b80) Driver=26.21.14.3615 Shader=3.0
+C:\Halo\halo.exe -novideo -window -console -timedemo   (Version=1.0.10.621)
+Frames=4700
+Total Time=29.60s
+Average frame rate=158.77fps
+Below  5fps= 50% (time)  0% (frames) (14.920s spent in 6 frames)
+Below 10fps= 50% (time)  0% (frames)
+Below 15fps= 50% (time)  0% (frames)
+Below 20fps= 50% (time)  0% (frames)
+Below 25fps= 50% (time)  0% (frames)
+Below 30fps= 50% (time)  0% (frames)
+Below 40fps= 51% (time)  0% (frames)
+Below 50fps= 51% (time)  0% (frames)
+Below 60fps= 51% (time)  0% (frames)
+###Sound Options###
+Hardware Acceleration= No
+Sound Quality= High
+Environmental Sound= No
+Sound Variety= High
+###Video Options###
+Resolution= 1920 x 1080
+Refresh rate= 144 Hz
+Framerate throttle= No Vsync
+Specular= Yes
+Shadows= Yes
+Decals= Yes
+Particles= Off
+Texture Quality= High
+
+For further information, please visit the timedemo FAQ at: http://halo.bungie.net/site/halo/features/hpcperformancefaq.html 
