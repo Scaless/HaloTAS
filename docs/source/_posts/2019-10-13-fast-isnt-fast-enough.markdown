@@ -48,7 +48,7 @@ If we want to simulate 10000 ticks quickly to get to the end of a recording, you
 
 Normally Halo 1 is limited to 30 ticks/second. In each tick, engine components are updated: physics, AI, movement, scripts, etc. Mouse/keyboard/gamepad input, however, is tracked on a per-frame basis. Since the game is capable of running at an unlocked framerate, your view needs to update at a faster rate so it is interpolated from your inputs. If we called the tick function directly, we would not get updated input information and end up with 10000 ticks of the same input which is quite useless.
 
-One of the features of Halo PC is the launch flag `-timedemo`. When you start the game with this flag, it will immediately play through the opening cutscene of a few levels then close the game and save a file with some FPS benchmark information (you can see my results [here!](/assets/timedemo.txt)).
+One of the features of Halo PC is the launch flag `-timedemo`. When you start the game with this flag, it will immediately play through the opening cutscene of a few levels then close the game and save a file with some FPS benchmark information (you can see my results [here!]({{ site.baseurl }}/assets/timedemo.txt)).
 
 I noticed that using `-timedemo` you are not restricted to 30 ticks/second! This makes sense as it wants to run as fast as possible for a good benchmark result. 
 

@@ -95,7 +95,7 @@
 
 <p>Normally Halo 1 is limited to 30 ticks/second. In each tick, engine components are updated: physics, AI, movement, scripts, etc. Mouse/keyboard/gamepad input, however, is tracked on a per-frame basis. Since the game is capable of running at an unlocked framerate, your view needs to update at a faster rate so it is interpolated from your inputs. If we called the tick function directly, we would not get updated input information and end up with 10000 ticks of the same input which is quite useless.</p>
 
-<p>One of the features of Halo PC is the launch flag <code class="highlighter-rouge">-timedemo</code>. When you start the game with this flag, it will immediately play through the opening cutscene of a few levels then close the game and save a file with some FPS benchmark information (you can see my results <a href="/assets/timedemo.txt">here!</a>).</p>
+<p>One of the features of Halo PC is the launch flag <code class="highlighter-rouge">-timedemo</code>. When you start the game with this flag, it will immediately play through the opening cutscene of a few levels then close the game and save a file with some FPS benchmark information (you can see my results <a href="/HaloTAS/assets/timedemo.txt">here!</a>).</p>
 
 <p>I noticed that using <code class="highlighter-rouge">-timedemo</code> you are not restricted to 30 ticks/second! This makes sense as it wants to run as fast as possible for a good benchmark result.</p>
 
