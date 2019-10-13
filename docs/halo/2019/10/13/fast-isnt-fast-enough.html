@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Fast Isn’t Fast Enough | HaloTAS</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Fast Isn’t Fast Enough" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="github.com/Scaless/HaloTAS" />
+<meta property="og:description" content="github.com/Scaless/HaloTAS" />
+<link rel="canonical" href="/halo/2019/10/13/fast-isnt-fast-enough.html" />
+<meta property="og:url" content="/halo/2019/10/13/fast-isnt-fast-enough.html" />
+<meta property="og:site_name" content="HaloTAS" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-13T12:18:04-04:00" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","headline":"Fast Isn’t Fast Enough","url":"/halo/2019/10/13/fast-isnt-fast-enough.html","dateModified":"2019-10-13T12:18:04-04:00","datePublished":"2019-10-13T12:18:04-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"/halo/2019/10/13/fast-isnt-fast-enough.html"},"description":"github.com/Scaless/HaloTAS","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="HaloTAS" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">HaloTAS</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Fast Isn&#39;t Fast Enough</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-10-13T12:18:04-04:00" itemprop="datePublished">Oct 13, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p><a href="https://github.com/Scaless/HaloTAS">github.com/Scaless/HaloTAS</a></p>
+
+<p>If you would like to support my projects, check out my <a href="https://www.patreon.com/scalesllc">Patreon</a>.</p>
+
+<hr />
+
+<p>Recently a new geo-bump (teleporting your character with level geometry) was found on the level Keyes. If you are not entirely familiar with Halo 1 speedrunning, Keyes is by far the most optimized speedrun level in the game. The current IL record for Keyes on Easy difficulty is 2 minutes and 18 seconds. With current strats we think it is theoretically possible to get a 2:17 with perfect RNG and movement.</p>
+
+<p>The new geo-bump strategy is very difficult to pull off consistently. In 200 attempts I was only able to do it twice. It requires incredibly precise movement and look direction while being inside of a wall with no currently consistent human-possible setup.</p>
+
+<p>I used this as an opportunity to test the viability of this strat with HaloTAS. Given how optimized the level is, shaving off even a second is quite considerable.</p>
+
+<p>This TAS recording represents an ‘average’ flood bump and a frame perfect geo-bump:</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/w64Q50cA-8M" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<p>Unfortuntely, the strat wastes too much time setting up the 2nd bump and is just too inconsistent to be viable to use in ILs. Even in a TAS run with perfectly manipulated RNG it may still be slower than the normal out of bounds platforming.</p>
+
+<p>For me however, this was an amazing test of HaloTAS. The recording utilizes all of the core aspects of the game:</p>
+
+<ul>
+  <li>Player movement and view angles</li>
+  <li>Enemy AI</li>
+  <li>Physics engine</li>
+  <li>RNG is manipulated correctly
+    <ul>
+      <li>AR spread is based on RNG, causing each bullet to be randomly distributed in a cone. The recording kills the grunt in the same way every time, even causing the same death animation. The amount of time that the flood takes to revive is also based on RNG.</li>
+    </ul>
+  </li>
+</ul>
+
+<p>I was pretty happy with this recording, but I wanted to go <em>faster</em>.</p>
+
+<p>One of the main pain points of the current TAS tools is iteration time. Starting input in a new TAS is simple enough, but once you are dozens of seconds into a level it is tedious to constantly restart the level in real-time. Most levels are several minutes long, so this had to be addressed eventually.</p>
+
+<p>My first attempt to improve iteration speed was to use the internal Halo engine functions <code class="highlighter-rouge">core_save</code> and <code class="highlighter-rouge">core_load</code>. <code class="highlighter-rouge">core_save</code> takes a snapshot of game state and saves it to a file, while <code class="highlighter-rouge">core_load</code> restores state from that file. Immediately I ran into problems doing this:</p>
+
+<ul>
+  <li>The snapshot of game state does not include RNG, so the sequence will immediately be out of sync after loading a <code class="highlighter-rouge">core_save</code>. I resolved this by saving the RNG state in the application and restoring it after the game is reverted.</li>
+  <li>The engine only maintains one <code class="highlighter-rouge">core.bin</code> file that state is saved to. When you <code class="highlighter-rouge">core_save</code> it overwrites this file with the new state.</li>
+  <li>If you <code class="highlighter-rouge">core_load</code> on a different map than the one you saved on, the game crashes.</li>
+  <li>Your last input state is preserved after a <code class="highlighter-rouge">core_load</code>. For example: if you are holding W when you issue the <code class="highlighter-rouge">core_load</code>, you will be holding W when the revert occurs. If you were not holding W on the tick that you loaded into, you’ve now desynced. I wasted a ton of time working on desynced files before figuring this out.</li>
+</ul>
+
+<p>In the long run this system wasn’t going to work. I started messing around in <a href="https://www.nsa.gov/resources/everyone/ghidra/">Ghidra</a> looking for alternatives.</p>
+
+<p>If we want to simulate 10000 ticks quickly to get to the end of a recording, you might wonder why we can’t just call the tick function directly.</p>
+
+<p>Normally Halo 1 is limited to 30 ticks/second. In each tick, engine components are updated: physics, AI, movement, scripts, etc. Mouse/keyboard/gamepad input, however, is tracked on a per-frame basis. Since the game is capable of running at an unlocked framerate, your view needs to update at a faster rate so it is interpolated from your inputs. If we called the tick function directly, we would not get updated input information and end up with 10000 ticks of the same input which is quite useless.</p>
+
+<p>One of the features of Halo PC is the launch flag <code class="highlighter-rouge">-timedemo</code>. When you start the game with this flag, it will immediately play through the opening cutscene of a few levels then close the game and save a file with some FPS benchmark information (you can see my results <a href="/assets/timedemo.txt">here!</a>).</p>
+
+<p>I noticed that using <code class="highlighter-rouge">-timedemo</code> you are not restricted to 30 ticks/second! This makes sense as it wants to run as fast as possible for a good benchmark result.</p>
+
+<p>By twiddling a few bits in the tick handling system we can trick the game into thinking we are in benchmark mode, allowing us to run the game at <em>incredible hihg speed</em> while maintaining input integrity. This is the same input sequence as the previous video, but with the new benchmark system:</p>
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/xSPpZSJTSkI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<p>With this new system we can quickly advance to a specific tick anywhere in the playback within seconds, and I can finally strip out the flawed <code class="highlighter-rouge">core_x</code> utilities.</p>
+
+<p>This is my first ‘blog’ post on this project, let me know if I should keep making these in the future.</p>
+
+  </div><a class="u-url" href="/halo/2019/10/13/fast-isnt-fast-enough.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">HaloTAS</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">HaloTAS</li><li><a class="u-email" href="mailto:scales@scal.es">scales@scal.es</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
