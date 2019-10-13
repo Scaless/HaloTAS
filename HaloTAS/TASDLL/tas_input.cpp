@@ -1,4 +1,5 @@
 #include "tas_input.h"
+#include <algorithm>
 
 tas_input::tas_input()
 	: levelName("")
@@ -71,10 +72,18 @@ void tas_input::append_tick()
 	// TODO
 }
 
-void tas_input::remove_tick_range(int32_t tick_begin, int32_t tick_end)
+void tas_input::remove_tick_range(size_t tick_begin, size_t tick_end)
 {
-	// TODO Bounds checking
-	inputs.erase(inputs.begin() + tick_begin, inputs.begin() + tick_end + 1);
+	if (tick_end < tick_begin) {
+		return;
+	}
+
+	auto length = inputs.size();
+	auto begin_pos = std::min(tick_begin, length);
+	auto end_pos = std::min(tick_end+1, length);
+	if (length > 0) {
+		inputs.erase(inputs.begin() + begin_pos, inputs.begin() + end_pos);
+	}
 }
 
 void tas_input::insert_tick_range(int32_t tick_start, int32_t count)

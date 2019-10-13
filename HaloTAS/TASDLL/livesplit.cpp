@@ -1,13 +1,19 @@
 #include "livesplit.h"
+#include "tas_logger.h"
 #include <Windows.h>
 #include <memoryapi.h>
-
+#include "halo_constants.h"
 
 livesplit::livesplit()
 {
 	LPVOID desiredAddr = reinterpret_cast<LPVOID>(0x44000000);
 	SIZE_T poolSize = sizeof(livesplit_export);
 	memPool = VirtualAlloc(desiredAddr, poolSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+
+	if (memPool == nullptr) {
+		tas_logger::error("VirtualAlloc failed to allocate memory for livesplit at address %p", desiredAddr);
+		return;
+	}
 
 	livesplit_export defaultExport = {};
 	memcpy_s(memPool, sizeof(defaultExport), &defaultExport, sizeof(defaultExport));
@@ -22,5 +28,11 @@ livesplit::~livesplit()
 
 void livesplit::update_export(const livesplit_export& newExport)
 {
-	memcpy_s(memPool, sizeof(newExport), &newExport, sizeof(newExport));
+	(*ADDR_HUD_PLAYER_HEALTH < 1.0f) ? *ADDR_HUD_FLAGS |= 1 << 1 : *ADDR_HUD_FLAGS &= ~(1 << 1);
+	(*ADDR_HUD_PLAYER_SHIELD < 1.0f && *ADDR_HUD_PLAYER_SHIELD != -1) ? *ADDR_HUD_FLAGS |= 1 << 3 : *ADDR_HUD_FLAGS &= ~(1 << 3);
+
+	// Update the pool
+	if (memPool != nullptr) {
+		memcpy_s(memPool, sizeof(newExport), &newExport, sizeof(newExport));
+	}
 }

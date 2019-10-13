@@ -70,10 +70,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <IncludePath>$(ProjectDir)include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -86,12 +86,13 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2017;$(SolutionDir)\lib\freetype;$(SolutionDir)\lib\detours;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2017;$(SolutionDir)\lib\freetype;$(SolutionDir)\lib\detours;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\boost_1_70_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MSVCRT.LIB;dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseFastLinkTimeCodeGeneration</LinkTimeCodeGeneration>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -106,10 +107,11 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2017;$(SolutionDir)\lib\freetype;$(SolutionDir)\lib\detours;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\lib\glfw\lib-vc2017;$(SolutionDir)\lib\freetype;$(SolutionDir)\lib\detours;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Lib\x86;C:\boost_1_70_0\stage\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>MSVCRTD.LIB;dwmapi.lib;opengl32.lib;glfw3.lib;freetype_release.lib;user32.lib;detours.lib;dinput8.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
     </Link>
@@ -149,9 +151,13 @@
     <ClCompile Include="imgui_impl_opengl3.cpp" />
     <ClCompile Include="livesplit.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="randomizer.cpp" />
+    <ClCompile Include="render_d3d9.cpp" />
     <ClCompile Include="tas_info_window.cpp" />
     <ClCompile Include="tas_input.cpp" />
     <ClCompile Include="tas_input_handler.cpp" />
+    <ClCompile Include="tas_logger.cpp" />
+    <ClCompile Include="tas_options.cpp" />
     <ClCompile Include="tas_overlay.cpp" />
     <ClCompile Include="render_cube.cpp" />
     <ClCompile Include="render_opengl.cpp" />
@@ -174,13 +180,18 @@
     <ClInclude Include="imgui_impl_glfw.h" />
     <ClInclude Include="imgui_impl_opengl3.h" />
     <ClInclude Include="livesplit.h" />
+    <ClInclude Include="randomizer.h" />
+    <ClInclude Include="render_d3d9.h" />
     <ClInclude Include="tas_info_window.h" />
     <ClInclude Include="tas_input.h" />
     <ClInclude Include="tas_input_handler.h" />
+    <ClInclude Include="tas_logger.h" />
+    <ClInclude Include="tas_options.h" />
     <ClInclude Include="tas_overlay.h" />
     <ClInclude Include="render_cube.h" />
     <ClInclude Include="render_opengl.h" />
     <ClInclude Include="render_text.h" />
+    <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="FreeType.fragmentshader">

@@ -21,6 +21,9 @@ Video Demo: https://www.youtube.com/watch?v=AEBJUeXLTlo
     - NVIDIA or AMD, integrated Intel has problems
 - [Boost](https://www.boost.org/users/download/) v1.70 or higher
     - Default location: C:\boost_1_70_0
+	- Several binaries are required to be built. To build boost, unzip the boost folder and run bootstrap.bat followed by b2.exe in a command prompt in the boost directory.
+- [DirectX 9 SDK](https://www.microsoft.com/en-us/download/details.aspx?id=6812)
+	- Default location: C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)
 
 #### Made possible with the following projects:
 

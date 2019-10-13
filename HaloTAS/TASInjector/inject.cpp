@@ -95,7 +95,7 @@ int main() {
 	std::cout << "Found DLL at: " << dllpath << std::endl;
 
 	// Copy resources files to Halo directory
-	if (fs::exists(halo_dir + "/" + HaloProcess)) {
+	/*if (fs::exists(halo_dir + "/" + HaloProcess)) {
 		fs::copy("Resources", halo_dir, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
 		std::cout << "Copied resources to " << halo_dir << std::endl;
 	}
@@ -105,7 +105,7 @@ int main() {
 			<< "Press Enter to Close.";
 		std::cin.get();
 		return 0;
-	}
+	}*/
 	
 	DWORD procId = NULL;
 	PROCESSENTRY32 pe32 = { sizeof(PROCESSENTRY32) };

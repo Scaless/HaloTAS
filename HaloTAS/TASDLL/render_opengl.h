@@ -11,4 +11,4 @@
 
 void glfw_error_callback(int error, const char* description);
 
-GLuint LoadShaders(const char * vertex_file_path, const char * fragment_file_path);
+GLuint LoadShaders(std::string vertex_file_path, std::string fragment_file_path);

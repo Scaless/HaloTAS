@@ -1,6 +1,7 @@
 #include "halo_engine.h"
 #include <Windows.h>
 #include <Psapi.h>
+#include "tas_input_handler.h"
 
 BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
 	char title[255];
@@ -81,12 +82,12 @@ void halo_engine::get_snapshot(engine_snapshot& snapshot)
 	{
 		int count = objectDataPool->ObjectCount;
 		for (int i = 0; i < count; i++) {
-			uint32_t* basePtr = (uint32_t*)&objectDataPool->ObjectPointers[i];
+			uint32_t* basePtr = (uint32_t*)& objectDataPool->ObjectPointers[i];
 
-			if ((int)*basePtr == 0) {
+			if ((int)* basePtr == 0) {
 				continue;
 			}
-			if ((int)*basePtr < 0x40000000 || (int)*basePtr > 0x41B40000) {
+			if ((int)* basePtr < 0x40000000 || (int)* basePtr > 0x41B40000) {
 				continue;
 			}
 
@@ -108,6 +109,76 @@ void halo_engine::print_hud_text(const std::wstring& input)
 		call halo::function::PRINT_HUD
 		add	esp, 4
 	}
+}
+
+int halo_engine::get_tag_index_from_path(int tagIdentifier, char* path)
+{
+	int index = -1;
+	__asm {
+		mov edi, tagIdentifier
+		push path
+		call halo::function::GET_TAG_INDEX
+		mov index, eax
+		add esp, 4
+	}
+	return index;
+}
+
+void halo_engine::set_debug_camera(bool enabled)
+{
+	if (enabled) {
+		ADDR_DEBUG_CAMERA_ENABLE[0] = 0x90;
+		ADDR_DEBUG_CAMERA_ENABLE[1] = 0x6E;
+	}
+	else {
+		ADDR_DEBUG_CAMERA_ENABLE[0] = 0x60;
+		ADDR_DEBUG_CAMERA_ENABLE[1] = 0x6D;
+	}
+}
+
+void halo_engine::request_tick_advance(int numTicks)
+{
+	tickLock = true;
+	ticksQueued = numTicks;
+}
+
+void halo_engine::internal_tick_advance()
+{
+	for (int i = 0; i < ticksQueued; i++) {
+		auto& gInputHandler = tas_input_handler::get();
+
+		int unknown;
+		__asm {
+			mov esi, 0
+			push esi
+			call halo::function::ADVANCE_TICK
+			mov unknown, eax
+			add esp, 4
+		}
+
+		*ADDR_SIMULATION_TICK += 1;
+		*ADDR_SIMULATION_TICK_2 += 1;
+	}
+	ticksQueued = 0;
+	tickLock = false;
+}
+
+bool halo_engine::locked()
+{
+	return tickLock;
+}
+
+// Gets the name of a BSP from the level name and index
+std::string halo_engine::current_bsp_name()
+{
+	std::string currentMap = std::string(ADDR_MAP_STRING);
+
+	auto keyVal = LEVEL_BSP_NAME.find(std::make_pair(currentMap, *ADDR_CURRENT_BSP_INDEX));
+	if (keyVal != LEVEL_BSP_NAME.end()) {
+		return keyVal->second;
+	}
+
+	return std::string();
 }
 
 void halo_engine::mouse_directinput_override_disable()
