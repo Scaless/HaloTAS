@@ -59,3 +59,5 @@ By twiddling a few bits in the tick handling system we can trick the game into t
 With this new system we can quickly advance to a specific tick anywhere in the playback within seconds, and I can finally strip out the flawed `core_x` utilities. 
 
 This is my first 'blog' post on this project, let me know if I should keep making these in the future.
+
+~Scales
