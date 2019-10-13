@@ -1,6 +1,10 @@
 # HaloTAS
 Halo: Combat Evolved PC Speedrunning Tools
 
+Blog stuff: https://scaless.github.io/HaloTAS/
+
+### There is currently no pre-built release of these tools. There are many bugs and crashes that are still being resolved. Once the project is cleaned up, I will make a public release for you to make your own TASs. 
+
 Video Demo: https://www.youtube.com/watch?v=AEBJUeXLTlo
 
 [Engine Documentation](https://docs.google.com/document/d/1ED6EnvpQ_c7rSdS5oY5-EKQLF_58TptMr9A5uNV8aSs/edit?usp=sharing)
