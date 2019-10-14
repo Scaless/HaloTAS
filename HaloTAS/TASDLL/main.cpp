@@ -31,6 +31,7 @@ typedef void(__cdecl* SimulateTick_t)(int);
 typedef char(__cdecl* AdvanceFrame_t)(float);
 typedef int(__cdecl* BeginLoop_t)();
 typedef void(__cdecl* GetMouseKeyboardGamepadInput_t)();
+typedef void(__cdecl* AdvanceEffectsTimer_t)(float);
 typedef HRESULT(__stdcall* D3D9BeginScene_t)(IDirect3DDevice9* pDevice);
 typedef HRESULT(__stdcall* D3D9EndScene_t)(IDirect3DDevice9* pDevice);
 
@@ -40,6 +41,7 @@ void __cdecl hkSimulateTick(int);
 char __cdecl hkAdvanceFrame(float);
 int __cdecl hkBeginLoop();
 void __cdecl hkGetMouseKeyboardGamepadInput();
+void __cdecl hkAdvanceEffectsTimer(float);
 HRESULT __stdcall hkD3D9EndScene(IDirect3DDevice9* pDevice);
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice);
 
@@ -48,6 +50,7 @@ GetDeviceData_t originalGetDeviceData;
 SimulateTick_t originalSimulateTick = (SimulateTick_t)(0x45B780);
 AdvanceFrame_t originalAdvanceFrame = (AdvanceFrame_t)(0x470BF0);
 BeginLoop_t originalBeginLoop = (BeginLoop_t)(0x4C6E80);
+AdvanceEffectsTimer_t originalAdvanceEffectsTimer = (AdvanceEffectsTimer_t)(0x45b4f0);
 GetMouseKeyboardGamepadInput_t originalGetMouseKeyboardGamepadInput = (GetMouseKeyboardGamepadInput_t)(0x490760);
 D3D9EndScene_t originalD3D9EndScene;
 D3D9BeginScene_t originalD3D9BeginScene;
@@ -186,6 +189,14 @@ void attach_hooks() {
 
 	void** d3d9VTable = *reinterpret_cast<void***>(dummyD3D9Device);
 
+#if _DEBUG
+	// Breakpoint to find additional D3D functions if needed
+	// Make sure symbols are loaded
+	for (int i = 0; i < 180; i++) {
+		auto funcPtr = d3d9VTable[i];
+	}
+#endif
+
 	originalD3D9BeginScene = (D3D9EndScene_t)(d3d9VTable[41]);
 	AttachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
 
@@ -201,6 +212,7 @@ void attach_hooks() {
 	AttachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
 	AttachFunc(&(PVOID&)originalBeginLoop, hkBeginLoop);
 	AttachFunc(&(PVOID&)originalGetMouseKeyboardGamepadInput, hkGetMouseKeyboardGamepadInput);
+	AttachFunc(&(PVOID&)originalAdvanceEffectsTimer, hkAdvanceEffectsTimer);
 }
 
 void detach_hooks() {
@@ -210,6 +222,7 @@ void detach_hooks() {
 	DetachFunc(&(PVOID&)originalAdvanceFrame, hkAdvanceFrame);
 	DetachFunc(&(PVOID&)originalBeginLoop, hkBeginLoop);
 	DetachFunc(&(PVOID&)originalGetMouseKeyboardGamepadInput, hkGetMouseKeyboardGamepadInput);
+	DetachFunc(&(PVOID&)originalAdvanceEffectsTimer, hkAdvanceEffectsTimer);
 	DetachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
 	DetachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
 }
@@ -435,6 +448,10 @@ void __cdecl hkGetMouseKeyboardGamepadInput() {
 	}
 
 	originalGetMouseKeyboardGamepadInput();
+}
+
+void __cdecl hkAdvanceEffectsTimer(float dt) {
+	originalAdvanceEffectsTimer(dt);
 }
 
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice)
