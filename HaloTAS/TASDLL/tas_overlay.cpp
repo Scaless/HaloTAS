@@ -134,6 +134,15 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 		}
 	}
 
+	float horizontalFovRadians = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
+	float verticalFov = horizontalFovRadians * (float)display_h / (float)display_w;
+	verticalFov = std::clamp(verticalFov - .03f, 0.1f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
+
+	if (display_w < 400 || display_h < 400) {
+		// Not within bounds
+		return;
+	}
+
 	// Rendering
 	glViewport(0, 0, display_w, display_h);
 	glClearColor(0, 0, 0, 0);
@@ -143,9 +152,6 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	float horizontalFovRadians = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
-	float verticalFov = horizontalFovRadians * (float)display_h / (float)display_w;
-	verticalFov = std::clamp(verticalFov - .03f, 0.001f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
 	glm::mat4 Projection = glm::perspectiveFov(verticalFov, (float)display_w, (float)display_h, 0.5f, options.cullDistance);
 
 	glm::vec3 playerPos = *ADDR_CAMERA_POSITION;
