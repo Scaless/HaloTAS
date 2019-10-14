@@ -34,6 +34,8 @@ void tas_overlay::init_window() {
 	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
 	glfwWindowHint(GLFW_FLOATING, GLFW_TRUE);
 
+	auto& gEngine = halo_engine::get();
+
 	window = glfwCreateWindow(1280, 720, "TAS Overlay", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
@@ -57,12 +59,15 @@ void tas_overlay::init_window() {
 	glfwSetMouseButtonCallback(window, func);
 }
 
-void tas_overlay::update_position(HWND haloWindow)
+void tas_overlay::update_position()
 {
 	glfwMakeContextCurrent(window);
 
-	RECT windowRect, clientRect;
-	if (GetWindowRect(haloWindow, &windowRect) && GetClientRect(haloWindow, &clientRect)) {
+	auto& gEngine = halo_engine::get();
+	RECT haloClientRect = gEngine.window_client_rect();
+	RECT haloWindowRect = gEngine.window_window_rect();
+
+	if (!IsRectEmpty(&haloWindowRect) && !IsRectEmpty(&haloClientRect)) {
 
 		int width, height, x, y;
 		glfwGetWindowSize(window, &width, &height);
@@ -70,11 +75,11 @@ void tas_overlay::update_position(HWND haloWindow)
 
 		int targetWidth, targetHeight, targetX, targetY;
 
-		targetX = windowRect.left + 8;
-		targetY = windowRect.top + 30;
+		targetX = haloWindowRect.left + 8;
+		targetY = haloWindowRect.top + 30;
 
-		targetWidth = clientRect.right - clientRect.left;
-		targetHeight = clientRect.bottom - clientRect.top;
+		targetWidth = haloClientRect.right - haloClientRect.left;
+		targetHeight = haloClientRect.bottom - haloClientRect.top;
 
 		if (targetX != x || targetY != y) {
 			glfwSetWindowPos(window, targetX, targetY);
@@ -108,12 +113,11 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 
 	glfwMakeContextCurrent(window);
 	glfwPollEvents();
+	update_position();
 
 	auto& engine = halo_engine::get();
-	update_position(engine.window_handle());
-
 	if (focused) {
-		SetForegroundWindow(engine.window_handle());
+		engine.focus();
 		focused = false;
 	}
 

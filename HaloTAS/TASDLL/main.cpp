@@ -82,13 +82,13 @@ void run() {
 		return;
 	}
 
-	auto liveSplit = std::make_unique<livesplit>();
-	auto overlay = std::make_unique<tas_overlay>();
-	infoWindow = std::make_unique<tas_info_window>();
-
 	auto& gEngine = halo_engine::get();
 	auto& gInputHandler = tas_input_handler::get();
 	gInputHandler.get_inputs_from_files();
+
+	auto liveSplit = std::make_unique<livesplit>();
+	auto overlay = std::make_unique<tas_overlay>();
+	infoWindow = std::make_unique<tas_info_window>();
 
 	auto lastEngineUpdate = std::chrono::system_clock::now();
 	auto lastDisplayUpdate = std::chrono::system_clock::now();

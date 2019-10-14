@@ -14,7 +14,17 @@ tas_info_window::tas_info_window()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	window = glfwCreateWindow(1280, 720, "Game Info", NULL, NULL);
+	auto& gEngine = halo_engine::get();
+	RECT haloClientRect = gEngine.window_client_rect();
+
+	if (!IsRectEmpty(&haloClientRect)) {
+		int targetWidth = haloClientRect.right - haloClientRect.left;
+		int targetHeight = haloClientRect.bottom - haloClientRect.top;
+		window = glfwCreateWindow(targetWidth, targetHeight, "Game Info", NULL, NULL);
+	}
+	else {
+		window = glfwCreateWindow(1280, 720, "Game Info", NULL, NULL);
+	}
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);

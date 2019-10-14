@@ -33,6 +33,9 @@ public:
 	void set_window_handle(HWND handle);
 	void update_window_handle();
 	HWND window_handle();
+	RECT window_client_rect();
+	RECT window_window_rect();
+	void focus();
 
 	void get_snapshot(engine_snapshot& snapshot);
 

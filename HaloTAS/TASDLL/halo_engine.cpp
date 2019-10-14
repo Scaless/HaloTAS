@@ -76,6 +76,35 @@ HWND halo_engine::window_handle()
 	return haloHWND;
 }
 
+RECT halo_engine::window_client_rect()
+{
+	if (haloHWND) {
+		RECT outRect;
+		if (GetClientRect(haloHWND, &outRect)) {
+			return outRect;
+		}
+	}
+	return RECT();
+}
+
+RECT halo_engine::window_window_rect()
+{
+	if (haloHWND) {
+		RECT outRect;
+		if (GetWindowRect(haloHWND, &outRect)) {
+			return outRect;
+		}
+	}
+	return RECT();
+}
+
+void halo_engine::focus()
+{
+	if (haloHWND) {
+		SetForegroundWindow(haloHWND);
+	}
+}
+
 void halo_engine::get_snapshot(engine_snapshot& snapshot)
 {
 	if (objectDataPool != nullptr)

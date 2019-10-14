@@ -25,7 +25,7 @@ private:
 	bool focused = false;
 
 	void glfwMouseButtonFunc(GLFWwindow* w, int button, int action, int mods);
-	void update_position(HWND haloWindow);
+	void update_position();
 	void init_window();
 
 public:
