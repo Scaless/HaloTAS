@@ -9,6 +9,7 @@
 #include <dinput.h>
 #include <d3d9.h>
 #include <d3dx9.h>
+#include <detours/detours.h>
 
 #include "halo_engine.h"
 #include "tas_overlay.h"
@@ -19,7 +20,6 @@
 #include "livesplit.h"
 #include "helpers.h"
 #include "render_d3d9.h"
-#include "detours.h"
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
