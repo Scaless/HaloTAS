@@ -417,11 +417,6 @@ char hkAdvanceFrame(float deltaTime) {
 int __cdecl hkBeginLoop() {
 	auto& gInputHandler = tas_input_handler::get();
 	
-	auto& gEngine = halo_engine::get();
-	while (gEngine.locked()) {
-		gEngine.internal_tick_advance();
-	}
-
 	gInputHandler.pre_loop();
 	auto ret = originalBeginLoop();
 	gInputHandler.post_loop();

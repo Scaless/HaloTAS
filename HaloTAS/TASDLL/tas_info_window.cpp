@@ -276,8 +276,8 @@ void tas_info_window::render_tas()
 		*ADDR_GAME_SPEED = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("ADVANCE X TICK") || GetAsyncKeyState(VK_RIGHT)) {
-		gEngine.request_tick_advance(advanceTicks);
+	if (ImGui::Button("ADVANCE X TICK")) {
+		MessageBox(NULL, "Not implemented","", MB_OK);
 	}
 
 	if (ImGui::Button("SAVE")) {

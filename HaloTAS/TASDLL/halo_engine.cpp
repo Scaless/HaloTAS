@@ -136,38 +136,6 @@ void halo_engine::set_debug_camera(bool enabled)
 	}
 }
 
-void halo_engine::request_tick_advance(int numTicks)
-{
-	tickLock = true;
-	ticksQueued = numTicks;
-}
-
-void halo_engine::internal_tick_advance()
-{
-	for (int i = 0; i < ticksQueued; i++) {
-		auto& gInputHandler = tas_input_handler::get();
-
-		int unknown;
-		__asm {
-			mov esi, 0
-			push esi
-			call halo::function::ADVANCE_TICK
-			mov unknown, eax
-			add esp, 4
-		}
-
-		*ADDR_SIMULATION_TICK += 1;
-		*ADDR_SIMULATION_TICK_2 += 1;
-	}
-	ticksQueued = 0;
-	tickLock = false;
-}
-
-bool halo_engine::locked()
-{
-	return tickLock;
-}
-
 // Gets the name of a BSP from the level name and index
 std::string halo_engine::current_bsp_name()
 {

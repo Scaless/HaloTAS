@@ -22,9 +22,6 @@ public:
 private:
 	halo_engine();
 
-	std::atomic<bool> tickLock{false};
-	int ticksQueued{ 0 };
-
 private:
 	HWND haloHWND = NULL;
 	std::vector<DataPool*> dataPools;
@@ -43,11 +40,6 @@ public:
 	void print_hud_text(const std::wstring& input);
 	int get_tag_index_from_path(int, char*);
 	void set_debug_camera(bool enabled);
-	void request_tick_advance(int numTicks);
-	void internal_tick_advance();
-
-	// Returns true if the engine is locked from internal function
-	bool locked();
 
 	std::string current_bsp_name();
 
