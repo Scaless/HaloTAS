@@ -31,7 +31,6 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
 void halo_engine::update_window_handle()
 {
 	EnumWindows(&EnumWindowsProc, reinterpret_cast<LPARAM>(this));
-	//haloHWND = FindWindowA(nullptr, "Halo");
 }
 
 void halo_engine::patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size)
@@ -45,6 +44,16 @@ void halo_engine::patch_memory(LPVOID dest_address, uint8_t* src_address, size_t
 
 	//reset the permissions of the address back to oldProtection after writting memory
 	VirtualProtect(dest_address, patch_size, old_protection, &unused);
+}
+
+void halo_engine::disable_render()
+{
+	*ADDR_ENGINE_RENDER_ENABLE = 1;
+}
+
+void halo_engine::enable_render()
+{
+	*ADDR_ENGINE_RENDER_ENABLE = 0;
 }
 
 void halo_engine::set_window_handle(HWND handle)
@@ -69,6 +78,15 @@ halo_engine::halo_engine()
 	}
 
 	update_window_handle();
+
+	auto addr = &enableFastForward;
+	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)&addr, 4);
+}
+
+halo_engine::~halo_engine()
+{
+	auto defaultAddr = 0x007196D8;
+	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)&defaultAddr, 4);
 }
 
 HWND halo_engine::window_handle()
@@ -162,6 +180,45 @@ void halo_engine::set_debug_camera(bool enabled)
 	else {
 		ADDR_DEBUG_CAMERA_ENABLE[0] = 0x60;
 		ADDR_DEBUG_CAMERA_ENABLE[1] = 0x6D;
+	}
+}
+
+void halo_engine::fast_forward_to(uint32_t tick)
+{
+	if (tick <= 0) {
+		fastForwardTick = 0;
+		return;
+	}
+
+	if (!enableFastForward && fastForwardTick == 0) {
+		fastForwardTick = tick;
+		if (fastForwardTick < *ADDR_SIMULATION_TICK) {
+			*ADDR_RESTART_LEVEL = 1;
+		}
+	}
+}
+
+void halo_engine::pre_frame()
+{
+	if (fastForwardTick > 0 && fastForwardTick > *ADDR_SIMULATION_TICK) {
+		enableFastForward = 1;
+		if (fastForwardTick < *ADDR_SIMULATION_TICK + 45) {
+			enable_render();
+		}
+		else {
+			disable_render();
+		}
+	}
+	else if (fastForwardTick > 0  && *ADDR_SIMULATION_TICK == fastForwardTick) {
+		*ADDR_GAME_SPEED = 0;
+		enableFastForward = 0;
+		fastForwardTick = 0;
+		enable_render();
+	}
+	else {
+		enableFastForward = 0;
+		fastForwardTick = 0;
+		enable_render();
 	}
 }
 

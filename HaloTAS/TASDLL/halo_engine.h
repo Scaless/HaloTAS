@@ -21,13 +21,19 @@ public:
 
 private:
 	halo_engine();
+	~halo_engine();
 
 private:
 	HWND haloHWND = NULL;
 	std::vector<DataPool*> dataPools;
 	DataPool* objectDataPool = nullptr;
+	uint32_t enableFastForward{ 0 };
+	uint32_t fastForwardTick{ 0 };
 
 	void patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size);
+
+	void disable_render();
+	void enable_render();
 
 public:
 	void set_window_handle(HWND handle);
@@ -43,6 +49,8 @@ public:
 	void print_hud_text(const std::wstring& input);
 	int get_tag_index_from_path(int, char*);
 	void set_debug_camera(bool enabled);
+	void fast_forward_to(uint32_t tick);
+	void pre_frame();
 
 	std::string current_bsp_name();
 

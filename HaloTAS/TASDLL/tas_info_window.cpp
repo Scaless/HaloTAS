@@ -86,7 +86,7 @@ void tas_info_window::render_overlay()
 	if (ImGui::TreeNode("Options##Overlay")) {
 		ImGui::SliderFloat("Cull Distance", &currentInput.overlayOptions.cullDistance, 1, 250);
 		ImGui::DragFloat("UI Scale", &currentInput.overlayOptions.uiScale, .1f, 1, 20);
-		
+
 		ImGui::TreePop();
 	}
 
@@ -248,7 +248,7 @@ void tas_info_window::render_tas()
 		*ADDR_SAVE_CHECKPOINT = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Restart Level")) {
+	if (ImGui::Button("Restart Level") || GetAsyncKeyState(VK_NUMPAD9) & 1) {
 		*ADDR_RESTART_LEVEL = 1;
 	}
 	ImGui::SameLine();
@@ -280,14 +280,19 @@ void tas_info_window::render_tas()
 
 	if (ImGui::Button("PAUSE")) {
 		*ADDR_GAME_SPEED = 0;
+		gEngine.fast_forward_to(0);
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("PLAY")) {
 		*ADDR_GAME_SPEED = 1;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("ADVANCE X TICK")) {
-		MessageBox(NULL, "Not implemented","", MB_OK);
+	if (ImGui::Button("REVERSE X TICK") || GetAsyncKeyState(VK_LEFT)) {
+		gEngine.fast_forward_to(std::clamp(*ADDR_SIMULATION_TICK - advanceTicks, 1, INT_MAX));
+	}
+	ImGui::SameLine();
+	if (ImGui::Button("ADVANCE X TICK") || GetAsyncKeyState(VK_RIGHT)) {
+		gEngine.fast_forward_to(*ADDR_SIMULATION_TICK + advanceTicks);
 	}
 
 	if (ImGui::Button("SAVE")) {
@@ -321,7 +326,7 @@ void tas_info_window::render_d3d()
 		if (ImGui::TreeNode("Models")) {
 
 			ImGui::Columns(3);
-			
+
 			for (auto& it : models) {
 				ImGui::Checkbox(it.first.c_str(), &it.second.active);
 				ImGui::NextColumn();
@@ -408,9 +413,6 @@ static int32_t project_yaw_down_count = 0;
 static int32_t project_pitch_yaw_down_count = 0;
 static int32_t lerp_end_tick = -1;
 static std::string current_item;
-static bool pauseOnTick = false;
-static bool pausedThisRun = false;
-static int pauseOnTickCount = 0;
 static int fixEditorTickOffset = 1;
 
 float lerp(float a, float b, float frac) {
@@ -513,16 +515,20 @@ void tas_info_window::render_inputs()
 				styles += 2;
 			}
 
-			if (ImGui::Checkbox("", &pauseOnTick)) {
-				pauseOnTickCount = count;
+			if (ImGui::Button("->##RunToHere")) {
+				//pauseOnTickCount = count;
+				*ADDR_RESTART_LEVEL = 1;
+
+				auto& gEngine = halo_engine::get();
+				gEngine.fast_forward_to(count);
 			}
-			if (!pausedThisRun && pauseOnTick && pauseOnTickCount == tas_input_handler::inputTickCounter && *ADDR_SIMULATION_TICK_2 != 0) {
+			/*if (!pausedThisRun && pauseOnTick && pauseOnTickCount == tas_input_handler::inputTickCounter && *ADDR_SIMULATION_TICK != 0) {
 				pausedThisRun = true;
 				*ADDR_GAME_SPEED = 0;
 			}
-			if (*ADDR_SIMULATION_TICK_2 == 0) {
+			if (*ADDR_SIMULATION_TICK == 0) {
 				pausedThisRun = false;
-			}
+			}*/
 			ImGui::NextColumn();
 
 			ImGui::Text("%d", count);

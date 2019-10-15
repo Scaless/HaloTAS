@@ -278,14 +278,13 @@ static bool enter_down = false;
 static bool g_down = false;
 static DWORD lastsequence = 0;
 static int32_t pressedTick = 0;
+static bool enterPreviousFrame = false;
 static bool queuedEnter = false;
 static bool queuedTab = false;
 static bool queuedG = false;
 HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) // Keyboard
 {
-	//ADDR_KEYBOARD_INPUT[KEYS::Tab] = 1;
 	HRESULT hResult = DI_OK;
-	//return DIERR_INPUTLOST;
 	
 	auto& inputHandler = tas_input_handler::get();
 
@@ -401,27 +400,20 @@ HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectDa
 }
 
 void hkSimulateTick(int ticksAfterThis) {
-
 	auto& gInputHandler = tas_input_handler::get();
 
-	// Pre-Tick
 	gInputHandler.pre_tick();
-
 	originalSimulateTick(ticksAfterThis);
-
-	// Post-Tick
 	gInputHandler.post_tick();
 }
 
 char hkAdvanceFrame(float deltaTime) {
-
-	// Pre-Frame
 	auto& gInputHandler = tas_input_handler::get();
+	auto& gEngine = halo_engine::get();
+
+	gEngine.pre_frame();
 	gInputHandler.pre_frame();
-
 	char c = originalAdvanceFrame(deltaTime);
-
-	// Post-Frame
 	gInputHandler.post_frame();
 
 	return c;
@@ -438,15 +430,6 @@ int __cdecl hkBeginLoop() {
 }
 
 void __cdecl hkGetMouseKeyboardGamepadInput() {
-	bool playback = false;
-	if (infoWindow != nullptr) {
-		auto input = infoWindow->getInput();
-		playback = input.playback;
-	}
-
-	if (!playback) {
-	}
-
 	originalGetMouseKeyboardGamepadInput();
 }
 

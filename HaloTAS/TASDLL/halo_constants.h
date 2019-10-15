@@ -87,6 +87,7 @@ inline extern uint8_t* ADDR_MIDDLEMOUSE = reinterpret_cast<uint8_t*>(0x006B1819)
 inline extern uint8_t* ADDR_RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
 inline extern bool* ADDR_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
 inline extern bool* ADDR_ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
+inline extern uint8_t* ADDR_ENGINE_RENDER_ENABLE = reinterpret_cast<uint8_t*>(0x00719AA8);
 
 // HUD Stuff
 inline extern bool* ADDR_HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
@@ -118,6 +119,8 @@ inline extern int32_t* ADDR_TICK_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x00
 			  
 inline extern int32_t* ADDR_TICK_END_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x0045B837);
 inline extern int32_t* ADDR_TICK_END_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x00456730);
+
+inline extern int32_t* ADDR_FAST_FORWARD_POINTER = reinterpret_cast<int32_t*>(0x00470c03);
 
 inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
 inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
