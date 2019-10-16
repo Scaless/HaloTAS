@@ -193,9 +193,34 @@ void halo_engine::fast_forward_to(uint32_t tick)
 	if (!enableFastForward && fastForwardTick == 0) {
 		fastForwardTick = tick;
 		if (fastForwardTick < *ADDR_SIMULATION_TICK) {
-			*ADDR_RESTART_LEVEL = 1;
+			map_reset();
 		}
 	}
+}
+
+void halo_engine::map_reset()
+{
+	*ADDR_MAP_RESET = 1;
+}
+
+void halo_engine::core_save()
+{
+	*ADDR_CORE_SAVE = 1;
+}
+
+void halo_engine::core_load()
+{
+	*ADDR_CORE_LOAD = 1;
+}
+
+void halo_engine::save_checkpoint()
+{
+	*ADDR_SAVE_CHECKPOINT = 1;
+}
+
+void halo_engine::load_checkpoint()
+{
+	*ADDR_LOAD_CHECKPOINT = 1;
 }
 
 void halo_engine::pre_frame()

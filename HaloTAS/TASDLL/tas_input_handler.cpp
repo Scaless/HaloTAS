@@ -26,28 +26,14 @@ static int32_t rng_count_since_last_tick;
 static int32_t last_rng;
 static boost::circular_buffer<float> rng_count_histogram_buffer(256);
 
-void tas_input_handler::set_engine_run_frame_begin()
-{
-	*ADDR_RUN_FRAME_BEGIN_CODE = record || playback;
-}
-
-tas_input_handler::tas_input_handler()
-{
-	set_engine_run_frame_begin();
-}
-
 void tas_input_handler::set_record(bool newRecord)
 {
 	record = newRecord;
-
-	set_engine_run_frame_begin();
 }
 
 void tas_input_handler::set_playback(bool newPlayback)
 {
 	playback = newPlayback;
-
-	set_engine_run_frame_begin();
 }
 
 void tas_input_handler::load_input_from_file(std::filesystem::path filePath) {

@@ -18,14 +18,10 @@
 #include <boost/functional/hash.hpp>
 
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
+// TODO: Replace this with Detours hook when possible
 static uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 static uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
-
-static uint8_t PATCH_FRAME_BEGIN_FUNC_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
-static uint8_t PATCH_FRAME_BEGIN_ORIGINAL_BYTES[sizeof(PATCH_FRAME_BEGIN_FUNC_BYTES)];
-
-static uint8_t PATCH_TICK_BEGIN_ORIGINAL_BYTES[5];
-static uint8_t PATCH_TICK_END_ORIGINAL_BYTES[5];
+inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
 
 enum class HUD_LOCATION : int16_t
 {
@@ -57,22 +53,20 @@ namespace halo::addr {
 
 }
 
-
-
 inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
 inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
 
 inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START_ANIMATION = reinterpret_cast<int32_t*>(0x00746F88);
 inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x008603CC);
 inline extern int32_t* ADDR_FRAMES_ABSOLUTE = reinterpret_cast<int32_t*>(0x007C3100);
-//inline extern int32_t* ADDR_FRAMES_ABSOLUTE_ALTERNATE = reinterpret_cast<int32_t*>(0x007C3104);
+inline extern int32_t* ADDR_FRAMES_ABSOLUTE_ALTERNATE = reinterpret_cast<int32_t*>(0x007C3104);
 inline volatile extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
 inline volatile extern int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
 
 inline extern uint8_t* ADDR_LOAD_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973A);
 inline extern uint8_t* ADDR_SAVE_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973F);
-inline extern uint8_t* ADDR_RESTART_LEVEL = reinterpret_cast<uint8_t*>(0x719738);
-inline extern uint8_t* ADDR_RESTART_LEVEL_FULL = reinterpret_cast<uint8_t*>(0x719739);
+inline extern uint8_t* ADDR_MAP_RESET = reinterpret_cast<uint8_t*>(0x719738);
+inline extern uint8_t* ADDR_RESTART_WITH_INITIAL_LOAD = reinterpret_cast<uint8_t*>(0x719739);
 inline extern uint8_t* ADDR_CORE_SAVE = reinterpret_cast<uint8_t*>(0x719751);
 inline extern uint8_t* ADDR_CORE_LOAD = reinterpret_cast<uint8_t*>(0x719752);
 
@@ -90,6 +84,10 @@ inline extern uint8_t* ADDR_RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
 inline extern bool* ADDR_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
 inline extern bool* ADDR_ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
 inline extern uint8_t* ADDR_ENGINE_RENDER_ENABLE = reinterpret_cast<uint8_t*>(0x00719AA8);
+inline extern int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
+inline extern int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
+inline extern int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
+inline extern char* ADDR_INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
 
 // HUD Stuff
 inline extern bool* ADDR_HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
@@ -103,40 +101,22 @@ inline extern float* ADDR_HUD_PLAYER_SHIELD = reinterpret_cast<float*>(0x4000084
 inline extern float* ADDR_HUD_PLAYER_HEALTH = reinterpret_cast<float*>(0x4000084C);
 inline extern uint8_t* ADDR_HUD_FLAGS = reinterpret_cast<uint8_t*>(0x400008A0);
 
-inline extern int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
-inline extern int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
-inline extern int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
-inline extern char* ADDR_INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
-
-// Patch point for allowing external directinput mouse movement
-inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
-inline extern uint8_t* ADDR_PATCH_FRAME_BEGIN_JUMP_FUNC = reinterpret_cast<uint8_t*>(0x004C7793);
-inline extern int32_t* ADDR_FRAME_BEGIN_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x004C7798);
-inline extern bool* ADDR_RUN_FRAME_BEGIN_CODE = reinterpret_cast<bool*>(0x0071D1A4);
-
-inline extern int32_t* ADDR_FRAME_BEGIN_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x004C6E80);
-
-inline extern int32_t* ADDR_TICK_BEGIN_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x0045B79B);
-inline extern int32_t* ADDR_TICK_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x0045B590);
-			  
-inline extern int32_t* ADDR_TICK_END_FUNC_OFFSET = reinterpret_cast<int32_t*>(0x0045B837);
-inline extern int32_t* ADDR_TICK_END_REPLACED_FUNC = reinterpret_cast<int32_t*>(0x00456730);
 
 inline extern int32_t* ADDR_FAST_FORWARD_POINTER = reinterpret_cast<int32_t*>(0x00470c03);
 
 inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
 inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
 inline extern float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
-inline extern float* ADDR_PLAYER_YAW_ROTATION_RADIANS   = reinterpret_cast<float*>(0x402AD4B8);
+inline extern float* ADDR_PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
 inline extern float* ADDR_PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
 inline extern uint8_t* ADDR_DEBUG_CAMERA_ENABLE = reinterpret_cast<uint8_t*>(0x006AC568);
 //inline extern uint8_t* debugB = reinterpret_cast<uint8_t*>(0x006AC569);
 
 inline extern float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
+inline extern int32_t* ADDR_RNG = reinterpret_cast<int32_t*>(0x00719CD0);
 inline extern uint8_t* ADDR_GAME_DIFFICULTY_ACTUAL = reinterpret_cast<uint8_t*>(0x40000126);
 inline extern uint8_t* ADDR_GAME_DIFFICULTY_ACTUAL_ALTERNATE = reinterpret_cast<uint8_t*>(0x400001E2);
-inline extern uint8_t* ADDR_GAME_DIFFICULTY_NEXT_MAP_LOAD = reinterpret_cast<uint8_t*>(0x696564);
-inline extern int32_t* ADDR_RNG = reinterpret_cast<int32_t*>(0x00719CD0);
+inline extern uint8_t* ADDR_GAME_DIFFICULTY_ON_NEXT_MAP_LOAD = reinterpret_cast<uint8_t*>(0x696564);
 
 #elif defined(HALO_CUSTOMED)
 
@@ -471,38 +451,38 @@ const std::unordered_map<std::pair<std::string, uint8_t>, std::string, boost::ha
 const std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
 { 580, Tag{ 580, glm::vec3(0,1,0), "static prop" } },
 { 616, Tag{ 616, glm::vec3(0,1,0), "Terminal" }},
-{ 628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }}, 
-{ 632, Tag{ 632, glm::vec3(0,1,0), "tree"   }}, 
-{ 680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }}, 
+{ 628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }},
+{ 632, Tag{ 632, glm::vec3(0,1,0), "tree"   }},
+{ 680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }},
 { 720, Tag{ 720, glm::vec3(0,1,0), "debris" } },
 { 732, Tag{ 732, glm::vec3(0,1,0), "door"   }},
-{ 736, Tag{ 736, glm::vec3(0,1,0), "tree"   }}, 
-{ 764, Tag{ 764, glm::vec3(0,1,0), "projectile"   }}, 
-{ 800, Tag{ 800, glm::vec3(0,1,0), "Ammo/Health/Consumable"   }}, 
-{ 836, Tag{ 836, glm::vec3(0,1,0), "bulkhead?"   }}, 
-{ 892, Tag{ 892, glm::vec3(0,1,0), "trigger?"   }}, 
+{ 736, Tag{ 736, glm::vec3(0,1,0), "tree"   }},
+{ 764, Tag{ 764, glm::vec3(0,1,0), "projectile"   }},
+{ 800, Tag{ 800, glm::vec3(0,1,0), "Ammo/Health/Consumable"   }},
+{ 836, Tag{ 836, glm::vec3(0,1,0), "bulkhead?"   }},
+{ 892, Tag{ 892, glm::vec3(0,1,0), "trigger?"   }},
 { 940, Tag{ 940, glm::vec3(0,1,0), "Door" } },
 { 972, Tag{ 972, glm::vec3(0,1,0), "Needler" } },
 { 1088,Tag{ 1088, glm::vec3(0,1,0), "Shotgun"   }},
-{ 1204,Tag{ 1204, glm::vec3(0,1,0), "MA5B"  }}, 
-{ 1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }}, 
-{ 1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }}, 
-{ 1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle/Rockets"  }}, 
+{ 1204,Tag{ 1204, glm::vec3(0,1,0), "MA5B"  }},
+{ 1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }},
+{ 1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }},
+{ 1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle/Rockets"  }},
 { 1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }},
 { 1616,Tag{ 1616, glm::vec3(0,1,0), "343 GS"  }},
 { 1668,Tag{ 1668, glm::vec3(0,1,0), "Pistol"  }},
-{ 1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }}, 
+{ 1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }},
 { 1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee" } },
 { 2076,Tag{ 2076, glm::vec3(0,1,0), "Ghost" } },
 { 2424,Tag{ 2424, glm::vec3(0,1,0), "Wraith" } },
 { 2888,Tag{ 2888, glm::vec3(0,1,0), "Pelican" } },
 { 2892,Tag{ 2892, glm::vec3(0,1,0), "Popcorn"  }},
 { 3356,Tag{ 3356, glm::vec3(0,1,0), "Grunt" } },
-{ 3584,Tag{ 3584, glm::vec3(0,1,0), "Warthog?"  }}, 
-{ 3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }}, 
+{ 3584,Tag{ 3584, glm::vec3(0,1,0), "Warthog?"  }},
+{ 3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }},
 { 3704,Tag{ 3704, glm::vec3(0,1,0), "Marine" } },
 { 3936,Tag{ 3936, glm::vec3(0,1,0), "Infection Form"  }},
-{ 4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }}, 
+{ 4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }},
 { 4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }},
 { 4864,Tag{ 4864, glm::vec3(1,0,1), "Hunter"  }},
 { 5328,Tag{ 5328, glm::vec3(0,1,0), "Cpt. Keyes" } },

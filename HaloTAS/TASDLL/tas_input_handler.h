@@ -17,11 +17,11 @@ public:
 	}
 
 private:
-	tas_input_handler();
+	tas_input_handler() = default;
+	~tas_input_handler() = default;
 
 private:
-	std::map<std::string,tas_input> levelInputs;
-	void set_engine_run_frame_begin();
+	std::map<std::string, tas_input> levelInputs;
 	void load_input_from_file(std::filesystem::path filePath);
 
 public:

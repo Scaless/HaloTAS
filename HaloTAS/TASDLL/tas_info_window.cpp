@@ -21,6 +21,7 @@ tas_info_window::tas_info_window()
 		int targetWidth = haloClientRect.right - haloClientRect.left;
 		int targetHeight = haloClientRect.bottom - haloClientRect.top;
 		window = glfwCreateWindow(targetWidth, targetHeight, "Game Info", NULL, NULL);
+		glfwSetWindowSize(window, 1280, 720);
 	}
 	else {
 		window = glfwCreateWindow(1280, 720, "Game Info", NULL, NULL);
@@ -53,26 +54,26 @@ tas_info_window::~tas_info_window()
 	glfwDestroyWindow(window);
 }
 
-static glm::vec3 camDistance;
-static bool camFollow = false;
+//static glm::vec3 camDistance;
+//static bool camFollow = false;
 void tas_info_window::render_overlay()
 {
 	engine_snapshot snapshot = {};
 	auto& engine = halo_engine::get();
 	engine.get_snapshot(snapshot);
 
-	auto player = GetPlayerObject(snapshot.gameObjects);
-
-	auto debugA = reinterpret_cast<uint8_t*>(0x006AC568);
+	/*auto debugA = reinterpret_cast<uint8_t*>(0x006AC568);
 	if (*debugA == 0x90 && player != nullptr) {
 		(*ADDR_CAMERA_POSITION).x = player->unit_x + camDistance.x;
 		(*ADDR_CAMERA_POSITION).y = player->unit_y + camDistance.y;
 		(*ADDR_CAMERA_POSITION).z = player->unit_z + camDistance.z;
-	}
+	}*/
 
 	if (!ImGui::CollapsingHeader("Overlay##Overlay")) {
 		return;
 	}
+
+	auto player = GetPlayerObject(snapshot.gameObjects);
 
 	std::unordered_set<uint32_t> objectCategories;
 	for (auto& v : snapshot.gameObjects) {
@@ -216,7 +217,6 @@ void tas_info_window::render_overlay()
 	}
 }
 
-static int32_t core_save_rng = 0;
 static int32_t int_handler_tick = 0;
 void tas_info_window::render_tas()
 {
@@ -238,76 +238,73 @@ void tas_info_window::render_tas()
 	};
 	ImGui::SameLine();
 	currentInput.loadPlayback = ImGui::Button("Load Playback");
-	/*ImGui::SameLine();
-	if (ImGui::Button("PatchMouse")) {
-		gEngine.mouse_directinput_override_enable();
-	}
+	
 	ImGui::SameLine();
-	if (ImGui::Button("UnPatchMouse")) {
-		gEngine.mouse_directinput_override_disable();
-	}*/
-
-	if (ImGui::Button("Load Checkpoint")) {
-		*ADDR_LOAD_CHECKPOINT = 1;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Save Checkpoint")) {
-		*ADDR_SAVE_CHECKPOINT = 1;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Restart Level") || GetAsyncKeyState(VK_NUMPAD9) & 1) {
-		*ADDR_RESTART_LEVEL = 1;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("CORE_SAVE")) {
-		*ADDR_CORE_SAVE = 1;
-		core_save_rng = *ADDR_RNG;
-		int_handler_tick = tas_input_handler::inputTickCounter;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("CORE_LOAD")) {
-		*ADDR_CORE_LOAD = 1;
-		*ADDR_RNG = core_save_rng;
-		tas_input_handler::inputTickCounter = int_handler_tick;
-	}
-	/*if (ImGui::Button("Restart Level (Partial?)")) {
-		*ADDR_RESTART_LEVEL_FULL = 1;
-	}*/
-
-	static bool enableDebugCamera{ false };
-	if (ImGui::Checkbox("Enable Debug Camera", &enableDebugCamera)) {
-		gEngine.set_debug_camera(enableDebugCamera);
-	}
-	ImGui::Checkbox("Cam Follow", &camFollow);
-	ImGui::DragFloat3("Cam Distance", glm::value_ptr(camDistance), .05f, -20.0f, 20.0f);
-
-
-	static int advanceTicks = 1;
-	ImGui::DragInt("Ticks To Advance", &advanceTicks, 1, 1, 100);
-
-	if (ImGui::Button("PAUSE")) {
-		*ADDR_GAME_SPEED = 0;
-		gEngine.fast_forward_to(0);
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("PLAY")) {
-		*ADDR_GAME_SPEED = 1;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("REVERSE X TICK") || GetAsyncKeyState(VK_LEFT)) {
-		gEngine.fast_forward_to(std::clamp(*ADDR_SIMULATION_TICK - advanceTicks, 1, INT_MAX));
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("ADVANCE X TICK") || GetAsyncKeyState(VK_RIGHT)) {
-		gEngine.fast_forward_to(*ADDR_SIMULATION_TICK + advanceTicks);
-	}
-
 	if (ImGui::Button("SAVE")) {
 		auto& gInputHandler = tas_input_handler::get();
 		gInputHandler.save_inputs();
 	}
-}
 
+	if (ImGui::TreeNode("Engine Functions"))
+	{
+		if (ImGui::Button("Load Checkpoint")) {
+			gEngine.load_checkpoint();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Save Checkpoint")) {
+			gEngine.save_checkpoint();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Restart Level")) {
+			gEngine.map_reset();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("core_save")) {
+			gEngine.core_save();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("core_load")) {
+			gEngine.core_load();
+		}
+
+		ImGui::TreePop();
+	}
+
+	// Remove debug camera until it is fully understood and works
+	/*static bool enableDebugCamera{ false };
+	if (ImGui::Checkbox("Enable Debug Camera", &enableDebugCamera)) {
+		gEngine.set_debug_camera(enableDebugCamera);
+	}
+	ImGui::Checkbox("Cam Follow", &camFollow);
+	ImGui::DragFloat3("Cam Distance", glm::value_ptr(camDistance), .05f, -20.0f, 20.0f);*/
+
+	if (ImGui::TreeNode("TAS Functions"))
+	{
+		static int advanceTicks = 1;
+		ImGui::SliderInt("Ticks To Advance", &advanceTicks, 1, 100);
+
+		if (ImGui::Button("PAUSE")) {
+			*ADDR_GAME_SPEED = 0;
+			gEngine.fast_forward_to(0);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("PLAY")) {
+			*ADDR_GAME_SPEED = 1;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("REVERSE X TICK")) {
+			gEngine.fast_forward_to(std::clamp(*ADDR_SIMULATION_TICK - advanceTicks, 1, INT_MAX));
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("ADVANCE X TICK")) {
+			gEngine.fast_forward_to(*ADDR_SIMULATION_TICK + advanceTicks);
+		}
+
+		ImGui::TreePop();
+	}
+
+	render_inputs();
+}
 
 void tas_info_window::render_d3d()
 {
@@ -454,7 +451,7 @@ void tas_info_window::render_inputs()
 		return;
 	}
 
-	if (ImGui::CollapsingHeader("TAS Input")) {
+	if (ImGui::TreeNode("TAS Input")) {
 
 		ImGui::SliderInt("Editor Tick Offset", &fixEditorTickOffset, -20, 20);
 
@@ -499,7 +496,9 @@ void tas_info_window::render_inputs()
 		ImGui::Text("RNG"); ImGui::NextColumn();
 		ImGui::Columns(1);
 
-		ImGui::BeginChild("Inputs##TASINPUT", ImGui::GetContentRegionAvail(), true, ImGuiWindowFlags_HorizontalScrollbar);
+		ImVec2 calculatedSize = ImGui::GetContentRegionAvail();
+		ImVec2 inputChildSize = ImVec2(calculatedSize.x, std::clamp(calculatedSize.y, 500.0f, FLT_MAX));
+		ImGui::BeginChild("Inputs##TASINPUT", inputChildSize, true, ImGuiWindowFlags_HorizontalScrollbar);
 
 		ImGui::Columns(7);
 		ImGui::SetColumnWidth(0, 52);
@@ -516,30 +515,18 @@ void tas_info_window::render_inputs()
 
 			int styles = 0;
 			if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset)) {
-				//if (gInputHandler->get_current_playback_tick() == count) {
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1, 0, 0, 1));
 				ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 0, 0, 1));
 				styles += 2;
 			}
 
 			if (ImGui::Button("->##RunToHere")) {
-				//pauseOnTickCount = count;
-				*ADDR_RESTART_LEVEL = 1;
-
 				auto& gEngine = halo_engine::get();
 				gEngine.fast_forward_to(count);
 			}
-			/*if (!pausedThisRun && pauseOnTick && pauseOnTickCount == tas_input_handler::inputTickCounter && *ADDR_SIMULATION_TICK != 0) {
-				pausedThisRun = true;
-				*ADDR_GAME_SPEED = 0;
-			}
-			if (*ADDR_SIMULATION_TICK == 0) {
-				pausedThisRun = false;
-			}*/
 			ImGui::NextColumn();
 
 			ImGui::Text("%d", count);
-			//ImGui::Text("%d", it->tick);
 			ImGui::NextColumn();
 			if (ImGui::DragFloat("##Pitch", &(it->cameraPitch), .002f)) {
 				*ADDR_PLAYER_PITCH_ROTATION_RADIANS = it->cameraPitch;
@@ -753,6 +740,8 @@ void tas_info_window::render_inputs()
 		ImGui::Columns(1);
 
 		ImGui::EndChild();
+
+		ImGui::TreePop();
 	}
 
 	gInputHandler.reload_playback_buffer(input);
@@ -853,7 +842,7 @@ void tas_info_window::render_other()
 			static char fileText[256] = "sound\\dialog\\chief\\deathviolent";
 			ImGui::InputText("File Test", fileText, IM_ARRAYSIZE(fileText));
 
-			if (ImGui::Button("Play Sound") || GetAsyncKeyState(VK_CONTROL)) {
+			if (ImGui::Button("Play Sound")) {
 				int tagIndex = gEngine.get_tag_index_from_path(0x736E6421, fileText);
 				if (tagIndex != -1) {
 					int16_t* f = new int16_t[2];
@@ -894,7 +883,6 @@ void tas_info_window::render_imgui()
 	render_overlay();
 	render_other();
 	render_tas();
-	render_inputs();
 
 	//ImGui::ShowDemoWindow();
 

@@ -50,6 +50,13 @@ public:
 	int get_tag_index_from_path(int, char*);
 	void set_debug_camera(bool enabled);
 	void fast_forward_to(uint32_t tick);
+
+	void map_reset();
+	void core_save();
+	void core_load();
+	void save_checkpoint();
+	void load_checkpoint();
+
 	void pre_frame();
 
 	std::string current_bsp_name();
