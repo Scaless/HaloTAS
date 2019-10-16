@@ -21,7 +21,7 @@
 // TODO: Replace this with Detours hook when possible
 static uint8_t PATCH_DINPUT_MOUSE_BYTES[] = { 0x90,0x90,0x90,0x90,0x90,0x90,0x90 };
 static uint8_t PATCH_DINPUT_MOUSE_ORIGINAL[] = { 0x52,0x6A,0x14,0x50,0xFF,0x51,0x24 };
-inline extern uint8_t* ADDR_PATCH_DINPUT_MOUSE = reinterpret_cast<uint8_t*>(0x00490910);
+inline extern uint8_t* PATCH_DINPUT_MOUSE_FUNC = reinterpret_cast<uint8_t*>(0x00490910);
 
 enum class HUD_LOCATION : int16_t
 {
@@ -50,73 +50,71 @@ namespace halo::function {
 }
 
 namespace halo::addr {
+	inline extern uint32_t* RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
+	inline extern uint32_t* TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
 
+	inline extern int32_t* FRAMES_SINCE_LEVEL_START_ANIMATION = reinterpret_cast<int32_t*>(0x00746F88);
+	inline extern int32_t* FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x008603CC);
+	inline extern int32_t* FRAMES_ABSOLUTE = reinterpret_cast<int32_t*>(0x007C3100);
+	inline extern int32_t* FRAMES_ABSOLUTE_ALTERNATE = reinterpret_cast<int32_t*>(0x007C3104);
+	inline volatile extern int32_t* SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
+	inline volatile extern int32_t* SIMULATION_TICK_ALTERNATE = reinterpret_cast<int32_t*>(0x400002FC);
+
+	inline extern uint8_t* LOAD_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973A);
+	inline extern uint8_t* SAVE_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973F);
+	inline extern uint8_t* MAP_RESET = reinterpret_cast<uint8_t*>(0x719738);
+	inline extern uint8_t* RESTART_WITH_INITIAL_LOAD = reinterpret_cast<uint8_t*>(0x719739);
+	inline extern uint8_t* CORE_SAVE = reinterpret_cast<uint8_t*>(0x719751);
+	inline extern uint8_t* CORE_LOAD = reinterpret_cast<uint8_t*>(0x719752);
+
+	inline extern uint8_t* GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
+	inline extern uint8_t* GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
+	inline extern float* LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);
+	inline extern float* UPDOWNVIEW = reinterpret_cast<float*>(0x402AD4BC);
+	inline extern char* MAP_STRING = reinterpret_cast<char*>(0x40000004);
+	inline extern uint8_t* CURRENT_BSP_INDEX = reinterpret_cast<uint8_t*>(0x69E8D8);
+	inline extern uint32_t* CHECKPOINT_INDICATOR = reinterpret_cast<uint32_t*>(0x00746F90);
+	inline extern uint8_t* KEYBOARD_INPUT = reinterpret_cast<uint8_t*>(0x006B1620);
+	inline extern uint8_t* LEFTMOUSE = reinterpret_cast<uint8_t*>(0x006B1818);
+	inline extern uint8_t* MIDDLEMOUSE = reinterpret_cast<uint8_t*>(0x006B1819);
+	inline extern uint8_t* RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
+	inline extern bool* ALLOW_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
+	inline extern bool* ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
+	inline extern uint8_t* ENGINE_RENDER_ENABLE = reinterpret_cast<uint8_t*>(0x00719AA8);
+	inline extern int32_t* DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
+	inline extern int32_t* DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
+	inline extern int32_t* DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
+	inline extern char* INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
+
+	// HUD Stuff
+	inline extern bool* HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
+	inline extern bool* HUD_TIMER_VISIBLE = reinterpret_cast<bool*>(0x40000847);
+	inline extern int32_t* HUD_TIMER_START_TICK = reinterpret_cast<int32_t*>(0x40000838);
+	inline extern int32_t* HUD_TIMER_TOTAL_TIME_TICKS = reinterpret_cast<int32_t*>(0x4000083C);
+	inline extern int16_t* HUD_TIMER_OFFSET_X = reinterpret_cast<int16_t*>(0x40000840);
+	inline extern int16_t* HUD_TIMER_OFFSET_Y = reinterpret_cast<int16_t*>(0x40000842);
+	inline extern HUD_LOCATION* HUD_TIMER_LOCATION = reinterpret_cast<HUD_LOCATION*>(0x40000844);
+	inline extern float* HUD_PLAYER_SHIELD = reinterpret_cast<float*>(0x40000848);
+	inline extern float* HUD_PLAYER_HEALTH = reinterpret_cast<float*>(0x4000084C);
+	inline extern uint8_t* HUD_FLAGS = reinterpret_cast<uint8_t*>(0x400008A0);
+
+
+	inline extern int32_t* FAST_FORWARD_POINTER = reinterpret_cast<int32_t*>(0x00470c03);
+
+	inline extern glm::vec3* CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
+	inline extern float* CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
+	inline extern float** PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
+	inline extern float* PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
+	inline extern float* PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
+	inline extern uint8_t* DEBUG_CAMERA_ENABLE = reinterpret_cast<uint8_t*>(0x006AC568);
+	//inline extern uint8_t* debugB = reinterpret_cast<uint8_t*>(0x006AC569);
+
+	inline extern float* GAME_SPEED = reinterpret_cast<float*>(0x40000300);
+	inline extern int32_t* RNG = reinterpret_cast<int32_t*>(0x00719CD0);
+	inline extern uint8_t* GAME_DIFFICULTY_ACTUAL = reinterpret_cast<uint8_t*>(0x40000126);
+	inline extern uint8_t* GAME_DIFFICULTY_ACTUAL_ALTERNATE = reinterpret_cast<uint8_t*>(0x400001E2);
+	inline extern uint8_t* GAME_DIFFICULTY_ON_NEXT_MAP_LOAD = reinterpret_cast<uint8_t*>(0x696564);
 }
-
-inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
-inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
-
-inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START_ANIMATION = reinterpret_cast<int32_t*>(0x00746F88);
-inline extern int32_t* ADDR_FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x008603CC);
-inline extern int32_t* ADDR_FRAMES_ABSOLUTE = reinterpret_cast<int32_t*>(0x007C3100);
-inline extern int32_t* ADDR_FRAMES_ABSOLUTE_ALTERNATE = reinterpret_cast<int32_t*>(0x007C3104);
-inline volatile extern int32_t* ADDR_SIMULATION_TICK = reinterpret_cast<int32_t*>(0x400002F4);
-inline volatile extern int32_t* ADDR_SIMULATION_TICK_2 = reinterpret_cast<int32_t*>(0x400002FC);
-
-inline extern uint8_t* ADDR_LOAD_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973A);
-inline extern uint8_t* ADDR_SAVE_CHECKPOINT = reinterpret_cast<uint8_t*>(0x71973F);
-inline extern uint8_t* ADDR_MAP_RESET = reinterpret_cast<uint8_t*>(0x719738);
-inline extern uint8_t* ADDR_RESTART_WITH_INITIAL_LOAD = reinterpret_cast<uint8_t*>(0x719739);
-inline extern uint8_t* ADDR_CORE_SAVE = reinterpret_cast<uint8_t*>(0x719751);
-inline extern uint8_t* ADDR_CORE_LOAD = reinterpret_cast<uint8_t*>(0x719752);
-
-inline extern uint8_t* ADDR_GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
-inline extern uint8_t* ADDR_GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
-inline extern float* ADDR_LEFTRIGHTVIEW = reinterpret_cast<float*>(0x402AD4B8);
-inline extern float* ADDR_UPDOWNVIEW = reinterpret_cast<float*>(0x402AD4BC);
-inline extern char* ADDR_MAP_STRING = reinterpret_cast<char*>(0x40000004);
-inline extern uint8_t* ADDR_CURRENT_BSP_INDEX = reinterpret_cast<uint8_t*>(0x69E8D8);
-inline extern uint32_t* ADDR_CHECKPOINT_INDICATOR = reinterpret_cast<uint32_t*>(0x00746F90);
-inline extern uint8_t* ADDR_KEYBOARD_INPUT = reinterpret_cast<uint8_t*>(0x006B1620);
-inline extern uint8_t* ADDR_LEFTMOUSE = reinterpret_cast<uint8_t*>(0x006B1818);
-inline extern uint8_t* ADDR_MIDDLEMOUSE = reinterpret_cast<uint8_t*>(0x006B1819);
-inline extern uint8_t* ADDR_RIGHTMOUSE = reinterpret_cast<uint8_t*>(0x006B181A);
-inline extern bool* ADDR_SIMULATE = reinterpret_cast<bool*>(0x00721E8C);
-inline extern bool* ADDR_ALLOW_INPUT = reinterpret_cast<bool*>(0x006B15F8);
-inline extern uint8_t* ADDR_ENGINE_RENDER_ENABLE = reinterpret_cast<uint8_t*>(0x00719AA8);
-inline extern int32_t* ADDR_DINPUT_MOUSEX = reinterpret_cast<int32_t*>(0x006B180C);
-inline extern int32_t* ADDR_DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
-inline extern int32_t* ADDR_DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
-inline extern char* ADDR_INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
-
-// HUD Stuff
-inline extern bool* ADDR_HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
-inline extern bool* ADDR_HUD_TIMER_VISIBLE = reinterpret_cast<bool*>(0x40000847);
-inline extern int32_t* ADDR_HUD_TIMER_START_TICK = reinterpret_cast<int32_t*>(0x40000838);
-inline extern int32_t* ADDR_HUD_TIMER_TOTAL_TIME_TICKS = reinterpret_cast<int32_t*>(0x4000083C);
-inline extern int16_t* ADDR_HUD_TIMER_OFFSET_X = reinterpret_cast<int16_t*>(0x40000840);
-inline extern int16_t* ADDR_HUD_TIMER_OFFSET_Y = reinterpret_cast<int16_t*>(0x40000842);
-inline extern HUD_LOCATION* ADDR_HUD_TIMER_LOCATION = reinterpret_cast<HUD_LOCATION*>(0x40000844);
-inline extern float* ADDR_HUD_PLAYER_SHIELD = reinterpret_cast<float*>(0x40000848);
-inline extern float* ADDR_HUD_PLAYER_HEALTH = reinterpret_cast<float*>(0x4000084C);
-inline extern uint8_t* ADDR_HUD_FLAGS = reinterpret_cast<uint8_t*>(0x400008A0);
-
-
-inline extern int32_t* ADDR_FAST_FORWARD_POINTER = reinterpret_cast<int32_t*>(0x00470c03);
-
-inline extern glm::vec3* ADDR_CAMERA_POSITION = reinterpret_cast<glm::vec3*>(0x006AC6D0);
-inline extern float* ADDR_CAMERA_LOOK_VECTOR = reinterpret_cast<float*>(0x006AC72C);
-inline extern float** ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS = reinterpret_cast<float**>(0x00445920);
-inline extern float* ADDR_PLAYER_YAW_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4B8);
-inline extern float* ADDR_PLAYER_PITCH_ROTATION_RADIANS = reinterpret_cast<float*>(0x402AD4BC);
-inline extern uint8_t* ADDR_DEBUG_CAMERA_ENABLE = reinterpret_cast<uint8_t*>(0x006AC568);
-//inline extern uint8_t* debugB = reinterpret_cast<uint8_t*>(0x006AC569);
-
-inline extern float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
-inline extern int32_t* ADDR_RNG = reinterpret_cast<int32_t*>(0x00719CD0);
-inline extern uint8_t* ADDR_GAME_DIFFICULTY_ACTUAL = reinterpret_cast<uint8_t*>(0x40000126);
-inline extern uint8_t* ADDR_GAME_DIFFICULTY_ACTUAL_ALTERNATE = reinterpret_cast<uint8_t*>(0x400001E2);
-inline extern uint8_t* ADDR_GAME_DIFFICULTY_ON_NEXT_MAP_LOAD = reinterpret_cast<uint8_t*>(0x696564);
 
 #elif defined(HALO_CUSTOMED)
 

@@ -13,6 +13,7 @@
 #include "helpers.h"
 
 using std::vector, std::string;
+using namespace halo::addr;
 
 // TODO: replace with tas_input object 
 static std::vector<input_moment> playback_buffer_current_level;
@@ -63,7 +64,7 @@ void tas_input_handler::load_input_from_file(std::filesystem::path filePath) {
 	}
 
 	levelInput.set_inputs(inputs);
-	
+
 	levelInputs[filePath.filename().string()] = levelInput;
 }
 
@@ -99,15 +100,15 @@ void tas_input_handler::reload_playback_buffer(tas_input* input) {
 
 void tas_input_handler::pre_tick()
 {
-	const int32_t tick = *ADDR_SIMULATION_TICK;
-	
+	const int32_t tick = *SIMULATION_TICK;
+
 	if (playback) {
-		*ADDR_DINPUT_MOUSEX = 0;
-		*ADDR_DINPUT_MOUSEY = 0;
+		*DINPUT_MOUSEX = 0;
+		*DINPUT_MOUSEY = 0;
 	}
 
-	if (last_level_name.compare(ADDR_MAP_STRING) != 0 || tick == 0) {
-		last_level_name = ADDR_MAP_STRING;
+	if (last_level_name.compare(MAP_STRING) != 0 || tick == 0) {
+		last_level_name = MAP_STRING;
 		tas_input_handler::inputTickCounter = 0;
 		rng_count_histogram_buffer.clear();
 	}
@@ -117,18 +118,18 @@ void tas_input_handler::pre_tick()
 		if (playback_buffer_current_level.size() > tas_input_handler::inputTickCounter) {
 			input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
 
-			memcpy(ADDR_KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
-			*ADDR_PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
-			*ADDR_PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
-			*ADDR_LEFTMOUSE = savedIM.leftMouse;
-			*ADDR_RIGHTMOUSE = savedIM.rightMouse;
+			memcpy(KEYBOARD_INPUT, savedIM.inputBuf, sizeof(savedIM.inputBuf));
+			*PLAYER_YAW_ROTATION_RADIANS = savedIM.cameraYaw;
+			*PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
+			*LEFTMOUSE = savedIM.leftMouse;
+			*RIGHTMOUSE = savedIM.rightMouse;
 
 			if (savedIM.middleMouse == 0) {
-				*ADDR_MIDDLEMOUSE = 0;
+				*MIDDLEMOUSE = 0;
 			}
 			else {
-				if (*ADDR_MIDDLEMOUSE == 0) {
-					*ADDR_MIDDLEMOUSE = 1;
+				if (*MIDDLEMOUSE == 0) {
+					*MIDDLEMOUSE = 1;
 				}
 			}
 		}
@@ -136,15 +137,15 @@ void tas_input_handler::pre_tick()
 
 	tas_input_handler::inputTickCounter += 1;
 
-	rng_count_since_last_tick = calc_rng_count(last_rng, *ADDR_RNG, 5000);
-	last_rng = *ADDR_RNG;
+	rng_count_since_last_tick = calc_rng_count(last_rng, *RNG, 5000);
+	last_rng = *RNG;
 	rng_count_histogram_buffer.push_back(rng_count_since_last_tick);
 }
 
 static int recordedTick = 0;
 void tas_input_handler::post_tick()
 {
-	const int32_t tick = *ADDR_SIMULATION_TICK - 1;
+	const int32_t tick = *SIMULATION_TICK - 1;
 
 	if (tick == 0) {
 		recordedTick = 0;
@@ -152,24 +153,24 @@ void tas_input_handler::post_tick()
 
 	if (record && recordedTick > static_cast<int32_t>(playback_buffer_current_level.size()) - 1)
 	{
-		std::string currentMap{ ADDR_MAP_STRING };
+		std::string currentMap{ MAP_STRING };
 		std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
 		std::ofstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary); // levels.a10.a10.hbin
 
 		input_moment im;
 		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
-			im.inputBuf[i] = ADDR_KEYBOARD_INPUT[i];
+			im.inputBuf[i] = KEYBOARD_INPUT[i];
 		}
 		im.tick = tick;
-		im.inputMouseX = *ADDR_DINPUT_MOUSEX;
-		im.inputMouseY = *ADDR_DINPUT_MOUSEY;
-		im.cameraYaw = *ADDR_PLAYER_YAW_ROTATION_RADIANS;
-		im.cameraPitch = *ADDR_PLAYER_PITCH_ROTATION_RADIANS;
-		im.leftMouse = *ADDR_LEFTMOUSE;
-		im.middleMouse = *ADDR_MIDDLEMOUSE;
-		im.rightMouse = *ADDR_RIGHTMOUSE;
-		im.cameraLocation = *ADDR_CAMERA_POSITION;
-		im.rng = *ADDR_RNG;
+		im.inputMouseX = *DINPUT_MOUSEX;
+		im.inputMouseY = *DINPUT_MOUSEY;
+		im.cameraYaw = *PLAYER_YAW_ROTATION_RADIANS;
+		im.cameraPitch = *PLAYER_PITCH_ROTATION_RADIANS;
+		im.leftMouse = *LEFTMOUSE;
+		im.middleMouse = *MIDDLEMOUSE;
+		im.rightMouse = *RIGHTMOUSE;
+		im.cameraLocation = *CAMERA_POSITION;
+		im.rng = *RNG;
 
 		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
 		logFile.close();
@@ -178,11 +179,11 @@ void tas_input_handler::post_tick()
 	recordedTick++;
 }
 
-	static bool justThisOnce = false;
+static bool justThisOnce = false;
 void tas_input_handler::pre_frame()
 {
-	if (*ADDR_MIDDLEMOUSE == 1) {
-		*ADDR_MIDDLEMOUSE = 2;
+	if (*MIDDLEMOUSE == 1) {
+		*MIDDLEMOUSE = 2;
 	}
 }
 
@@ -195,7 +196,7 @@ void tas_input_handler::pre_loop()
 {
 	// Fix for input buffer overflow
 	std::string scan = { 0x2E, 0x00, 0x2E, 0x00, 0x2E, 0x00, 0x20, 0x00 };
-	auto* inputSlot = ADDR_INPUT_SLOT;
+	auto* inputSlot = INPUT_SLOT;
 	for (int i = 0; i < 4; i++) {
 		std::string inputBuf(inputSlot, inputSlot + 128);
 		std::size_t n = inputBuf.find(scan);
@@ -232,7 +233,7 @@ tas_input* tas_input_handler::get_inputs(std::string levelName)
 std::array<float, 256> tas_input_handler::get_rng_histogram_data()
 {
 	std::array<float, 256> data{};
-	
+
 	auto part1 = rng_count_histogram_buffer.array_one();
 	auto part2 = rng_count_histogram_buffer.array_two();
 

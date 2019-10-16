@@ -117,7 +117,7 @@ void run() {
 		}
 
 		livesplit_export newExport = {};
-		strcpy_s((char*)&newExport.currentMap, sizeof(newExport.currentMap), ADDR_MAP_STRING);
+		strcpy_s((char*)&newExport.currentMap, sizeof(newExport.currentMap), halo::addr::MAP_STRING);
 		liveSplit->update_export(newExport);
 
 		auto input = infoWindow->getInput();
@@ -234,7 +234,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	tas_logger::info("Current working directory: %s",current_path.c_str());
 
 	// Wait for program to init
-	while (*ADDR_SIMULATION_TICK <= 0) {
+	while (*halo::addr::SIMULATION_TICK <= 0) {
 		
 	}
 	

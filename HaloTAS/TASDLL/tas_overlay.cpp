@@ -7,6 +7,8 @@
 #include <chrono>
 #include <algorithm>
 
+using namespace halo::addr;
+
 void tas_overlay::glfwMouseButtonFunc(GLFWwindow* /*w*/, int button, int /*action*/, int /*mods*/) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT) {
 		focused = true;
@@ -134,7 +136,7 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 		}
 	}
 
-	float horizontalFovRadians = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
+	float horizontalFovRadians = **PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
 	float verticalFov = horizontalFovRadians * (float)display_h / (float)display_w;
 	verticalFov = std::clamp(verticalFov - .03f, 0.1f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
 
@@ -154,8 +156,8 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 
 	glm::mat4 Projection = glm::perspectiveFov(verticalFov, (float)display_w, (float)display_h, 0.5f, options.cullDistance);
 
-	glm::vec3 playerPos = *ADDR_CAMERA_POSITION;
-	glm::vec3 dir(ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
+	glm::vec3 playerPos = *CAMERA_POSITION;
+	glm::vec3 dir(CAMERA_LOOK_VECTOR[0], CAMERA_LOOK_VECTOR[1], CAMERA_LOOK_VECTOR[2]);
 	glm::vec3 lookAt = playerPos + dir;
 
 	// Camera matrix

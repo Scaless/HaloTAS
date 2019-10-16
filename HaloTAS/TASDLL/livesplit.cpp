@@ -4,6 +4,8 @@
 #include <memoryapi.h>
 #include "halo_constants.h"
 
+using namespace halo::addr;
+
 livesplit::livesplit()
 {
 	LPVOID desiredAddr = reinterpret_cast<LPVOID>(0x44000000);
@@ -28,8 +30,8 @@ livesplit::~livesplit()
 
 void livesplit::update_export(const livesplit_export& newExport)
 {
-	(*ADDR_HUD_PLAYER_HEALTH < 1.0f) ? *ADDR_HUD_FLAGS |= 1 << 1 : *ADDR_HUD_FLAGS &= ~(1 << 1);
-	(*ADDR_HUD_PLAYER_SHIELD < 1.0f && *ADDR_HUD_PLAYER_SHIELD != -1) ? *ADDR_HUD_FLAGS |= 1 << 3 : *ADDR_HUD_FLAGS &= ~(1 << 3);
+	(*HUD_PLAYER_HEALTH < 1.0f) ? *HUD_FLAGS |= 1 << 1 : *HUD_FLAGS &= ~(1 << 1);
+	(*HUD_PLAYER_SHIELD < 1.0f && *HUD_PLAYER_SHIELD != -1) ? *HUD_FLAGS |= 1 << 3 : *HUD_FLAGS &= ~(1 << 3);
 
 	// Update the pool
 	if (memPool != nullptr) {

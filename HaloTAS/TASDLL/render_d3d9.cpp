@@ -9,6 +9,7 @@
 #include <glm/gtx/normal.hpp>
 #include <thread>
 
+using namespace halo::addr;
 namespace fs = std::filesystem;
 
 IDirect3DVertexDeclaration9* CUSTOMVERTEX::Decl = NULL;
@@ -174,8 +175,8 @@ void render_d3d9::render(IDirect3DDevice9* device)
 		initialize(device);
 	}
 
-	glm::vec3 cam = *ADDR_CAMERA_POSITION;
-	glm::vec3 look{ ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2] };
+	glm::vec3 cam = *CAMERA_POSITION;
+	glm::vec3 look{ CAMERA_LOOK_VECTOR[0], CAMERA_LOOK_VECTOR[1], CAMERA_LOOK_VECTOR[2] };
 	look = cam + look;
 
 	IDirect3DStateBlock9* pStateBlock = NULL;
@@ -320,7 +321,7 @@ void render_d3d9::render(IDirect3DDevice9* device)
 	D3DXMatrixTranslation(&matWorld, 0,0,0);
 	device->SetTransform(D3DTS_WORLD, &matWorld);
 
-	float horizontalFovRadians = **ADDR_PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
+	float horizontalFovRadians = **PTR_TO_CAMERA_HORIZONTAL_FIELD_OF_VIEW_IN_RADIANS;
 	float verticalFov = horizontalFovRadians * (float)1080 / (float)1920;
 	verticalFov = std::clamp(verticalFov + fovOffset, 0.001f, glm::pi<float>()); // Have to offset by this to get correct ratio for 16:9, need to look into this further
 
@@ -331,7 +332,7 @@ void render_d3d9::render(IDirect3DDevice9* device)
 		&D3DXVECTOR3(0.0f, 0.0f, 1.0f));
 
 	//D3DXMATRIX matRotate;
-	//D3DXMatrixRotationYawPitchRoll(&matRotate, 0, 0, *ADDR_CAMERA_ROLL);
+	//D3DXMatrixRotationYawPitchRoll(&matRotate, 0, 0, *CAMERA_ROLL);
 	//D3DXMatrixMultiply(&matView, &matView, &matRotate);
 
 	device->SetTransform(D3DTS_VIEW, &matView);

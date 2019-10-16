@@ -3,6 +3,8 @@
 #include <Psapi.h>
 #include "tas_input_handler.h"
 
+using namespace halo::addr;
+
 BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
 	char title[255];
 
@@ -48,12 +50,12 @@ void halo_engine::patch_memory(LPVOID dest_address, uint8_t* src_address, size_t
 
 void halo_engine::disable_render()
 {
-	*ADDR_ENGINE_RENDER_ENABLE = 1;
+	*ENGINE_RENDER_ENABLE = 1;
 }
 
 void halo_engine::enable_render()
 {
-	*ADDR_ENGINE_RENDER_ENABLE = 0;
+	*ENGINE_RENDER_ENABLE = 0;
 }
 
 void halo_engine::set_window_handle(HWND handle)
@@ -67,8 +69,8 @@ halo_engine::halo_engine()
 	uint32_t data_pool_size = 0x1B40000;
 
 	for (uint32_t i = 0; i < data_pool_size / 4; i++) {
-		if (memcmp(&MAGIC_DATAPOOLHEADER, &(ADDR_RUNTIME_DATA_BEGIN[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
-			DataPool* pool = (DataPool*)(&ADDR_RUNTIME_DATA_BEGIN[i] - 10);
+		if (memcmp(&MAGIC_DATAPOOLHEADER, &(RUNTIME_DATA_BEGIN[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
+			DataPool* pool = (DataPool*)(&RUNTIME_DATA_BEGIN[i] - 10);
 			dataPools.push_back(pool);
 
 			if (std::string(pool->Name) == "object") {
@@ -80,13 +82,13 @@ halo_engine::halo_engine()
 	update_window_handle();
 
 	auto addr = &enableFastForward;
-	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)& addr, 4);
+	patch_memory(FAST_FORWARD_POINTER, (uint8_t*)& addr, 4);
 }
 
 halo_engine::~halo_engine()
 {
 	auto defaultAddr = 0x007196D8;
-	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)& defaultAddr, 4);
+	patch_memory(FAST_FORWARD_POINTER, (uint8_t*)& defaultAddr, 4);
 }
 
 HWND halo_engine::window_handle()
@@ -174,12 +176,12 @@ int halo_engine::get_tag_index_from_path(int tagIdentifier, char* path)
 void halo_engine::set_debug_camera(bool enabled)
 {
 	if (enabled) {
-		ADDR_DEBUG_CAMERA_ENABLE[0] = 0x90;
-		ADDR_DEBUG_CAMERA_ENABLE[1] = 0x6E;
+		DEBUG_CAMERA_ENABLE[0] = 0x90;
+		DEBUG_CAMERA_ENABLE[1] = 0x6E;
 	}
 	else {
-		ADDR_DEBUG_CAMERA_ENABLE[0] = 0x60;
-		ADDR_DEBUG_CAMERA_ENABLE[1] = 0x6D;
+		DEBUG_CAMERA_ENABLE[0] = 0x60;
+		DEBUG_CAMERA_ENABLE[1] = 0x6D;
 	}
 }
 
@@ -192,7 +194,7 @@ void halo_engine::fast_forward_to(uint32_t tick)
 
 	if (!enableFastForward && fastForwardTick == 0) {
 		fastForwardTick = tick;
-		if (fastForwardTick < *ADDR_SIMULATION_TICK) {
+		if (fastForwardTick < *SIMULATION_TICK) {
 			map_reset();
 		}
 	}
@@ -200,42 +202,42 @@ void halo_engine::fast_forward_to(uint32_t tick)
 
 void halo_engine::map_reset()
 {
-	*ADDR_MAP_RESET = 1;
+	*MAP_RESET = 1;
 }
 
 void halo_engine::core_save()
 {
-	*ADDR_CORE_SAVE = 1;
+	*CORE_SAVE = 1;
 }
 
 void halo_engine::core_load()
 {
-	*ADDR_CORE_LOAD = 1;
+	*CORE_LOAD = 1;
 }
 
 void halo_engine::save_checkpoint()
 {
-	*ADDR_SAVE_CHECKPOINT = 1;
+	*SAVE_CHECKPOINT = 1;
 }
 
 void halo_engine::load_checkpoint()
 {
-	*ADDR_LOAD_CHECKPOINT = 1;
+	*LOAD_CHECKPOINT = 1;
 }
 
 void halo_engine::pre_frame()
 {
-	if (fastForwardTick > 0 && fastForwardTick > * ADDR_SIMULATION_TICK) {
+	if (fastForwardTick > 0 && fastForwardTick > * SIMULATION_TICK) {
 		enableFastForward = 1;
-		if (fastForwardTick < *ADDR_SIMULATION_TICK + 45) {
+		if (fastForwardTick < *SIMULATION_TICK + 45) {
 			enable_render();
 		}
 		else {
 			disable_render();
 		}
 	}
-	else if (fastForwardTick > 0 && *ADDR_SIMULATION_TICK == fastForwardTick) {
-		*ADDR_GAME_SPEED = 0;
+	else if (fastForwardTick > 0 && *SIMULATION_TICK == fastForwardTick) {
+		*GAME_SPEED = 0;
 		enableFastForward = 0;
 		fastForwardTick = 0;
 		enable_render();
@@ -250,9 +252,9 @@ void halo_engine::pre_frame()
 // Gets the name of a BSP from the level name and index
 std::string halo_engine::current_bsp_name()
 {
-	std::string currentMap = std::string(ADDR_MAP_STRING);
+	std::string currentMap = std::string(MAP_STRING);
 
-	auto keyVal = LEVEL_BSP_NAME.find(std::make_pair(currentMap, *ADDR_CURRENT_BSP_INDEX));
+	auto keyVal = LEVEL_BSP_NAME.find(std::make_pair(currentMap, *CURRENT_BSP_INDEX));
 	if (keyVal != LEVEL_BSP_NAME.end()) {
 		return keyVal->second;
 	}
@@ -263,7 +265,7 @@ std::string halo_engine::current_bsp_name()
 halo::MAP halo_engine::current_map()
 {
 	using halo::MAP;
-	std::string currentMap = std::string(ADDR_MAP_STRING);
+	std::string currentMap = std::string(MAP_STRING);
 
 	if (currentMap == "levels\\a10\\a10") {
 		return MAP::PILLAR_OF_AUTUMN;
@@ -306,7 +308,7 @@ halo::MAP halo_engine::current_map()
 halo::DIFFICULTY halo_engine::current_difficulty()
 {
 	using halo::DIFFICULTY;
-	switch (*ADDR_GAME_DIFFICULTY_ACTUAL) {
+	switch (*GAME_DIFFICULTY_ACTUAL) {
 	case 0: return DIFFICULTY::EASY;
 	case 1: return DIFFICULTY::NORMAL;
 	case 2: return DIFFICULTY::HEROIC;
@@ -317,10 +319,10 @@ halo::DIFFICULTY halo_engine::current_difficulty()
 
 void halo_engine::mouse_directinput_override_disable()
 {
-	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
+	patch_memory(PATCH_DINPUT_MOUSE_FUNC, PATCH_DINPUT_MOUSE_ORIGINAL, 7);
 }
 
 void halo_engine::mouse_directinput_override_enable()
 {
-	patch_memory(ADDR_PATCH_DINPUT_MOUSE, PATCH_DINPUT_MOUSE_BYTES, 7);
+	patch_memory(PATCH_DINPUT_MOUSE_FUNC, PATCH_DINPUT_MOUSE_BYTES, 7);
 }

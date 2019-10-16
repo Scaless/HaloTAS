@@ -7,6 +7,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+using namespace halo::addr;
+
 tas_info_window::tas_info_window()
 {
 	glfwDefaultWindowHints();
@@ -64,9 +66,9 @@ void tas_info_window::render_overlay()
 
 	/*auto debugA = reinterpret_cast<uint8_t*>(0x006AC568);
 	if (*debugA == 0x90 && player != nullptr) {
-		(*ADDR_CAMERA_POSITION).x = player->unit_x + camDistance.x;
-		(*ADDR_CAMERA_POSITION).y = player->unit_y + camDistance.y;
-		(*ADDR_CAMERA_POSITION).z = player->unit_z + camDistance.z;
+		(*CAMERA_POSITION).x = player->unit_x + camDistance.x;
+		(*CAMERA_POSITION).y = player->unit_y + camDistance.y;
+		(*CAMERA_POSITION).z = player->unit_z + camDistance.z;
 	}*/
 
 	if (!ImGui::CollapsingHeader("Overlay##Overlay")) {
@@ -150,28 +152,28 @@ void tas_info_window::render_overlay()
 
 	if (ImGui::TreeNode("Manual Input##Overlay"))
 	{
-		ImGui::Text("Camera Position: (%f,%f,%f)", ADDR_CAMERA_POSITION->x, ADDR_CAMERA_POSITION->y, ADDR_CAMERA_POSITION->z);
+		ImGui::Text("Camera Position: (%f,%f,%f)", CAMERA_POSITION->x, CAMERA_POSITION->y, CAMERA_POSITION->z);
 		ImGui::SameLine();
-		ImGui::Text("Look Direction: (%f,%f,%f)", ADDR_CAMERA_LOOK_VECTOR[0], ADDR_CAMERA_LOOK_VECTOR[1], ADDR_CAMERA_LOOK_VECTOR[2]);
+		ImGui::Text("Look Direction: (%f,%f,%f)", CAMERA_LOOK_VECTOR[0], CAMERA_LOOK_VECTOR[1], CAMERA_LOOK_VECTOR[2]);
 
-		ImGui::DragFloat3("Camera Movement", glm::value_ptr(*ADDR_CAMERA_POSITION), .1f);
-		ImGui::DragFloat3("Camera Angle", ADDR_CAMERA_LOOK_VECTOR, .05f);
+		ImGui::DragFloat3("Camera Movement", glm::value_ptr(*CAMERA_POSITION), .1f);
+		ImGui::DragFloat3("Camera Angle", CAMERA_LOOK_VECTOR, .05f);
 
-		int tempLeftMouse = *ADDR_LEFTMOUSE;
+		int tempLeftMouse = *LEFTMOUSE;
 		if (ImGui::SliderInt("LeftMouse", &tempLeftMouse, 0, 255)) {
-			*ADDR_LEFTMOUSE = (uint8_t)tempLeftMouse;
+			*LEFTMOUSE = (uint8_t)tempLeftMouse;
 		}
 
-		int tempRightMouse = *ADDR_RIGHTMOUSE;
+		int tempRightMouse = *RIGHTMOUSE;
 		if (ImGui::SliderInt("RightMouse", &tempRightMouse, 0, 255)) {
-			*ADDR_RIGHTMOUSE = (uint8_t)tempRightMouse;
+			*RIGHTMOUSE = (uint8_t)tempRightMouse;
 		}
 
-		ImGui::SliderInt("RawMouseX", ADDR_DINPUT_MOUSEX, -5, 5);
-		ImGui::SliderInt("RawMouseY", ADDR_DINPUT_MOUSEY, -5, 5);
+		ImGui::SliderInt("RawMouseX", DINPUT_MOUSEX, -5, 5);
+		ImGui::SliderInt("RawMouseY", DINPUT_MOUSEY, -5, 5);
 
-		ImGui::SliderFloat("Vertical View Angle", ADDR_UPDOWNVIEW, -1.492f, 1.492f);
-		ImGui::SliderFloat("Horizontal View Angle", ADDR_LEFTRIGHTVIEW, 0, glm::pi<float>() * 2.0f);
+		ImGui::SliderFloat("Vertical View Angle", UPDOWNVIEW, -1.492f, 1.492f);
+		ImGui::SliderFloat("Horizontal View Angle", LEFTRIGHTVIEW, 0, glm::pi<float>() * 2.0f);
 
 		ImGui::Columns(6, "inputmap", true);
 		ImGui::Separator();
@@ -179,15 +181,15 @@ void tas_info_window::render_overlay()
 		for (int n = 0; n < 104; n++)
 		{
 			bool colorChanged = false;
-			if (ADDR_KEYBOARD_INPUT[n] > 0) {
+			if (KEYBOARD_INPUT[n] > 0) {
 				ImGui::PushStyleColor(ImGuiCol_SliderGrab, (ImVec4)ImColor::ImColor(0.0f, 0.5f, 0.0f));
 				colorChanged = true;
 			}
 
 			ImGui::PushID(KEY_PRINT_CODES[n].c_str());
-			int tempInputVal = (int)ADDR_KEYBOARD_INPUT[n];
+			int tempInputVal = (int)KEYBOARD_INPUT[n];
 			if (ImGui::SliderInt(KEY_PRINT_CODES[n].c_str(), &tempInputVal, 0, 255)) {
-				ADDR_KEYBOARD_INPUT[n] = (uint8_t)tempInputVal;
+				KEYBOARD_INPUT[n] = (uint8_t)tempInputVal;
 			}
 			ImGui::PopID();
 
@@ -206,7 +208,7 @@ void tas_info_window::render_overlay()
 
 		for (int n = 0; n < 104; n++)
 		{
-			int tempInputVal = (int)ADDR_KEYBOARD_INPUT[n];
+			int tempInputVal = (int)KEYBOARD_INPUT[n];
 			if (tempInputVal > 0) {
 				ImGui::SliderInt(KEY_PRINT_CODES[n].c_str(), &tempInputVal, 0, 255);
 			}
@@ -284,20 +286,20 @@ void tas_info_window::render_tas()
 		ImGui::SliderInt("Ticks To Advance", &advanceTicks, 1, 100);
 
 		if (ImGui::Button("PAUSE")) {
-			*ADDR_GAME_SPEED = 0;
+			*GAME_SPEED = 0;
 			gEngine.fast_forward_to(0);
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("PLAY")) {
-			*ADDR_GAME_SPEED = 1;
+			*GAME_SPEED = 1;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("REVERSE X TICK")) {
-			gEngine.fast_forward_to(std::clamp(*ADDR_SIMULATION_TICK - advanceTicks, 1, INT_MAX));
+			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK - advanceTicks, 1, INT_MAX));
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("ADVANCE X TICK")) {
-			gEngine.fast_forward_to(*ADDR_SIMULATION_TICK + advanceTicks);
+			gEngine.fast_forward_to(*SIMULATION_TICK + advanceTicks);
 		}
 
 		ImGui::TreePop();
@@ -529,7 +531,7 @@ void tas_info_window::render_inputs()
 			ImGui::Text("%d", count);
 			ImGui::NextColumn();
 			if (ImGui::DragFloat("##Pitch", &(it->cameraPitch), .002f)) {
-				*ADDR_PLAYER_PITCH_ROTATION_RADIANS = it->cameraPitch;
+				*PLAYER_PITCH_ROTATION_RADIANS = it->cameraPitch;
 			}
 
 			ImGui::SameLine();
@@ -612,7 +614,7 @@ void tas_info_window::render_inputs()
 			ImGui::NextColumn();
 
 			if (ImGui::DragFloat("##Yaw", &(it->cameraYaw), .002f)) {
-				*ADDR_PLAYER_YAW_ROTATION_RADIANS = it->cameraYaw;
+				*PLAYER_YAW_ROTATION_RADIANS = it->cameraYaw;
 			}
 
 			ImGui::NextColumn();
@@ -724,7 +726,7 @@ void tas_info_window::render_inputs()
 			ImGui::Text("%d", it->rng);
 			ImGui::NextColumn();
 
-			if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset) && *ADDR_GAME_SPEED > 0) {
+			if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset) && *GAME_SPEED > 0) {
 				ImGui::SetScrollHereY();
 			}
 
@@ -776,36 +778,36 @@ static float lockedGameSpeed = 1.0f;
 static bool lockSpeed = false;
 void tas_info_window::render_header()
 {
-	ImGui::Text("Map: %s\t", ADDR_MAP_STRING);
+	ImGui::Text("Map: %s\t", MAP_STRING);
 	ImGui::SameLine();
-	ImGui::Text("Tick: %d\t", *ADDR_SIMULATION_TICK_2);
+	ImGui::Text("Tick: %d\t", *SIMULATION_TICK);
 	ImGui::SameLine();
-	ImGui::Text("Frame: %d\t", *ADDR_FRAMES_ABSOLUTE);
+	ImGui::Text("Frame: %d\t", *FRAMES_ABSOLUTE);
 	ImGui::SameLine();
-	ImGui::Text("Frames Since Load: %d\t", *ADDR_FRAMES_SINCE_LEVEL_START);
+	ImGui::Text("Frames Since Load: %d\t", *FRAMES_SINCE_LEVEL_START);
 	ImGui::SameLine();
 	ImGui::PushItemWidth(200);
-	ImGui::DragFloat("Game Speed", ADDR_GAME_SPEED, .005f, 0, 4);
+	ImGui::DragFloat("Game Speed", GAME_SPEED, .005f, 0, 4);
 	ImGui::PopItemWidth();
 	ImGui::SameLine();
 	if (ImGui::Checkbox("Lock", &lockSpeed)) {
-		lockedGameSpeed = *ADDR_GAME_SPEED;
+		lockedGameSpeed = *GAME_SPEED;
 	}
 
 	if (lockSpeed) {
-		*ADDR_GAME_SPEED = lockedGameSpeed;
+		*GAME_SPEED = lockedGameSpeed;
 	}
 
 	//ImGui::Checkbox("Force Simulate", &currentInput.forceSimulate);
-	*ADDR_SIMULATE = currentInput.forceSimulate ? 0 : 1;
-	*ADDR_ALLOW_INPUT = (*ADDR_SIMULATE == 1 ? 0 : 1);
+	*ALLOW_SIMULATE = currentInput.forceSimulate ? 0 : 1;
+	*ALLOW_INPUT = (*ALLOW_SIMULATE == 1 ? 0 : 1);
 }
 
 void tas_info_window::render_rng() {
 	if (ImGui::CollapsingHeader("RNG")) {
 		auto& gInputHandler = tas_input_handler::get();
 		ImGui::PushItemWidth(100);
-		ImGui::InputInt("RNG VAL", ADDR_RNG, INT_MIN, INT_MAX);
+		ImGui::InputInt("RNG VAL", RNG, INT_MIN, INT_MAX);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		ImGui::Text("RNG Calls: %d", gInputHandler.get_rng_advances_since_last_tick());
