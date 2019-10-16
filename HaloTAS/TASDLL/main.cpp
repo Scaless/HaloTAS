@@ -4,6 +4,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <thread>
 #include <GL/gl3w.h>
 #include <GLFW/glfw3.h>
 #include <dinput.h>
@@ -26,7 +27,7 @@
 #pragma comment (lib, "d3dx9.lib")
 #pragma comment(lib, "dxguid.lib")
 
-typedef HRESULT(__stdcall* GetDeviceState_t)(LPDIRECTINPUTDEVICE*, DWORD, LPVOID *);
+typedef HRESULT(__stdcall * GetDeviceState_t)(LPDIRECTINPUTDEVICE*, DWORD, LPVOID*);
 typedef HRESULT(__stdcall* GetDeviceData_t)(LPDIRECTINPUTDEVICE*, DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
 typedef void(__cdecl* SimulateTick_t)(int);
 typedef char(__cdecl* AdvanceFrame_t)(float);
@@ -36,8 +37,8 @@ typedef void(__cdecl* AdvanceEffectsTimer_t)(float);
 typedef HRESULT(__stdcall* D3D9BeginScene_t)(IDirect3DDevice9* pDevice);
 typedef HRESULT(__stdcall* D3D9EndScene_t)(IDirect3DDevice9* pDevice);
 
-HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE *pDevice, DWORD cbData, LPVOID *lpvData);
-HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags);
+HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE* pDevice, DWORD cbData, LPVOID* lpvData);
+HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE* pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags);
 void __cdecl hkSimulateTick(int);
 char __cdecl hkAdvanceFrame(float);
 int __cdecl hkBeginLoop();
@@ -89,7 +90,7 @@ void run() {
 	auto& gEngine = halo_engine::get();
 	auto& gInputHandler = tas_input_handler::get();
 	auto& gHotkeys = hotkeys::get();
-	
+
 	gHotkeys.load_hotkeys();
 	gInputHandler.get_inputs_from_files();
 
@@ -121,7 +122,7 @@ void run() {
 		}
 
 		livesplit_export newExport = {};
-		strcpy_s((char*)&newExport.currentMap, sizeof(newExport.currentMap), halo::addr::MAP_STRING);
+		strcpy_s((char*)& newExport.currentMap, sizeof(newExport.currentMap), halo::addr::MAP_STRING);
 		liveSplit->update_export(newExport);
 
 		auto input = infoWindow->getInput();
@@ -149,7 +150,7 @@ void attach_hooks() {
 
 	// DIRECTINPUT8
 	LPDIRECTINPUT8 pDI8;
-	DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&pDI8, NULL);
+	DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)& pDI8, NULL);
 	if (!pDI8) {
 		tas_logger::fatal("Couldn't get dinput8 handle.");
 		exit(1);
@@ -162,7 +163,7 @@ void attach_hooks() {
 		tas_logger::fatal("Couldn't create dinput8 device.");
 		exit(1);
 	}
-	
+
 	void** dinputVTable = *reinterpret_cast<void***>(pDI8Dev);
 
 	originalGetDeviceState = (GetDeviceState_t)(dinputVTable[9]);
@@ -233,24 +234,29 @@ void detach_hooks() {
 
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
-	// Make sure folder exists to store HaloTAS files
-	std::filesystem::create_directory("HaloTASFiles");
+	try {
+		// Make sure folder exists to store HaloTAS files
+		std::filesystem::create_directory("HaloTASFiles");
 
-	tas_logger::info("===== HaloTAS Started =====");
-	tas_logger::info("Current working directory: %s", std::filesystem::current_path().c_str());
+		tas_logger::info("===== HaloTAS Started =====");
+		tas_logger::info("Current working directory: %s", std::filesystem::current_path().string().c_str());
 
-	// Wait for halo.exe to init otherwise we may access invalid memory
-	while (*halo::addr::SIMULATION_TICK <= 0) {
-		
+		// Wait for halo.exe to init otherwise we may access invalid memory
+		while (*halo::addr::SIMULATION_TICK <= 0) {
+			std::this_thread::sleep_for(std::chrono::milliseconds(50));
+		}
+
+		attach_hooks();
+
+		run();
+
+		glfwTerminate();
+		detach_hooks();
+		tas_logger::info("===== HaloTAS Closed =====");
 	}
-	
-	attach_hooks();
-
-	run();
-
-	glfwTerminate();
-	detach_hooks();
-	tas_logger::info("===== HaloTAS Closed =====");
+	catch (const std::exception& e) {
+		tas_logger::fatal("%s", e.what());
+	}
 	FreeLibraryAndExitThread(hDLL, NULL);
 }
 
@@ -261,18 +267,15 @@ INT APIENTRY DllMain(HMODULE hDLL, DWORD Reason, LPVOID /*Reserved*/)
 	if (Reason == DLL_PROCESS_ATTACH) {
 		CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)Main_Thread, hDLL, 0, &dwThreadID);
 	}
-	else if (Reason == DLL_PROCESS_DETACH) {
-		//MessageBox(NULL, "Detach", "", MB_OK);
-	}
 	return TRUE;
 }
 
 static int32_t pressedMouseTick = 0;
 
 static bool btn_down[3] = { false, false, false };
-static bool btn_queued[3] = {false, false, false };
+static bool btn_queued[3] = { false, false, false };
 
-HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE *lpDevice, DWORD cbData, LPVOID *lpvData) // Mouse
+HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE* lpDevice, DWORD cbData, LPVOID* lpvData) // Mouse
 {
 	HRESULT hResult = DI_OK;
 	hResult = originalGetDeviceState(lpDevice, cbData, lpvData);
@@ -288,10 +291,10 @@ static bool enterPreviousFrame = false;
 static bool queuedEnter = false;
 static bool queuedTab = false;
 static bool queuedG = false;
-HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) // Keyboard
+HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE* pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags) // Keyboard
 {
 	HRESULT hResult = DI_OK;
-	
+
 	auto& inputHandler = tas_input_handler::get();
 
 	if (inputHandler.this_tick_enter() && pressedTick != inputHandler.get_current_playback_tick()) {
@@ -306,7 +309,7 @@ HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE *pDevice, DWORD cbObjectDa
 
 	pressedTick = inputHandler.get_current_playback_tick();
 
-	if (queuedTab){
+	if (queuedTab) {
 		if (tab_down) {
 			rgdod->dwData = 0x80;
 		}
@@ -362,7 +365,7 @@ char hkAdvanceFrame(float deltaTime) {
 
 int __cdecl hkBeginLoop() {
 	auto& gInputHandler = tas_input_handler::get();
-	
+
 	gInputHandler.pre_loop();
 	auto ret = originalBeginLoop();
 	gInputHandler.post_loop();
