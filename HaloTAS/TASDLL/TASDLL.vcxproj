@@ -149,6 +149,7 @@
     <ClCompile Include="gameobject.cpp" />
     <ClCompile Include="halo_engine.cpp" />
     <ClCompile Include="helpers.cpp" />
+    <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="livesplit.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="randomizer.cpp" />
@@ -182,6 +183,7 @@
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="halo_engine.h" />
     <ClInclude Include="helpers.h" />
+    <ClInclude Include="hotkeys.h" />
     <ClInclude Include="livesplit.h" />
     <ClInclude Include="randomizer.h" />
     <ClInclude Include="render_d3d9.h" />

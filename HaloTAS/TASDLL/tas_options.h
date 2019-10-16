@@ -11,7 +11,7 @@
 class tas_options
 {
 private:
-	typedef boost::variant<std::string, int8_t, int16_t, int32_t, float> options_variant;
+	typedef boost::variant<std::string, int8_t, int16_t, int32_t, float, uint8_t, uint32_t> options_variant;
 
 	std::unordered_map<std::string, options_variant> options{};
 

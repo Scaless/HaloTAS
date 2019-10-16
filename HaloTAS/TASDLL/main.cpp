@@ -20,6 +20,7 @@
 #include "livesplit.h"
 #include "helpers.h"
 #include "render_d3d9.h"
+#include "hotkeys.h"
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
@@ -87,7 +88,11 @@ void run() {
 
 	auto& gEngine = halo_engine::get();
 	auto& gInputHandler = tas_input_handler::get();
+	auto& gHotkeys = hotkeys::get();
+	gHotkeys.load_hotkeys();
+
 	gInputHandler.get_inputs_from_files();
+
 
 	auto liveSplit = std::make_unique<livesplit>();
 	auto overlay = std::make_unique<tas_overlay>();

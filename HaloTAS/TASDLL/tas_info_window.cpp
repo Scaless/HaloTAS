@@ -2,6 +2,7 @@
 #include "tas_input_handler.h"
 #include "tas_options.h"
 #include "render_d3d9.h"
+#include "hotkeys.h"
 #include <unordered_set>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -295,11 +296,11 @@ void tas_info_window::render_tas()
 			*GAME_SPEED = 1;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("REVERSE X TICK")) {
+		if (ImGui::Button("REVERSE X TICK") || hotkeys::is_hotkey_pressed(HOTKEY_ACTION::TAS_PREVIOUS_TICK)) {
 			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK - advanceTicks, 1, INT_MAX));
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("ADVANCE X TICK")) {
+		if (ImGui::Button("ADVANCE X TICK") || hotkeys::is_hotkey_pressed(HOTKEY_ACTION::TAS_NEXT_TICK)) {
 			gEngine.fast_forward_to(*SIMULATION_TICK + advanceTicks);
 		}
 
