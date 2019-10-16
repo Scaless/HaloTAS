@@ -80,13 +80,13 @@ halo_engine::halo_engine()
 	update_window_handle();
 
 	auto addr = &enableFastForward;
-	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)&addr, 4);
+	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)& addr, 4);
 }
 
 halo_engine::~halo_engine()
 {
 	auto defaultAddr = 0x007196D8;
-	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)&defaultAddr, 4);
+	patch_memory(ADDR_FAST_FORWARD_POINTER, (uint8_t*)& defaultAddr, 4);
 }
 
 HWND halo_engine::window_handle()
@@ -200,7 +200,7 @@ void halo_engine::fast_forward_to(uint32_t tick)
 
 void halo_engine::pre_frame()
 {
-	if (fastForwardTick > 0 && fastForwardTick > *ADDR_SIMULATION_TICK) {
+	if (fastForwardTick > 0 && fastForwardTick > * ADDR_SIMULATION_TICK) {
 		enableFastForward = 1;
 		if (fastForwardTick < *ADDR_SIMULATION_TICK + 45) {
 			enable_render();
@@ -209,7 +209,7 @@ void halo_engine::pre_frame()
 			disable_render();
 		}
 	}
-	else if (fastForwardTick > 0  && *ADDR_SIMULATION_TICK == fastForwardTick) {
+	else if (fastForwardTick > 0 && *ADDR_SIMULATION_TICK == fastForwardTick) {
 		*ADDR_GAME_SPEED = 0;
 		enableFastForward = 0;
 		fastForwardTick = 0;
@@ -233,6 +233,61 @@ std::string halo_engine::current_bsp_name()
 	}
 
 	return std::string();
+}
+
+halo::MAP halo_engine::current_map()
+{
+	using halo::MAP;
+	std::string currentMap = std::string(ADDR_MAP_STRING);
+
+	if (currentMap == "levels\\a10\\a10") {
+		return MAP::PILLAR_OF_AUTUMN;
+	}
+	else if (currentMap == "levels\\a30\\a30") {
+		return MAP::HALO;
+	}
+	else if (currentMap == "levels\\a50\\a50") {
+		return MAP::TRUTH_AND_RECONCILIATION;
+	}
+	else if (currentMap == "levels\\b30\\b30") {
+		return MAP::SILENT_CARTOGRAPHER;
+	}
+	else if (currentMap == "levels\\b40\\b40") {
+		return MAP::ASSAULT_ON_THE_CONTROL_ROOM;
+	}
+	else if (currentMap == "levels\\c10\\c10") {
+		return MAP::_343_GUILTY_SPARK;
+	}
+	else if (currentMap == "levels\\c20\\c20") {
+		return MAP::LIBRARY;
+	}
+	else if (currentMap == "levels\\c40\\c40") {
+		return MAP::TWO_BETRAYALS;
+	}
+	else if (currentMap == "levels\\d20\\d20") {
+		return MAP::KEYES;
+	}
+	else if (currentMap == "levels\\d40\\d40") {
+		return MAP::MAW;
+	}
+	else if (currentMap == "levels\\ui\\ui") {
+		return MAP::UI_MAIN_MENU;
+	}
+	else {
+		return MAP::UNKNOWN_MAP;
+	}
+}
+
+halo::DIFFICULTY halo_engine::current_difficulty()
+{
+	using halo::DIFFICULTY;
+	switch (*ADDR_GAME_DIFFICULTY_ACTUAL) {
+	case 0: return DIFFICULTY::EASY;
+	case 1: return DIFFICULTY::NORMAL;
+	case 2: return DIFFICULTY::HEROIC;
+	case 3: return DIFFICULTY::LEGENDARY;
+	default: return DIFFICULTY::INVALID_DIFFICULTY;
+	}
 }
 
 void halo_engine::mouse_directinput_override_disable()

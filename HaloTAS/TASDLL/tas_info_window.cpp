@@ -228,17 +228,24 @@ void tas_info_window::render_tas()
 
 	ImGui::Checkbox("Record", &currentInput.record);
 	ImGui::SameLine();
-	ImGui::Checkbox("Playback", &currentInput.playback);
+	if (ImGui::Checkbox("Playback", &currentInput.playback)) {
+		if (currentInput.playback) {
+			gEngine.mouse_directinput_override_enable();
+		}
+		else {
+			gEngine.mouse_directinput_override_disable();
+		}
+	};
 	ImGui::SameLine();
 	currentInput.loadPlayback = ImGui::Button("Load Playback");
-	ImGui::SameLine();
+	/*ImGui::SameLine();
 	if (ImGui::Button("PatchMouse")) {
 		gEngine.mouse_directinput_override_enable();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button("UnPatchMouse")) {
 		gEngine.mouse_directinput_override_disable();
-	}
+	}*/
 
 	if (ImGui::Button("Load Checkpoint")) {
 		*ADDR_LOAD_CHECKPOINT = 1;

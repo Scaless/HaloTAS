@@ -57,6 +57,8 @@ namespace halo::addr {
 
 }
 
+
+
 inline extern uint32_t* ADDR_RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
 inline extern uint32_t* ADDR_TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
 
@@ -131,6 +133,9 @@ inline extern uint8_t* ADDR_DEBUG_CAMERA_ENABLE = reinterpret_cast<uint8_t*>(0x0
 //inline extern uint8_t* debugB = reinterpret_cast<uint8_t*>(0x006AC569);
 
 inline extern float* ADDR_GAME_SPEED = reinterpret_cast<float*>(0x40000300);
+inline extern uint8_t* ADDR_GAME_DIFFICULTY_ACTUAL = reinterpret_cast<uint8_t*>(0x40000126);
+inline extern uint8_t* ADDR_GAME_DIFFICULTY_ACTUAL_ALTERNATE = reinterpret_cast<uint8_t*>(0x400001E2);
+inline extern uint8_t* ADDR_GAME_DIFFICULTY_NEXT_MAP_LOAD = reinterpret_cast<uint8_t*>(0x696564);
 inline extern int32_t* ADDR_RNG = reinterpret_cast<int32_t*>(0x00719CD0);
 
 #elif defined(HALO_CUSTOMED)
@@ -391,6 +396,30 @@ struct Tag {
 	std::string displayName;
 };
 
+namespace halo {
+	enum MAP {
+		PILLAR_OF_AUTUMN,
+		HALO,
+		TRUTH_AND_RECONCILIATION,
+		SILENT_CARTOGRAPHER,
+		ASSAULT_ON_THE_CONTROL_ROOM,
+		_343_GUILTY_SPARK,
+		LIBRARY,
+		TWO_BETRAYALS,
+		KEYES,
+		MAW,
+		UI_MAIN_MENU,
+		UNKNOWN_MAP
+	};
+
+	enum DIFFICULTY {
+		EASY,
+		NORMAL,
+		HEROIC,
+		LEGENDARY,
+		INVALID_DIFFICULTY
+	};
+}
 
 
 const std::unordered_map<std::pair<std::string, uint8_t>, std::string, boost::hash<std::pair<std::string, uint8_t>>> LEVEL_BSP_NAME{

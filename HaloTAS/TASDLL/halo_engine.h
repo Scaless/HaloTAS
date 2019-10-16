@@ -53,6 +53,8 @@ public:
 	void pre_frame();
 
 	std::string current_bsp_name();
+	halo::MAP current_map();
+	halo::DIFFICULTY current_difficulty();
 
 	// Patching
 	void mouse_directinput_override_disable();
