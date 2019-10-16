@@ -6,7 +6,7 @@
 
 struct input_moment {
 	uint32_t tick;
-	uint8_t inputBuf[104];
+	uint8_t inputBuf[halo::KEYS::KEY_COUNT];
 	int32_t inputMouseX, inputMouseY;
 	float cameraYaw, cameraPitch;
 	glm::vec3 cameraLocation;
@@ -29,7 +29,7 @@ public:
 	void set_inputs(const std::vector<input_moment>& newInputs);
 
 	// Set kb input for tick
-	void set_kb_input(int32_t tick, KEYS key, uint8_t value);
+	void set_kb_input(int32_t tick, halo::KEYS key, uint8_t value);
 	// Set view angle
 	void set_view_angle(int32_t tick, float pitch, float yaw);
 	void set_pitch(int32_t tick, float pitch);

@@ -7,6 +7,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+using namespace halo;
 using namespace halo::addr;
 
 tas_info_window::tas_info_window()
@@ -178,7 +179,7 @@ void tas_info_window::render_overlay()
 		ImGui::Columns(6, "inputmap", true);
 		ImGui::Separator();
 
-		for (int n = 0; n < 104; n++)
+		for (int n = 0; n < KEYS::KEY_COUNT; n++)
 		{
 			bool colorChanged = false;
 			if (KEYBOARD_INPUT[n] > 0) {
@@ -186,9 +187,9 @@ void tas_info_window::render_overlay()
 				colorChanged = true;
 			}
 
-			ImGui::PushID(KEY_PRINT_CODES[n].c_str());
+			ImGui::PushID(KEYS_TO_STRING[n].c_str());
 			int tempInputVal = (int)KEYBOARD_INPUT[n];
-			if (ImGui::SliderInt(KEY_PRINT_CODES[n].c_str(), &tempInputVal, 0, 255)) {
+			if (ImGui::SliderInt(KEYS_TO_STRING[n].c_str(), &tempInputVal, 0, 255)) {
 				KEYBOARD_INPUT[n] = (uint8_t)tempInputVal;
 			}
 			ImGui::PopID();
@@ -206,11 +207,11 @@ void tas_info_window::render_overlay()
 	{
 		ImGui::PushItemWidth(200);
 
-		for (int n = 0; n < 104; n++)
+		for (int n = 0; n < KEYS::KEY_COUNT; n++)
 		{
 			int tempInputVal = (int)KEYBOARD_INPUT[n];
 			if (tempInputVal > 0) {
-				ImGui::SliderInt(KEY_PRINT_CODES[n].c_str(), &tempInputVal, 0, 255);
+				ImGui::SliderInt(KEYS_TO_STRING[n].c_str(), &tempInputVal, 0, 255);
 			}
 		}
 
@@ -628,7 +629,7 @@ void tas_info_window::render_inputs()
 
 				for (int key = 0; key < KEYS::KEY_COUNT; key++) {
 					// Add the key to the current input
-					if (ImGui::BeginMenu(KEY_PRINT_CODES[key].c_str()))
+					if (ImGui::BeginMenu(KEYS_TO_STRING[key].c_str()))
 					{
 						if (ImGui::MenuItem("x1")) {
 							// Add input
@@ -655,7 +656,7 @@ void tas_info_window::render_inputs()
 
 			for (int key = 0; key < KEYS::KEY_COUNT; key++) {
 				if (it->inputBuf[key]) {
-					const char* btnId = KEY_PRINT_CODES[key].c_str();
+					const char* btnId = KEYS_TO_STRING[key].c_str();
 					ImGui::PushID(btnId);
 					if (ImGui::Button(btnId)) {
 						ImGui::OpenPopup("key_dialog");

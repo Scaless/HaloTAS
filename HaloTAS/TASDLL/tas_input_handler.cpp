@@ -13,6 +13,7 @@
 #include "helpers.h"
 
 using std::vector, std::string;
+using namespace halo;
 using namespace halo::addr;
 
 // TODO: replace with tas_input object 

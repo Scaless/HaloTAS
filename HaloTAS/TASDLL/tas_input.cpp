@@ -27,7 +27,7 @@ void tas_input::set_inputs(const std::vector<input_moment>& newInputs)
 	inputs = newInputs;
 }
 
-void tas_input::set_kb_input(int32_t tick, KEYS key, uint8_t value)
+void tas_input::set_kb_input(int32_t tick, halo::KEYS key, uint8_t value)
 {
 	if (inputs.size() > tick) {
 		inputs[tick].inputBuf[key] = value;
