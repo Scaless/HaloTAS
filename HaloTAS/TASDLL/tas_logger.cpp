@@ -1,22 +1,18 @@
 #include "tas_logger.h"
 
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-
-namespace logging = boost::log;
-namespace keywords = boost::log::keywords;
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <filesystem>
+#include <fstream>
 
 tas_logger::tas_logger()
 {
-	logging::add_common_attributes();
-	boost::log::register_simple_formatter_factory< boost::log::trivial::severity_level, char >("Severity");
-	logging::add_file_log(
-		keywords::file_name = "HaloTAS.log",
-		keywords::format = "[%TimeStamp%]: [%Severity%] %Message%",
-		keywords::auto_flush = true,
-		keywords::open_mode = std::ios_base::out | std::ios_base::app,
-		keywords::max_size = 64 * 1024 * 1024
-	);
+	std::string logPath = "HaloTASFiles/HaloTAS.log";
+	auto file_logger = spdlog::basic_logger_mt("basic_logger", logPath);
+	spdlog::set_default_logger(file_logger);
+
+	spdlog::set_pattern("[%H:%M:%S.%e] [%^-%L-%$] [thread %t] %v");
+	spdlog::flush_on(spdlog::level::debug);
 }
 
 void tas_logger::debug(const char* format, ...)
@@ -26,7 +22,7 @@ void tas_logger::debug(const char* format, ...)
 	va_start(args, format);
 	char buffer[2048];
 	vsprintf_s(buffer, format, args);
-	BOOST_LOG_TRIVIAL(debug) << buffer;
+	spdlog::debug(buffer);
 }
 
 void tas_logger::info(const char* format, ...)
@@ -36,7 +32,7 @@ void tas_logger::info(const char* format, ...)
 	va_start(args, format);
 	char buffer[2048];
 	vsprintf_s(buffer, format, args);
-	BOOST_LOG_TRIVIAL(info) << buffer;
+	spdlog::info(buffer);
 }
 
 void tas_logger::warning(const char* format, ...)
@@ -46,7 +42,7 @@ void tas_logger::warning(const char* format, ...)
 	va_start(args, format);
 	char buffer[2048];
 	vsprintf_s(buffer, format, args);
-	BOOST_LOG_TRIVIAL(warning) << buffer;
+	spdlog::warn(buffer);
 }
 
 void tas_logger::error(const char* format, ...)
@@ -56,7 +52,7 @@ void tas_logger::error(const char* format, ...)
 	va_start(args, format);
 	char buffer[2048];
 	vsprintf_s(buffer, format, args);
-	BOOST_LOG_TRIVIAL(error) << buffer;
+	spdlog::error(buffer);
 }
 
 void tas_logger::fatal(const char* format, ...)
@@ -66,5 +62,5 @@ void tas_logger::fatal(const char* format, ...)
 	va_start(args, format);
 	char buffer[2048];
 	vsprintf_s(buffer, format, args);
-	BOOST_LOG_TRIVIAL(fatal) << buffer;
+	spdlog::critical(buffer);
 }

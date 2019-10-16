@@ -1,7 +1,5 @@
 #pragma once
 
-#include <boost/log/trivial.hpp>
-
 class tas_logger
 {
 #pragma region Singleton

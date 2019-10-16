@@ -89,10 +89,9 @@ void run() {
 	auto& gEngine = halo_engine::get();
 	auto& gInputHandler = tas_input_handler::get();
 	auto& gHotkeys = hotkeys::get();
+	
 	gHotkeys.load_hotkeys();
-
 	gInputHandler.get_inputs_from_files();
-
 
 	auto liveSplit = std::make_unique<livesplit>();
 	auto overlay = std::make_unique<tas_overlay>();
@@ -234,11 +233,13 @@ void detach_hooks() {
 
 DWORD WINAPI Main_Thread(HMODULE hDLL)
 {
-	tas_logger::info("===== HaloTAS Started =====");
-	auto current_path = std::filesystem::current_path().string();
-	tas_logger::info("Current working directory: %s",current_path.c_str());
+	// Make sure folder exists to store HaloTAS files
+	std::filesystem::create_directory("HaloTASFiles");
 
-	// Wait for program to init
+	tas_logger::info("===== HaloTAS Started =====");
+	tas_logger::info("Current working directory: %s", std::filesystem::current_path().c_str());
+
+	// Wait for halo.exe to init otherwise we may access invalid memory
 	while (*halo::addr::SIMULATION_TICK <= 0) {
 		
 	}
