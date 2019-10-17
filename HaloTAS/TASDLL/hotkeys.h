@@ -30,11 +30,16 @@ public:
 private:
 	hotkeys() = default;
 
+	// Action, VK Code
 	std::unordered_map <HOTKEY_ACTION, uint8_t> assigned_hotkeys;
+	// VK Code, Hold Count
+	std::unordered_map <uint8_t, uint8_t> key_pressed;
 public:
 	
 	void load_hotkeys();
 	void set_hotkey(HOTKEY_ACTION action, uint8_t vk_code);
-	static bool is_hotkey_pressed(HOTKEY_ACTION action);
+	static void check_all_hotkeys();
+	static bool is_action_trigger_once(HOTKEY_ACTION action);
+	static bool is_action_trigger_held(HOTKEY_ACTION action);
 };
 

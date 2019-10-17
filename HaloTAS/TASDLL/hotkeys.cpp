@@ -42,13 +42,70 @@ void hotkeys::set_hotkey(HOTKEY_ACTION action, uint8_t vk_code)
 	}
 }
 
-bool hotkeys::is_hotkey_pressed(HOTKEY_ACTION action)
+void hotkeys::check_all_hotkeys()
+{
+	auto& hotkeys = hotkeys::get();
+
+	for (auto& hotkey : hotkeys.assigned_hotkeys) {
+		auto action = hotkey.first;
+		auto vk_code = hotkey.second;
+
+		bool currentlyPressed = (GetAsyncKeyState(vk_code) & 0x8000) != 0;
+
+		// Make sure key exists
+		if (!hotkeys.key_pressed.count(vk_code)) {
+			hotkeys.key_pressed[vk_code] = 0;
+		}
+
+		// Increment if key is held
+		if (currentlyPressed) {
+			hotkeys.key_pressed[vk_code] = static_cast<uint8_t>(std::clamp(hotkeys.key_pressed[vk_code] + 1, 0, 255));
+		}
+		else {
+			hotkeys.key_pressed[vk_code] = 0;
+		}
+	}
+}
+
+bool hotkeys::is_action_trigger_once(HOTKEY_ACTION action)
 {
 	auto& hotkeys = hotkeys::get();
 
 	if (hotkeys.assigned_hotkeys.count(action)) {
 		auto vk_code = hotkeys.assigned_hotkeys[action];
-		return (GetAsyncKeyState(vk_code) & 0x8000) != 0;
+
+		if (!hotkeys.key_pressed.count(vk_code)) {
+			return false;
+		}
+
+		if (hotkeys.key_pressed[vk_code] == 1) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	return false;
+}
+
+bool hotkeys::is_action_trigger_held(HOTKEY_ACTION action)
+{
+	auto& hotkeys = hotkeys::get();
+
+	if (hotkeys.assigned_hotkeys.count(action)) {
+		auto vk_code = hotkeys.assigned_hotkeys[action];
+
+		if (!hotkeys.key_pressed.count(vk_code)) {
+			return false;
+		}
+
+		if (hotkeys.key_pressed[vk_code] > 0) {
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	return false;

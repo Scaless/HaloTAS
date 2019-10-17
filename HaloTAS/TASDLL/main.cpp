@@ -106,6 +106,7 @@ void run() {
 	while (!close)
 	{
 		glfwPollEvents();
+		gHotkeys.check_all_hotkeys();
 
 		auto now = std::chrono::system_clock::now();
 		auto engineUpdateDuration = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastEngineUpdate);

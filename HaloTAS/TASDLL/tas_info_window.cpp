@@ -284,9 +284,6 @@ void tas_info_window::render_tas()
 
 	if (ImGui::TreeNode("TAS Functions"))
 	{
-		static int advanceTicks = 1;
-		ImGui::SliderInt("Ticks To Advance", &advanceTicks, 1, 100);
-
 		if (ImGui::Button("PAUSE")) {
 			*GAME_SPEED = 0;
 			gEngine.fast_forward_to(0);
@@ -295,13 +292,23 @@ void tas_info_window::render_tas()
 		if (ImGui::Button("PLAY")) {
 			*GAME_SPEED = 1;
 		}
+
+		static int reverseTicks = 1;
+		ImGui::PushItemWidth(200);
+		ImGui::DragInt("##ReverseTicks", &reverseTicks, .1f, 1, 100);
+		ImGui::PopItemWidth();
 		ImGui::SameLine();
-		if (ImGui::Button("REVERSE X TICK") || hotkeys::is_hotkey_pressed(HOTKEY_ACTION::TAS_PREVIOUS_TICK)) {
-			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK - advanceTicks, 1, INT_MAX));
+		if (ImGui::Button("REVERSE X TICK") || hotkeys::is_action_trigger_once(HOTKEY_ACTION::TAS_PREVIOUS_TICK)) {
+			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK - reverseTicks, 1, INT_MAX));
 		}
+
+		static int advanceTicks = 1;
+		ImGui::PushItemWidth(200);
+		ImGui::DragInt("##AdvanceTicks", &advanceTicks, .1f, 1, 100);
+		ImGui::PopItemWidth();
 		ImGui::SameLine();
-		if (ImGui::Button("ADVANCE X TICK") || hotkeys::is_hotkey_pressed(HOTKEY_ACTION::TAS_NEXT_TICK)) {
-			gEngine.fast_forward_to(*SIMULATION_TICK + advanceTicks);
+		if (ImGui::Button("ADVANCE X TICK") || hotkeys::is_action_trigger_once(HOTKEY_ACTION::TAS_NEXT_TICK)) {
+			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK + advanceTicks, 1, INT_MAX));
 		}
 
 		ImGui::TreePop();
