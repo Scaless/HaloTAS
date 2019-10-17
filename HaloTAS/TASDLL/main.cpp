@@ -143,6 +143,7 @@ void run() {
 		close |= infoWindow->shouldClose();
 	}
 
+	gEngine.mouse_directinput_override_disable();
 }
 
 void attach_hooks() {
@@ -256,6 +257,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		tas_logger::info("===== HaloTAS Closed =====");
 	}
 	catch (const std::exception& e) {
+		auto& gEngine = halo_engine::get();
+		gEngine.mouse_directinput_override_disable();
 		tas_logger::fatal("%s", e.what());
 	}
 	FreeLibraryAndExitThread(hDLL, NULL);
