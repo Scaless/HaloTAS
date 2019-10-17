@@ -30,9 +30,8 @@ void tas_input::set_inputs(const std::vector<input_moment>& newInputs)
 void tas_input::set_kb_input(int32_t tick, halo::KEYS key, uint8_t value)
 {
 	if (inputs.size() > tick) {
-		inputs[tick].inputBuf[key] = value;
+		inputs[tick].inputBuf[to_underlying(key)] = value;
 	}
-	// TODO
 }
 
 void tas_input::set_view_angle(int32_t tick, float pitch, float yaw)

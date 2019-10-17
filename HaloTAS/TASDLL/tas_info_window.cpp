@@ -180,7 +180,7 @@ void tas_info_window::render_overlay()
 		ImGui::Columns(6, "inputmap", true);
 		ImGui::Separator();
 
-		for (int n = 0; n < KEYS::KEY_COUNT; n++)
+		for (int n = 0; n < to_underlying(KEYS::KEY_COUNT); n++)
 		{
 			bool colorChanged = false;
 			if (KEYBOARD_INPUT[n] > 0) {
@@ -208,7 +208,7 @@ void tas_info_window::render_overlay()
 	{
 		ImGui::PushItemWidth(200);
 
-		for (int n = 0; n < KEYS::KEY_COUNT; n++)
+		for (int n = 0; n < to_underlying(KEYS::KEY_COUNT); n++)
 		{
 			int tempInputVal = (int)KEYBOARD_INPUT[n];
 			if (tempInputVal > 0) {
@@ -242,7 +242,7 @@ void tas_info_window::render_tas()
 	};
 	ImGui::SameLine();
 	currentInput.loadPlayback = ImGui::Button("Load Playback");
-	
+
 	ImGui::SameLine();
 	if (ImGui::Button("SAVE")) {
 		auto& gInputHandler = tas_input_handler::get();
@@ -628,12 +628,11 @@ void tas_info_window::render_inputs()
 			}
 			if (ImGui::BeginPopup("new_input")) {
 
-				for (int key = 0; key < KEYS::KEY_COUNT; key++) {
+				for (auto key : COMMON_KEYS) {
 					// Add the key to the current input
-					if (ImGui::BeginMenu(KEYS_TO_STRING[key].c_str()))
+					if (ImGui::BeginMenu(KEYS_TO_STRING[to_underlying(key)].c_str()))
 					{
 						if (ImGui::MenuItem("x1")) {
-							// Add input
 							input->set_kb_input(count, (KEYS)key, 1);
 						}
 						if (ImGui::BeginMenu("xX")) {
@@ -649,13 +648,39 @@ void tas_info_window::render_inputs()
 						}
 						ImGui::EndMenu();
 					}
-
 				}
+
+				if (ImGui::BeginMenu("ALL KEYS")) {
+					for (int key = 0; key < to_underlying(KEYS::KEY_COUNT); key++) {
+						// Add the key to the current input
+						if (ImGui::BeginMenu(KEYS_TO_STRING[key].c_str()))
+						{
+							if (ImGui::MenuItem("x1")) {
+								input->set_kb_input(count, (KEYS)key, 1);
+							}
+							if (ImGui::BeginMenu("xX")) {
+
+								ImGui::SliderInt("##new_input_count", &new_input_multiple_count, 1, 200);
+								ImGui::SameLine();
+								if (ImGui::Button("Add##new_input_count")) {
+									for (int i = count; i < count + new_input_multiple_count; i++) {
+										input->set_kb_input(i, (KEYS)key, 1);
+									}
+								}
+								ImGui::EndMenu();
+							}
+							ImGui::EndMenu();
+						}
+
+					}
+					ImGui::EndMenu();
+				}
+
 				ImGui::EndPopup();
 			}
 			ImGui::SameLine();
 
-			for (int key = 0; key < KEYS::KEY_COUNT; key++) {
+			for (int key = 0; key < to_underlying(KEYS::KEY_COUNT); key++) {
 				if (it->inputBuf[key]) {
 					const char* btnId = KEYS_TO_STRING[key].c_str();
 					ImGui::PushID(btnId);

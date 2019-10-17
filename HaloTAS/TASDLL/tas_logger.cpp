@@ -2,8 +2,6 @@
 
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/basic_file_sink.h>
-#include <filesystem>
-#include <fstream>
 
 tas_logger::tas_logger()
 {

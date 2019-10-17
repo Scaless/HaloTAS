@@ -273,7 +273,7 @@ bool tas_input_handler::this_tick_enter()
 		return false;
 
 	input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
-	if (savedIM.inputBuf[KEYS::Enter]) {
+	if (savedIM.inputBuf[to_underlying(KEYS::Enter)]) {
 		return true;
 	}
 	return false;
@@ -288,7 +288,7 @@ bool tas_input_handler::this_tick_tab()
 		return false;
 
 	input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
-	if (savedIM.inputBuf[KEYS::Tab]) {
+	if (savedIM.inputBuf[to_underlying(KEYS::Tab)]) {
 		return true;
 	}
 	return false;
@@ -303,7 +303,7 @@ bool tas_input_handler::this_tick_g()
 		return false;
 
 	input_moment savedIM = playback_buffer_current_level[tas_input_handler::inputTickCounter];
-	if (savedIM.inputBuf[KEYS::G]) {
+	if (savedIM.inputBuf[to_underlying(KEYS::G)]) {
 		return true;
 	}
 	return false;
