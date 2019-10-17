@@ -239,6 +239,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 	try {
 		// Make sure folder exists to store HaloTAS files
 		std::filesystem::create_directory("HaloTASFiles");
+		std::filesystem::create_directory("HaloTASFiles/Recordings");
 
 		tas_logger::info("===== HaloTAS Started =====");
 		tas_logger::info("Current working directory: %s", std::filesystem::current_path().string().c_str());

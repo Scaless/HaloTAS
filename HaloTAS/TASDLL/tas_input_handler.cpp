@@ -72,7 +72,7 @@ void tas_input_handler::load_input_from_file(std::filesystem::path filePath) {
 void tas_input_handler::get_inputs_from_files()
 {
 	levelInputs.clear();
-	for (const auto& file : std::filesystem::directory_iterator("")) {
+	for (const auto& file : std::filesystem::directory_iterator("HaloTASFiles/Recordings")) {
 		if (boost::algorithm::ends_with(file.path().string(), ".hbin")) {
 			load_input_from_file(file.path());
 		}
@@ -95,9 +95,7 @@ void tas_input_handler::save_inputs()
 void tas_input_handler::reload_playback_buffer(tas_input* input) {
 
 	playback_buffer_current_level = *input->input_buffer();
-	//playback_buffer_current_level = inputs;
 }
-
 
 void tas_input_handler::pre_tick()
 {
@@ -155,26 +153,30 @@ void tas_input_handler::post_tick()
 	if (record && recordedTick > static_cast<int32_t>(playback_buffer_current_level.size()) - 1)
 	{
 		std::string currentMap{ MAP_STRING };
-		std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
-		std::ofstream logFile(currentMap + ".hbin", std::ios::app | std::ios::binary); // levels.a10.a10.hbin
 
-		input_moment im;
-		for (auto i = 0; i < sizeof(im.inputBuf); i++) {
-			im.inputBuf[i] = KEYBOARD_INPUT[i];
+		if (!(currentMap == "levels\\ui\\ui")) {
+			std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
+			std::string saveFileRoot = "HaloTASFiles/Recordings/";
+			std::ofstream logFile(saveFileRoot + currentMap + ".hbin", std::ios::app | std::ios::binary);
+
+			input_moment im;
+			for (auto i = 0; i < sizeof(im.inputBuf); i++) {
+				im.inputBuf[i] = KEYBOARD_INPUT[i];
+			}
+			im.tick = tick;
+			im.inputMouseX = *DINPUT_MOUSEX;
+			im.inputMouseY = *DINPUT_MOUSEY;
+			im.cameraYaw = *PLAYER_YAW_ROTATION_RADIANS;
+			im.cameraPitch = *PLAYER_PITCH_ROTATION_RADIANS;
+			im.leftMouse = *LEFTMOUSE;
+			im.middleMouse = *MIDDLEMOUSE;
+			im.rightMouse = *RIGHTMOUSE;
+			im.cameraLocation = *CAMERA_POSITION;
+			im.rng = *RNG;
+
+			logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
+			logFile.close();
 		}
-		im.tick = tick;
-		im.inputMouseX = *DINPUT_MOUSEX;
-		im.inputMouseY = *DINPUT_MOUSEY;
-		im.cameraYaw = *PLAYER_YAW_ROTATION_RADIANS;
-		im.cameraPitch = *PLAYER_PITCH_ROTATION_RADIANS;
-		im.leftMouse = *LEFTMOUSE;
-		im.middleMouse = *MIDDLEMOUSE;
-		im.rightMouse = *RIGHTMOUSE;
-		im.cameraLocation = *CAMERA_POSITION;
-		im.rng = *RNG;
-
-		logFile.write(reinterpret_cast<char*>(&im), sizeof(im));
-		logFile.close();
 	}
 
 	recordedTick++;
