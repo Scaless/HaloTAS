@@ -1,2 +1,1 @@
 1. copy TASDLL.dll to your Halo\CONTROLS folder
-2. copy HaloTASFiles folder to your Halo folder 

@@ -94,6 +94,7 @@ namespace halo::addr {
 	inline extern int32_t* DINPUT_MOUSEY = reinterpret_cast<int32_t*>(0x006B1810);
 	inline extern int32_t* DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
 	inline extern char* INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
+	inline extern uint8_t* SOUND_ENABLED = reinterpret_cast<uint8_t*>(0x00725201);
 
 	// HUD Stuff
 	inline extern bool* HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
@@ -106,7 +107,6 @@ namespace halo::addr {
 	inline extern float* HUD_PLAYER_SHIELD = reinterpret_cast<float*>(0x40000848);
 	inline extern float* HUD_PLAYER_HEALTH = reinterpret_cast<float*>(0x4000084C);
 	inline extern uint8_t* HUD_FLAGS = reinterpret_cast<uint8_t*>(0x400008A0);
-
 
 	inline extern int32_t* FAST_FORWARD_POINTER = reinterpret_cast<int32_t*>(0x00470c03);
 

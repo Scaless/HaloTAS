@@ -29,11 +29,14 @@ private:
 	DataPool* objectDataPool = nullptr;
 	uint32_t enableFastForward{ 0 };
 	uint32_t fastForwardTick{ 0 };
+	bool isPresentEnabled{ true };
 
 	void patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size);
 
 	void disable_render();
 	void enable_render();
+	void disable_sound();
+	void enable_sound();
 
 public:
 	void set_window_handle(HWND handle);
@@ -44,6 +47,7 @@ public:
 	void focus();
 
 	void get_snapshot(engine_snapshot& snapshot);
+	bool is_present_enabled();
 
 	// Engine Functions
 	void print_hud_text(const std::wstring& input);

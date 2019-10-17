@@ -36,6 +36,7 @@ typedef void(__cdecl* GetMouseKeyboardGamepadInput_t)();
 typedef void(__cdecl* AdvanceEffectsTimer_t)(float);
 typedef HRESULT(__stdcall* D3D9BeginScene_t)(IDirect3DDevice9* pDevice);
 typedef HRESULT(__stdcall* D3D9EndScene_t)(IDirect3DDevice9* pDevice);
+typedef HRESULT(__stdcall* D3D9Present_t)(IDirect3DDevice9* pDevice, const RECT*, const RECT*, HWND, RGNDATA*);
 
 HRESULT __stdcall hkGetDeviceState(LPDIRECTINPUTDEVICE* pDevice, DWORD cbData, LPVOID* lpvData);
 HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE* pDevice, DWORD cbObjectData, LPDIDEVICEOBJECTDATA rgdod, LPDWORD pdwInOut, DWORD dwFlags);
@@ -46,6 +47,7 @@ void __cdecl hkGetMouseKeyboardGamepadInput();
 void __cdecl hkAdvanceEffectsTimer(float);
 HRESULT __stdcall hkD3D9EndScene(IDirect3DDevice9* pDevice);
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice);
+HRESULT __stdcall hkD3D9Present(IDirect3DDevice9* pDevice, const RECT* pSourceRect, const RECT* pDestRect, HWND hDestWindowOverride, RGNDATA* pDirtyRegion);
 
 GetDeviceState_t originalGetDeviceState;
 GetDeviceData_t originalGetDeviceData;
@@ -56,6 +58,7 @@ AdvanceEffectsTimer_t originalAdvanceEffectsTimer = (AdvanceEffectsTimer_t)(0x45
 GetMouseKeyboardGamepadInput_t originalGetMouseKeyboardGamepadInput = (GetMouseKeyboardGamepadInput_t)(0x490760);
 D3D9EndScene_t originalD3D9EndScene;
 D3D9BeginScene_t originalD3D9BeginScene;
+D3D9Present_t originalD3D9Present;
 
 void detours_error(LONG detourResult) {
 	if (detourResult != NO_ERROR) {
@@ -210,6 +213,9 @@ void attach_hooks() {
 	originalD3D9EndScene = (D3D9EndScene_t)(d3d9VTable[42]);
 	AttachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
 
+	originalD3D9Present = (D3D9Present_t)(d3d9VTable[17]);
+	AttachFunc(&(PVOID&)originalD3D9Present, hkD3D9Present);
+
 	dummyD3D9Device->Release();
 	pD3D->Release();
 
@@ -232,6 +238,7 @@ void detach_hooks() {
 	DetachFunc(&(PVOID&)originalAdvanceEffectsTimer, hkAdvanceEffectsTimer);
 	DetachFunc(&(PVOID&)originalD3D9EndScene, hkD3D9EndScene);
 	DetachFunc(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
+	DetachFunc(&(PVOID&)originalD3D9Present, hkD3D9Present);
 }
 
 DWORD WINAPI Main_Thread(HMODULE hDLL)
@@ -389,6 +396,16 @@ void __cdecl hkAdvanceEffectsTimer(float dt) {
 HRESULT __stdcall hkD3D9BeginScene(IDirect3DDevice9* pDevice)
 {
 	return originalD3D9BeginScene(pDevice);
+}
+
+HRESULT __stdcall hkD3D9Present(IDirect3DDevice9* pDevice, const RECT* pSourceRect, const RECT* pDestRect, HWND hDestWindowOverride, RGNDATA* pDirtyRegion)
+{
+	auto& gEngine = halo_engine::get();
+	if (gEngine.is_present_enabled()) {
+		return originalD3D9Present(pDevice, pSourceRect, pDestRect, hDestWindowOverride, pDirtyRegion);
+	}
+
+	return D3D_OK;
 }
 
 HRESULT __stdcall hkD3D9EndScene(IDirect3DDevice9* pDevice)

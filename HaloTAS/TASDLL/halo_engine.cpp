@@ -58,6 +58,16 @@ void halo_engine::enable_render()
 	*ENGINE_RENDER_ENABLE = 0;
 }
 
+void halo_engine::disable_sound()
+{
+	*SOUND_ENABLED = 0;
+}
+
+void halo_engine::enable_sound()
+{
+	*SOUND_ENABLED = 1;
+}
+
 void halo_engine::set_window_handle(HWND handle)
 {
 	haloHWND = handle;
@@ -144,6 +154,11 @@ void halo_engine::get_snapshot(engine_snapshot& snapshot)
 			snapshot.gameObjects.push_back(object);
 		}
 	}
+}
+
+bool halo_engine::is_present_enabled()
+{
+	return isPresentEnabled;
 }
 
 void halo_engine::print_hud_text(const std::wstring& input)
@@ -235,17 +250,23 @@ void halo_engine::pre_frame()
 		else {
 			disable_render();
 		}
+		isPresentEnabled = false;
+		disable_sound();
 	}
 	else if (fastForwardTick > 0 && *SIMULATION_TICK == fastForwardTick) {
 		*GAME_SPEED = 0;
 		enableFastForward = 0;
 		fastForwardTick = 0;
 		enable_render();
+		isPresentEnabled = true;
+		enable_sound();
 	}
 	else {
 		enableFastForward = 0;
 		fastForwardTick = 0;
 		enable_render();
+		isPresentEnabled = true;
+		enable_sound();
 	}
 }
 
