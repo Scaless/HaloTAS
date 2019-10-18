@@ -60,12 +60,12 @@ void halo_engine::enable_render()
 
 void halo_engine::disable_sound()
 {
-	*SOUND_ENABLED = 0;
+	//*SOUND_ENABLED = 0;
 }
 
 void halo_engine::enable_sound()
 {
-	*SOUND_ENABLED = 1;
+	//*SOUND_ENABLED = 1;
 }
 
 void halo_engine::set_window_handle(HWND handle)
