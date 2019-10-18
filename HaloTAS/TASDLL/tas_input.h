@@ -19,12 +19,18 @@ class tas_input {
 	std::string levelName;
 	std::vector<input_moment> inputs;
 
+	bool dirty{ false };
+	void set_dirty();
+
 public:
 	tas_input();
 	tas_input(std::string fileName);
 
 	std::string level_name();
 	std::vector<input_moment>* input_buffer();
+
+	bool is_dirty();
+	void clear_dirty_flag();
 
 	void set_inputs(const std::vector<input_moment>& newInputs);
 
@@ -35,9 +41,9 @@ public:
 	void set_pitch(int32_t tick, float pitch);
 	void set_yaw(int32_t tick, float yaw);
 	// Set mouse input for tick
-	void set_mouse_input(int32_t tick, bool leftMouseDown, bool rightMouseDown);
-	// Set breakpoint on tick
-	void set_breakpoint(int32_t tick, bool enabled);
+	void set_mouse_lmb(int32_t tick, bool buttonDown);
+	void set_mouse_mmb(int32_t tick, bool buttonDown);
+	void set_mouse_rmb(int32_t tick, bool buttonDown);
 
 	// Appends tick to the end of the current input range
 	void append_tick();

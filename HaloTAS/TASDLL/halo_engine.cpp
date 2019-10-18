@@ -242,9 +242,10 @@ void halo_engine::load_checkpoint()
 
 void halo_engine::pre_frame()
 {
+	const int MIN_RENDERED_FRAMES = 60;
 	if (fastForwardTick > 0 && fastForwardTick > * SIMULATION_TICK) {
 		enableFastForward = 1;
-		if (fastForwardTick < *SIMULATION_TICK + 45) {
+		if (fastForwardTick < *SIMULATION_TICK + MIN_RENDERED_FRAMES) {
 			enable_render();
 		}
 		else {

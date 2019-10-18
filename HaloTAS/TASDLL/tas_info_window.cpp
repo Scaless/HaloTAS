@@ -539,9 +539,13 @@ void tas_info_window::render_inputs()
 			}
 			ImGui::NextColumn();
 
+#pragma region Pitch/Yaw
+
 			ImGui::Text("%d", count);
 			ImGui::NextColumn();
-			if (ImGui::DragFloat("##Pitch", &(it->cameraPitch), .002f)) {
+			float tempPitch = it->cameraPitch;
+			if (ImGui::DragFloat("##Pitch", &tempPitch, .001f)) {
+				input->set_pitch(count, tempPitch);
 				*PLAYER_PITCH_ROTATION_RADIANS = it->cameraPitch;
 			}
 
@@ -624,14 +628,18 @@ void tas_info_window::render_inputs()
 
 			ImGui::NextColumn();
 
-			if (ImGui::DragFloat("##Yaw", &(it->cameraYaw), .002f)) {
+			float tempYaw = it->cameraYaw;
+			if (ImGui::DragFloat("##Yaw", &tempYaw, .001f)) {
+				input->set_yaw(count, tempYaw);
 				*PLAYER_YAW_ROTATION_RADIANS = it->cameraYaw;
 			}
 
 			ImGui::NextColumn();
 
-			// INPUTS
-			////////////////////////
+#pragma endregion
+
+#pragma region Keyboard Input
+
 			if (ImGui::Button("+")) {
 				ImGui::OpenPopup("new_input");
 			}
@@ -721,43 +729,119 @@ void tas_info_window::render_inputs()
 
 			ImGui::NextColumn();
 
+#pragma endregion
+
+#pragma region Mouse Input
+
+			const uint8_t BUTTON_MAX_VALUE = 1;
+
 			ImGui::PushItemWidth(50);
-			ImGui::Text("LMB:");
-			ImGui::SameLine();
-			if (it->leftMouse > 0) {
-				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
-				ImGui::DragScalar("##LMB", ImGuiDataType_U8, &(it->leftMouse), 1);
-				ImGui::PopStyleColor();
-			}
-			else {
-				ImGui::DragScalar("##LMB", ImGuiDataType_U8, &(it->leftMouse), 1);
-			}
-			ImGui::SameLine();
 
-			ImGui::Text("RMB:");
-			ImGui::SameLine();
-			if (it->rightMouse > 0) {
-				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
-				ImGui::DragScalar("##RMB", ImGuiDataType_U8, &(it->rightMouse), 1);
-				ImGui::PopStyleColor();
-			}
-			else {
-				ImGui::DragScalar("##RMB", ImGuiDataType_U8, &(it->rightMouse), 1);
-			}
-			ImGui::SameLine();
+			// LMB
+			{
+				ImGui::Text("LMB:");
+				ImGui::SameLine();
+				uint8_t tempLMB = it->leftMouse;
+				bool lmbChanged = false;
+				if (it->leftMouse > 0) {
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
+					lmbChanged = ImGui::DragScalar("##LMB", ImGuiDataType_U8, &tempLMB, 1, 0, &BUTTON_MAX_VALUE);
+					ImGui::PopStyleColor();
+				}
+				else {
+					lmbChanged = ImGui::DragScalar("##LMB", ImGuiDataType_U8, &tempLMB, 1, 0, &BUTTON_MAX_VALUE);
+				}
 
-			ImGui::Text("MMB:");
-			ImGui::SameLine();
-			if (it->middleMouse > 0) {
-				ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
-				ImGui::DragScalar("##MMB", ImGuiDataType_U8, &(it->middleMouse), 1);
-				ImGui::PopStyleColor();
+				bool hovered = ImGui::IsItemHovered();
+				bool leftClicked = ImGui::IsItemClicked(0);
+				bool rightClicked = ImGui::IsItemClicked(1);
+
+				if (hovered && GetAsyncKeyState(VK_SHIFT) || leftClicked) {
+					tempLMB = 1;
+					lmbChanged = true;
+				}
+				if (hovered && GetAsyncKeyState(VK_CONTROL) || rightClicked) {
+					tempLMB = 0;
+					lmbChanged = true;
+				}
+
+				if (lmbChanged) {
+					input->set_mouse_lmb(count, tempLMB > 0);
+				}
+				ImGui::SameLine();
 			}
-			else {
-				ImGui::DragScalar("##MMB", ImGuiDataType_U8, &(it->middleMouse), 1);
+
+			// MMB
+			{
+				ImGui::Text("MMB:");
+				ImGui::SameLine();
+				uint8_t tempMMB = it->middleMouse;
+				bool mmbChanged = false;
+				if (it->middleMouse > 0) {
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
+					mmbChanged = ImGui::DragScalar("##MMB", ImGuiDataType_U8, &tempMMB, 1, 0, &BUTTON_MAX_VALUE);
+					ImGui::PopStyleColor();
+				}
+				else {
+					mmbChanged = ImGui::DragScalar("##MMB", ImGuiDataType_U8, &tempMMB, 1, 0, &BUTTON_MAX_VALUE);
+				}
+
+				bool hovered = ImGui::IsItemHovered();
+				bool leftClicked = ImGui::IsItemClicked(0);
+				bool rightClicked = ImGui::IsItemClicked(1);
+
+				if (hovered && GetAsyncKeyState(VK_SHIFT) || leftClicked) {
+					tempMMB = 1;
+					mmbChanged = true;
+				}
+				if (hovered && GetAsyncKeyState(VK_CONTROL) || rightClicked) {
+					tempMMB = 0;
+					mmbChanged = true;
+				}
+
+				if (mmbChanged) {
+					input->set_mouse_mmb(count, tempMMB > 0);
+				}
+				ImGui::SameLine();
 			}
+
+			// RMB
+			{
+				ImGui::Text("RMB:");
+				ImGui::SameLine();
+				uint8_t tempRMB = it->rightMouse;
+				bool rmbChanged = false;
+				if (it->rightMouse > 0) {
+					ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0, .5f, 0, 1));
+					rmbChanged = ImGui::DragScalar("##RMB", ImGuiDataType_U8, &tempRMB, 1, 0, &BUTTON_MAX_VALUE);
+					ImGui::PopStyleColor();
+				}
+				else {
+					rmbChanged = ImGui::DragScalar("##RMB", ImGuiDataType_U8, &tempRMB, 1, 0, &BUTTON_MAX_VALUE);
+				}
+
+				bool hovered = ImGui::IsItemHovered();
+				bool leftClicked = ImGui::IsItemClicked(0);
+				bool rightClicked = ImGui::IsItemClicked(1);
+
+				if (hovered && GetAsyncKeyState(VK_SHIFT) || leftClicked) {
+					tempRMB = 1;
+					rmbChanged = true;
+				}
+				if (hovered && GetAsyncKeyState(VK_CONTROL) || rightClicked) {
+					tempRMB = 0;
+					rmbChanged = true;
+				}
+
+				if (rmbChanged) {
+					input->set_mouse_rmb(count, tempRMB > 0);
+				}
+			}
+
 			ImGui::PopItemWidth();
 			ImGui::NextColumn();
+
+#pragma endregion
 
 			ImGui::Text("%d", it->rng);
 			ImGui::NextColumn();

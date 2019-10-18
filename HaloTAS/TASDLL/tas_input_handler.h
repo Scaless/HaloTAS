@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <chrono>
 #include <filesystem>
 #include <vector>
 #include <array>
@@ -17,12 +18,18 @@ public:
 	}
 
 private:
-	tas_input_handler() = default;
+	tas_input_handler();
 	~tas_input_handler() = default;
 
 private:
 	std::map<std::string, tas_input> levelInputs;
 	void load_input_from_file(std::filesystem::path filePath);
+	std::chrono::steady_clock::time_point lastAutosaveCheck;
+	std::chrono::minutes autosaveInterval{ 5 };
+	uintmax_t autosaveFolderMaxSizeBytes{ 100 * 1024 * 1024 };
+
+	void autosave();
+	bool autosave_safe_to_save();
 
 public:
 	static inline int32_t inputTickCounter = 0;
@@ -32,6 +39,7 @@ public:
 
 	void get_inputs_from_files();
 	void save_input_to_file(std::string hbinFileName);
+	void autosave_check();
 	void reload_playback_buffer(tas_input* input);
 
 	void pre_tick();

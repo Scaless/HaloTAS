@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iterator>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <atomic>
 #include "halo_constants.h"
@@ -27,6 +28,11 @@ static int32_t last_input_tick;
 static int32_t rng_count_since_last_tick;
 static int32_t last_rng;
 static boost::circular_buffer<float> rng_count_histogram_buffer(256);
+
+tas_input_handler::tas_input_handler()
+{
+	lastAutosaveCheck = std::chrono::steady_clock::now() + autosaveInterval;
+}
 
 void tas_input_handler::set_record(bool newRecord)
 {
@@ -69,6 +75,77 @@ void tas_input_handler::load_input_from_file(std::filesystem::path filePath) {
 	levelInputs[filePath.filename().string()] = levelInput;
 }
 
+void tas_input_handler::autosave()
+{
+	std::string rootAutosavePath = "HaloTASFiles/Recordings/_Autosave/";
+
+	for (auto& inputSet : levelInputs) {
+
+		const auto& inputName = inputSet.first;
+		auto& input = inputSet.second;
+		if (!input.is_dirty()) {
+			continue;
+		}
+
+		// Get string with current time in filename-safe format
+		std::time_t now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+		std::string file_time;
+		std::stringstream ss;
+		tm ltm;
+		localtime_s(&ltm, &now);
+		ss << std::put_time(&ltm, "%Y-%m-%d_%H-%M-%S");
+		file_time = ss.str();
+
+		auto originalFIleName = std::filesystem::path(inputName);
+		auto autosaveFullPath = rootAutosavePath + originalFIleName.stem().string() + "_" + file_time + originalFIleName.extension().string();
+
+		std::ofstream logFile(autosaveFullPath, std::ios::trunc | std::ios::binary);
+		for (auto& inp : *input.input_buffer()) {
+			logFile.write(reinterpret_cast<char*>(&inp), sizeof(inp));
+		}
+		logFile.close();
+
+		input.clear_dirty_flag();
+	}
+}
+
+bool tas_input_handler::autosave_safe_to_save()
+{
+	std::string rootAutosavePath = "HaloTASFiles/Recordings/_Autosave/";
+	uintmax_t totalFileBytes = 0;
+
+	for (const auto& file : std::filesystem::directory_iterator(rootAutosavePath)) {
+		if (file.path().extension().string() != ".hbin") {
+			continue;
+		}
+		if (!file.is_regular_file()) {
+			continue;
+		}
+		totalFileBytes += std::filesystem::file_size(file);
+	}
+
+	if (totalFileBytes > autosaveFolderMaxSizeBytes) {
+
+		size_t autosaveFolderMaxSizeMB = autosaveFolderMaxSizeBytes / 1024 / 1024;
+
+		std::stringstream ss;
+		ss << "The _Autosave folder is currently more than " << autosaveFolderMaxSizeMB << "MB. Do you want to continue saving anyways?";
+		ss << std::endl << std::endl << "To stop this message, reduce the size of the _Autosave folder or increase the Autosave Max Folder Size Limit.";
+		std::string message = ss.str();
+
+		const int result = MessageBox(NULL, message.c_str(), "HaloTAS: Autosave Folder Size Limit Reached", MB_YESNO);
+
+		if (result == IDYES) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+
+	return true;
+}
+
 void tas_input_handler::get_inputs_from_files()
 {
 	levelInputs.clear();
@@ -95,8 +172,20 @@ void tas_input_handler::save_input_to_file(std::string hbinFileName)
 	}
 }
 
-void tas_input_handler::reload_playback_buffer(tas_input* input) {
+void tas_input_handler::autosave_check()
+{
+	auto now = std::chrono::steady_clock::now();
 
+	if ((lastAutosaveCheck + autosaveInterval) < now) {
+		if (autosave_safe_to_save()) {
+			autosave();
+		}
+		lastAutosaveCheck = std::chrono::steady_clock::now();
+	}
+}
+
+void tas_input_handler::reload_playback_buffer(tas_input* input)
+{
 	playback_buffer_current_level = *input->input_buffer();
 }
 

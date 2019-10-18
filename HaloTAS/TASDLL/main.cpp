@@ -142,6 +142,7 @@ void run() {
 
 		gInputHandler.set_record(input.record);
 		gInputHandler.set_playback(input.playback);
+		gInputHandler.autosave_check();
 
 		close |= infoWindow->shouldClose();
 	}
@@ -194,7 +195,8 @@ void attach_hooks() {
 	if (!dummyD3D9Device)
 	{
 		pD3D->Release();
-		return;
+		tas_logger::fatal("Couldn't create dummy d3d9 device.");
+		exit(1);
 	}
 
 	void** d3d9VTable = *reinterpret_cast<void***>(dummyD3D9Device);
@@ -247,6 +249,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		// Make sure folder exists to store HaloTAS files
 		std::filesystem::create_directory("HaloTASFiles");
 		std::filesystem::create_directory("HaloTASFiles/Recordings");
+		std::filesystem::create_directory("HaloTASFiles/Recordings/_Autosave");
 
 		tas_logger::info("===== HaloTAS Started =====");
 		tas_logger::info("Current working directory: %s", std::filesystem::current_path().string().c_str());
