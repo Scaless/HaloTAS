@@ -11,6 +11,8 @@
 using namespace halo;
 using namespace halo::addr;
 
+static std::string current_selected_hbin = "";
+
 tas_info_window::tas_info_window()
 {
 	glfwDefaultWindowHints();
@@ -246,7 +248,7 @@ void tas_info_window::render_tas()
 	ImGui::SameLine();
 	if (ImGui::Button("SAVE")) {
 		auto& gInputHandler = tas_input_handler::get();
-		gInputHandler.save_inputs();
+		gInputHandler.save_input_to_file(current_selected_hbin);
 	}
 
 	if (ImGui::TreeNode("Engine Functions"))
@@ -427,7 +429,7 @@ static int32_t project_pitch_down_count = 0;
 static int32_t project_yaw_down_count = 0;
 static int32_t project_pitch_yaw_down_count = 0;
 static int32_t lerp_end_tick = -1;
-static std::string current_item;
+
 static int fixEditorTickOffset = 1;
 
 float lerp(float a, float b, float frac) {
@@ -438,14 +440,14 @@ void tas_info_window::render_inputs()
 {
 	auto& gInputHandler = tas_input_handler::get();
 
-	if (ImGui::BeginCombo("##levelSelect", current_item.c_str()))
+	if (ImGui::BeginCombo("##levelSelect", current_selected_hbin.c_str()))
 	{
 		for (const auto& level : gInputHandler.get_loaded_levels()) {
 
-			bool is_selected = level == current_item; // You can store your selection however you want, outside or inside your objects
+			bool is_selected = level == current_selected_hbin; // You can store your selection however you want, outside or inside your objects
 			const char* levelCstr = level.c_str();
 			if (ImGui::Selectable(levelCstr, is_selected))
-				current_item = level;
+				current_selected_hbin = level;
 			if (is_selected)
 				ImGui::SetItemDefaultFocus();   // You may set the initial focus when opening the combo (scrolling + for keyboard navigation support)
 		}
@@ -453,11 +455,11 @@ void tas_info_window::render_inputs()
 		ImGui::EndCombo();
 	}
 
-	if (current_item.empty()) {
+	if (current_selected_hbin.empty()) {
 		return;
 	}
 
-	auto input = gInputHandler.get_inputs(current_item);
+	auto input = gInputHandler.get_inputs(current_selected_hbin);
 	if (input == nullptr) {
 		return;
 	}

@@ -79,12 +79,15 @@ void tas_input_handler::get_inputs_from_files()
 	}
 }
 
-void tas_input_handler::save_inputs()
+void tas_input_handler::save_input_to_file(std::string hbinFileName)
 {
-	for (auto& inputSet : levelInputs) {
-		std::ofstream logFile(inputSet.first, std::ios::trunc | std::ios::binary);
+	std::string rootRecordingsPath = "HaloTASFiles/Recordings/";
 
-		for (auto& inp : *inputSet.second.input_buffer()) {
+	if (levelInputs.count(hbinFileName)) {
+		std::ofstream logFile(rootRecordingsPath + hbinFileName, std::ios::trunc | std::ios::binary);
+		auto input = levelInputs[hbinFileName];
+
+		for (auto& inp : *input.input_buffer()) {
 			logFile.write(reinterpret_cast<char*>(&inp), sizeof(inp));
 		}
 

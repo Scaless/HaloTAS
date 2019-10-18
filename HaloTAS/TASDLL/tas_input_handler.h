@@ -31,7 +31,7 @@ public:
 	void set_playback(bool newPlayback);
 
 	void get_inputs_from_files();
-	void save_inputs();
+	void save_input_to_file(std::string hbinFileName);
 	void reload_playback_buffer(tas_input* input);
 
 	void pre_tick();
