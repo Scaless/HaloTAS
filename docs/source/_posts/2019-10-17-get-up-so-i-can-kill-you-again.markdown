@@ -22,22 +22,18 @@ Until I find a true way to disable screen effects without drastically editing ga
 
 1. Reset the map
 2. Disable the renderer
-3. Simulate ticks 0 - 955
+3. Simulate ticks 0 - 940
 4. Enable the renderer, but disable framebuffer updates
-5. Simulate ticks 956 - 1000
+5. Simulate ticks 941 - 1000
 6. Enable screen updates
 
-We spend the last 45 ticks rendering to nowhere*, but doing it this way lets screen effects run to completion and provides us with a smooth transition when traversing through time:
+We spend the last 60 ticks rendering to nowhere*, but doing it this way lets screen effects run to completion and provides us with a smooth transition when traversing through time:
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/LUNra1tLzT4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
-I've also discovered that disabling the sound engine during a fast-forward provides a significant speed boost. I am on the lookout for other systems that can be safely disabled or reduced to provide as seamless of an experience as possible. We need to be careful with editing systems as even the smallest change in behavior may cause a replay desync.
-
-My next main focus will be working on squashing the few remaining bugs with playback that occasionally cause desync problems.
-
 ~Scales
 
-\* Using Game Capture in OBS you can actually see the last 45 frames rendering in the preview, but the Halo window itself does not update. Window Capture works appropriately.
+\* Using Game Capture in OBS you can actually see the last 60 frames rendering in the preview, but the Halo window itself does not update. Window Capture works appropriately.
 
 ---
 
