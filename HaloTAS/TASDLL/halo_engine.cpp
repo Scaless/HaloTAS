@@ -276,8 +276,8 @@ std::string halo_engine::current_bsp_name()
 {
 	std::string currentMap = std::string(MAP_STRING);
 
-	auto keyVal = LEVEL_BSP_NAME.find(std::make_pair(currentMap, *CURRENT_BSP_INDEX));
-	if (keyVal != LEVEL_BSP_NAME.end()) {
+	auto keyVal = halo::LEVEL_BSP_NAME.find(std::make_pair(currentMap, *CURRENT_BSP_INDEX));
+	if (keyVal != halo::LEVEL_BSP_NAME.end()) {
 		return keyVal->second;
 	}
 

@@ -27,8 +27,8 @@ private:
 	HWND haloHWND = NULL;
 	std::vector<DataPool*> dataPools;
 	DataPool* objectDataPool = nullptr;
-	uint32_t enableFastForward{ 0 };
-	uint32_t fastForwardTick{ 0 };
+	int32_t enableFastForward{ 0 };
+	int32_t fastForwardTick{ 0 };
 	bool isPresentEnabled{ true };
 
 	void patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size);

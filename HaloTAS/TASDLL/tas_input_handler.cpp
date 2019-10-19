@@ -52,8 +52,6 @@ void tas_input_handler::load_input_from_file(std::filesystem::path filePath) {
 	tas_input levelInput(filePath.filename().string());
 
 	std::vector<input_moment> inputs;
-	auto estimatedElements = std::filesystem::file_size(filePath) / sizeof(input_moment) + 1;
-	inputs.reserve(estimatedElements);
 
 	std::ifstream logFile(filePath.string(), std::ios::in | std::ios::binary);
 
@@ -126,7 +124,7 @@ bool tas_input_handler::autosave_safe_to_save()
 
 	if (totalFileBytes > autosaveFolderMaxSizeBytes) {
 
-		size_t autosaveFolderMaxSizeMB = autosaveFolderMaxSizeBytes / 1024 / 1024;
+		size_t autosaveFolderMaxSizeMB = static_cast<size_t>(autosaveFolderMaxSizeBytes / 1024 / 1024);
 
 		std::stringstream ss;
 		ss << "The _Autosave folder is currently more than " << autosaveFolderMaxSizeMB << "MB. Do you want to continue saving anyways?";
@@ -230,7 +228,7 @@ void tas_input_handler::pre_tick()
 
 	rng_count_since_last_tick = calc_rng_count(last_rng, *RNG, 5000);
 	last_rng = *RNG;
-	rng_count_histogram_buffer.push_back(rng_count_since_last_tick);
+	rng_count_histogram_buffer.push_back(static_cast<float>(rng_count_since_last_tick));
 }
 
 static int recordedTick = 0;

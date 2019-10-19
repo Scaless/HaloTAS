@@ -173,9 +173,9 @@ void tas_overlay::render(const tas_overlay_render_options& options)
 			if (glm::distance(modelPos, playerPos) > options.cullDistance)
 				continue;
 
-			if (KNOWN_TAGS.count(v->tag_id) > 0) {
-				color = KNOWN_TAGS.at(v->tag_id).displayColor;
-				name = KNOWN_TAGS.at(v->tag_id).displayName;
+			if (halo::KNOWN_TAGS.count(v->tag_id) > 0) {
+				color = halo::KNOWN_TAGS.at(v->tag_id).displayColor;
+				name = halo::KNOWN_TAGS.at(v->tag_id).displayName;
 			}
 
 			cubeRenderer->draw_cube(Projection, View, modelPos, .01f, color);

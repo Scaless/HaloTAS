@@ -361,7 +361,7 @@ namespace halo {
 	};
 
 	// Text to display for KEYS codes
-	inline extern std::string KEYS_TO_STRING[] = {
+	inline extern const std::string KEYS_TO_STRING[] = {
 		"ESC",
 		"F1",
 		"F2",
@@ -468,92 +468,91 @@ namespace halo {
 		"NUM_."
 	};
 
+	const std::unordered_map<std::pair<std::string, uint8_t>, std::string, boost::hash<std::pair<std::string, uint8_t>>> LEVEL_BSP_NAME{
+			{{"levels\\a10\\a10", 0}, "a10a"},
+			{{"levels\\a10\\a10", 1}, "a10b"},
+			{{"levels\\a10\\a10", 2}, "a10c"},
+			{{"levels\\a10\\a10", 3}, "a10d"},
+			{{"levels\\a10\\a10", 4}, "a10e"},
+			{{"levels\\a10\\a10", 5}, "a10f"},
+			{{"levels\\a10\\a10", 6}, "a10g"},
+			{{"levels\\a10\\a10", 7}, "a10_space"},
+			{{"levels\\a10\\a10", 8}, "x10hangar"},
+
+			{{"levels\\a30\\a30", 0}, "a30_a"},
+			{{"levels\\a30\\a30", 1}, "a30_b"},
+
+			{{"levels\\a50\\a50", 0}, "a50_exterior"},
+			{{"levels\\a50\\a50", 1}, "a50_muster"},
+			{{"levels\\a50\\a50", 2}, "a50_hangar"},
+			{{"levels\\a50\\a50", 3}, "a50_control"},
+
+			{{"levels\\b30\\b30", 0}, "b30a"},
+			{{"levels\\b30\\b30", 1}, "b30b"},
+
+			{{"levels\\c20\\c20", 0}, "c20_1"},
+			{{"levels\\c20\\c20", 1}, "c20_2"},
+			{{"levels\\c20\\c20", 2}, "c20_3"},
+			{{"levels\\c20\\c20", 3}, "c20_4"},
+
+			{{"levels\\d20\\d20", 0}, "d20_start"},
+			{{"levels\\d20\\d20", 1}, "d20_exterior"},
+			{{"levels\\d20\\d20", 2}, "d20_muster"},
+			{{"levels\\d20\\d20", 3}, "d20_hangar"},
+			{{"levels\\d20\\d20", 4}, "d20_control"},
+
+			{{"levels\\d40\\d40", 0}, "d40a"},
+			{{"levels\\d40\\d40", 1}, "d40b"},
+			{{"levels\\d40\\d40", 2}, "d40c"},
+			{{"levels\\d40\\d40", 3}, "d40d"},
+			{{"levels\\d40\\d40", 4}, "d40e"},
+			{{"levels\\d40\\d40", 5}, "d40f"},
+			{{"levels\\d40\\d40", 6}, "d40g"},
+			{{"levels\\d40\\d40", 7}, "d40h"},
+			{{"levels\\d40\\d40", 8}, "d40_terrain"},
+
+
+	};
+
+	const std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
+	{ 580, Tag{ 580, glm::vec3(0,1,0), "static prop" } },
+	{ 616, Tag{ 616, glm::vec3(0,1,0), "Terminal" }},
+	{ 628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }},
+	{ 632, Tag{ 632, glm::vec3(0,1,0), "tree"   }},
+	{ 680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }},
+	{ 720, Tag{ 720, glm::vec3(0,1,0), "debris" } },
+	{ 732, Tag{ 732, glm::vec3(0,1,0), "door"   }},
+	{ 736, Tag{ 736, glm::vec3(0,1,0), "tree"   }},
+	{ 764, Tag{ 764, glm::vec3(0,1,0), "projectile"   }},
+	{ 800, Tag{ 800, glm::vec3(0,1,0), "Ammo/Health/Consumable"   }},
+	{ 836, Tag{ 836, glm::vec3(0,1,0), "bulkhead?"   }},
+	{ 892, Tag{ 892, glm::vec3(0,1,0), "trigger?"   }},
+	{ 940, Tag{ 940, glm::vec3(0,1,0), "Door" } },
+	{ 972, Tag{ 972, glm::vec3(0,1,0), "Needler" } },
+	{ 1088,Tag{ 1088, glm::vec3(0,1,0), "Shotgun"   }},
+	{ 1204,Tag{ 1204, glm::vec3(0,1,0), "MA5B"  }},
+	{ 1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }},
+	{ 1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }},
+	{ 1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle/Rockets"  }},
+	{ 1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }},
+	{ 1616,Tag{ 1616, glm::vec3(0,1,0), "343 GS"  }},
+	{ 1668,Tag{ 1668, glm::vec3(0,1,0), "Pistol"  }},
+	{ 1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }},
+	{ 1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee" } },
+	{ 2076,Tag{ 2076, glm::vec3(0,1,0), "Ghost" } },
+	{ 2424,Tag{ 2424, glm::vec3(0,1,0), "Wraith" } },
+	{ 2888,Tag{ 2888, glm::vec3(0,1,0), "Pelican" } },
+	{ 2892,Tag{ 2892, glm::vec3(0,1,0), "Popcorn"  }},
+	{ 3356,Tag{ 3356, glm::vec3(0,1,0), "Grunt" } },
+	{ 3584,Tag{ 3584, glm::vec3(0,1,0), "Warthog?"  }},
+	{ 3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }},
+	{ 3704,Tag{ 3704, glm::vec3(0,1,0), "Marine" } },
+	{ 3936,Tag{ 3936, glm::vec3(0,1,0), "Infection Form"  }},
+	{ 4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }},
+	{ 4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }},
+	{ 4864,Tag{ 4864, glm::vec3(1,0,1), "Hunter"  }},
+	{ 5328,Tag{ 5328, glm::vec3(0,1,0), "Cpt. Keyes" } },
+	{ 5792,Tag{ 5792, glm::vec3(0,1,0), "Flood (human)" } },
+	{ 6024,Tag{ 6024, glm::vec3(0,1,0), "Flood (elite)" }},
+	};
 }
-
-const std::unordered_map<std::pair<std::string, uint8_t>, std::string, boost::hash<std::pair<std::string, uint8_t>>> LEVEL_BSP_NAME{
-		{{"levels\\a10\\a10", 0}, "a10a"},
-		{{"levels\\a10\\a10", 1}, "a10b"},
-		{{"levels\\a10\\a10", 2}, "a10c"},
-		{{"levels\\a10\\a10", 3}, "a10d"},
-		{{"levels\\a10\\a10", 4}, "a10e"},
-		{{"levels\\a10\\a10", 5}, "a10f"},
-		{{"levels\\a10\\a10", 6}, "a10g"},
-		{{"levels\\a10\\a10", 7}, "a10_space"},
-		{{"levels\\a10\\a10", 8}, "x10hangar"},
-
-		{{"levels\\a30\\a30", 0}, "a30_a"},
-		{{"levels\\a30\\a30", 1}, "a30_b"},
-
-		{{"levels\\a50\\a50", 0}, "a50_exterior"},
-		{{"levels\\a50\\a50", 1}, "a50_muster"},
-		{{"levels\\a50\\a50", 2}, "a50_hangar"},
-		{{"levels\\a50\\a50", 3}, "a50_control"},
-
-		{{"levels\\b30\\b30", 0}, "b30a"},
-		{{"levels\\b30\\b30", 1}, "b30b"},
-
-		{{"levels\\c20\\c20", 0}, "c20_1"},
-		{{"levels\\c20\\c20", 1}, "c20_2"},
-		{{"levels\\c20\\c20", 2}, "c20_3"},
-		{{"levels\\c20\\c20", 3}, "c20_4"},
-
-		{{"levels\\d20\\d20", 0}, "d20_start"},
-		{{"levels\\d20\\d20", 1}, "d20_exterior"},
-		{{"levels\\d20\\d20", 2}, "d20_muster"},
-		{{"levels\\d20\\d20", 3}, "d20_hangar"},
-		{{"levels\\d20\\d20", 4}, "d20_control"},
-
-		{{"levels\\d40\\d40", 0}, "d40a"},
-		{{"levels\\d40\\d40", 1}, "d40b"},
-		{{"levels\\d40\\d40", 2}, "d40c"},
-		{{"levels\\d40\\d40", 3}, "d40d"},
-		{{"levels\\d40\\d40", 4}, "d40e"},
-		{{"levels\\d40\\d40", 5}, "d40f"},
-		{{"levels\\d40\\d40", 6}, "d40g"},
-		{{"levels\\d40\\d40", 7}, "d40h"},
-		{{"levels\\d40\\d40", 8}, "d40_terrain"},
-
-
-};
-
-const std::unordered_map<uint32_t, Tag> KNOWN_TAGS = {
-{ 580, Tag{ 580, glm::vec3(0,1,0), "static prop" } },
-{ 616, Tag{ 616, glm::vec3(0,1,0), "Terminal" }},
-{ 628, Tag{ 628, glm::vec3(0,1,0), "bulkhead?"   }},
-{ 632, Tag{ 632, glm::vec3(0,1,0), "tree"   }},
-{ 680, Tag{ 680, glm::vec3(0,1,0), "animated light"   }},
-{ 720, Tag{ 720, glm::vec3(0,1,0), "debris" } },
-{ 732, Tag{ 732, glm::vec3(0,1,0), "door"   }},
-{ 736, Tag{ 736, glm::vec3(0,1,0), "tree"   }},
-{ 764, Tag{ 764, glm::vec3(0,1,0), "projectile"   }},
-{ 800, Tag{ 800, glm::vec3(0,1,0), "Ammo/Health/Consumable"   }},
-{ 836, Tag{ 836, glm::vec3(0,1,0), "bulkhead?"   }},
-{ 892, Tag{ 892, glm::vec3(0,1,0), "trigger?"   }},
-{ 940, Tag{ 940, glm::vec3(0,1,0), "Door" } },
-{ 972, Tag{ 972, glm::vec3(0,1,0), "Needler" } },
-{ 1088,Tag{ 1088, glm::vec3(0,1,0), "Shotgun"   }},
-{ 1204,Tag{ 1204, glm::vec3(0,1,0), "MA5B"  }},
-{ 1320,Tag{ 1320, glm::vec3(0,1,0), "Plasma Pistol"  }},
-{ 1356,Tag{ 1356, glm::vec3(0,1,0), "POA Terminal"  }},
-{ 1436,Tag{ 1436, glm::vec3(0,1,0), "Plasma Rifle/Rockets"  }},
-{ 1612,Tag{ 1612, glm::vec3(0,1,0), "POA Bridge Chair"  }},
-{ 1616,Tag{ 1616, glm::vec3(0,1,0), "343 GS"  }},
-{ 1668,Tag{ 1668, glm::vec3(0,1,0), "Pistol"  }},
-{ 1728,Tag{ 1728, glm::vec3(0,1,0), "???"  }},
-{ 1960,Tag{ 1960, glm::vec3(0,1,0), "Banshee" } },
-{ 2076,Tag{ 2076, glm::vec3(0,1,0), "Ghost" } },
-{ 2424,Tag{ 2424, glm::vec3(0,1,0), "Wraith" } },
-{ 2888,Tag{ 2888, glm::vec3(0,1,0), "Pelican" } },
-{ 2892,Tag{ 2892, glm::vec3(0,1,0), "Popcorn"  }},
-{ 3356,Tag{ 3356, glm::vec3(0,1,0), "Grunt" } },
-{ 3584,Tag{ 3584, glm::vec3(0,1,0), "Warthog?"  }},
-{ 3588,Tag{ 3588, glm::vec3(0,1,0), "You!"  }},
-{ 3704,Tag{ 3704, glm::vec3(0,1,0), "Marine" } },
-{ 3936,Tag{ 3936, glm::vec3(0,1,0), "Infection Form"  }},
-{ 4400,Tag{ 4400, glm::vec3(0,1,0), "Elite"  }},
-{ 4516,Tag{ 4516, glm::vec3(0,1,0), "Jackal"  }},
-{ 4864,Tag{ 4864, glm::vec3(1,0,1), "Hunter"  }},
-{ 5328,Tag{ 5328, glm::vec3(0,1,0), "Cpt. Keyes" } },
-{ 5792,Tag{ 5792, glm::vec3(0,1,0), "Flood (human)" } },
-{ 6024,Tag{ 6024, glm::vec3(0,1,0), "Flood (elite)" }},
-};
