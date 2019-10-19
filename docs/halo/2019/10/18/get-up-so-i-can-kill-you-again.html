@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.6.1 -->
+<title>Get Up, So I Can Kill You Again! | HaloTAS</title>
+<meta name="generator" content="Jekyll v4.0.0" />
+<meta property="og:title" content="Get Up, So I Can Kill You Again!" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Today we’re going to go back in time! (Warning: contains eurobeat):" />
+<meta property="og:description" content="Today we’re going to go back in time! (Warning: contains eurobeat):" />
+<link rel="canonical" href="/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html" />
+<meta property="og:url" content="/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html" />
+<meta property="og:site_name" content="HaloTAS" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-10-18T00:00:00-04:00" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","url":"/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html","headline":"Get Up, So I Can Kill You Again!","dateModified":"2019-10-18T00:00:00-04:00","datePublished":"2019-10-18T00:00:00-04:00","mainEntityOfPage":{"@type":"WebPage","@id":"/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html"},"description":"Today we’re going to go back in time! (Warning: contains eurobeat):","@context":"https://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/HaloTAS/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/HaloTAS/feed.xml" title="HaloTAS" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/HaloTAS/">HaloTAS</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Get Up, So I Can Kill You Again!</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-10-18T00:00:00-04:00" itemprop="datePublished">Oct 18, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <p>Today we’re going to go back in time! (Warning: contains eurobeat):</p>
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/iyX9cpZZ-AI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<p>As you can hopefully see, progress is going well on the rewind feature in HaloTAS. We can now easily go forward and backward in time which greatly helps with iteration time on TAS files.</p>
+
+<p>You may notice the screen is shaking a bit in the video, which is not an effect I added. Any screen effect that you incur over the course of re-playing a demo will persist until it is rendered to completion, including: AR shots, grenade blasts (flashes screen yellow), taking damage (flashes screen red), and some scripted events.</p>
+
+<p>During a fast-forward, we disable the renderer to greatly speed up the time it takes to simulate ticks by not issuing any draw calls for each frame. A side effect of this is that the screen effect timers never advance through their animations and will end up stacking on top of each other. Effects can range from annoying to unplayable, such as grenade explosions:</p>
+
+<p><img src="/HaloTAS/assets/screen_effect_explosion.jpg" alt="screen_effect_explosion.jpg" /></p>
+
+<p>Until I find a true way to disable screen effects without drastically editing game files, I’ve implemented a workaround that works fairly well. The process to fast-forward to tick 1000 would be:</p>
+
+<ol>
+  <li>Reset the map</li>
+  <li>Disable the renderer</li>
+  <li>Simulate ticks 0 - 940</li>
+  <li>Enable the renderer, but disable framebuffer updates</li>
+  <li>Simulate ticks 941 - 1000</li>
+  <li>Enable screen updates</li>
+</ol>
+
+<p>We spend the last 60 ticks rendering to nowhere<sup>1</sup>, but doing it this way lets screen effects run to completion and provides us with a smooth transition when traversing through time:</p>
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/LUNra1tLzT4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<hr />
+
+<h3 id="timesplitters">TimeSplitters</h3>
+
+<p>While working on these time-altering tools, we made an interesting discovery<sup>2</sup>: disabling or enabling sound actually changes how the game runs. To understand why this is, we first need to discuss how the flow of time works in-game. From the start of a level, there are two paths we can take:</p>
+
+<ol>
+  <li>Skip the opening cutscene with Enter or Esc</li>
+  <li>Let the opening cutscene play to completion</li>
+</ol>
+
+<p><img src="/HaloTAS/assets/tick_flowchart.png" alt="tick_flowchart.png" /></p>
+
+<p>In speedrun/TAS gameplay, (1) is always preferred when possible as skipping the cutscene is faster. Around half of levels do not have skippable opening cutscenes so the (2) path is taken in those cases. By skipping the cutscene we are re-setting the timeline back to Tick 2, but not <em>completely</em>.</p>
+
+<p>There exists a single global RNG value that is referenced by every consumer of RNG in the game. This RNG value is only ever directly set when the map is restarted. Every time an RNG roll is consumed, the RNG counter advances forward. In heavy firefights and intense scenes, this value may be advanced hundreds to thousands of times per second.</p>
+
+<p>To loop back around to how sound affects the game, here are the tick sequences for two scenarios. Both scenarios restart the map and press enter on Tick 2, the first possible tick to skip the opening cutscene. Blue ticks represent time spent in cutscene, while the red tick is the first tick of player control.</p>
+
+<p>Sound Enabled : 0 - 1 - <span style="color:blue">2</span> - <span style="color:red">2</span> - 3 - 4 … <br />
+Sound Disabled: 0 - 1 - <span style="color:blue">2 - 3 - 4 - 5 - 6 - 7 - 8</span> - <span style="color:red">2</span> - 3 - 4 …</p>
+
+<p>With sound disabled, we spend 6 extra ticks in the cutscene. During those 6 ticks, events are occuring that advance the RNG counter. When we resume player control, the differing RNG sequence will cause the simulation to diverge and result in a desync. We are still investigating WHY this is the case, but for the time being we need leave the sound system enabled for our TAS adventures. This is especially unfortunate for the fast-forward utilities of the TAS as disabling the sound system speeds up fast-forward by around 50%.</p>
+
+<h3 id="moving-forward">Moving Forward</h3>
+
+<p>The focus for the next few updates is going to be on tackling the remaining sources of desync and general tool usability. I would like to make a public release by the end of the year should the project be in a state that I deem appropriate. I do not want to prematurely release tools that become incompatible or create replays that are not truly repeatable.</p>
+
+<p>~Scales</p>
+
+<p><sup>1</sup> Using Game Capture in OBS you can actually see the last 60 frames rendering in the preview, but the Halo window itself does not update. Window Capture works appropriately.</p>
+
+<p><sup>2</sup> When I brought this up in the community, some people already knew that disabling sound could have adverse effects like more crashes, but not the specifics of what was affected.</p>
+
+<hr />
+
+<p><a href="https://github.com/Scaless/HaloTAS">github.com/Scaless/HaloTAS</a></p>
+
+<p>If you would like to support my projects, check out my <a href="https://www.patreon.com/scalesllc">Patreon</a>.</p>
+
+  </div><a class="u-url" href="/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/HaloTAS/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">HaloTAS</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">HaloTAS</li><li><a class="u-email" href="mailto:scales@scal.es">scales@scal.es</a></li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
