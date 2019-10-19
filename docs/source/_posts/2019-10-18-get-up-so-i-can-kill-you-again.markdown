@@ -7,7 +7,7 @@ categories: halo
 
 Today we're going to go back in time! (Warning: contains eurobeat):
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/iyX9cpZZ-AI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/iyX9cpZZ-AI" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 As you can hopefully see, progress is going well on the rewind feature in HaloTAS. We can now easily go forward and backward in time which greatly helps with iteration time on TAS files.
 
@@ -28,7 +28,7 @@ Until I find a true way to disable screen effects without drastically editing ga
 
 We spend the last 60 ticks rendering to nowhere<sup>1</sup>, but doing it this way lets screen effects run to completion and provides us with a smooth transition when traversing through time:
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/LUNra1tLzT4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="640" height="360" src="https://www.youtube.com/embed/LUNra1tLzT4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ---
 
@@ -51,6 +51,20 @@ Sound Enabled : 0 - 1 - <span style='color:blue'>2</span> - <span style='color:r
 Sound Disabled: 0 - 1 - <span style='color:blue'>2 - 3 - 4 - 5 - 6 - 7 - 8</span> - <span style='color:red'>2</span> - 3 - 4 ...
 
 With sound disabled, we spend 6 extra ticks in the cutscene. During those 6 ticks, events are occuring that advance the RNG counter. When we resume player control, the differing RNG sequence will cause the simulation to diverge and result in a desync. We are still investigating WHY this is the case, but for the time being we need to leave the sound system enabled for our TAS adventures. This is especially unfortunate for the fast-forward utilities of the TAS as disabling the sound system speeds up fast-forward by around 50%. 
+
+---
+
+### 🎲 Let's Get Random 🎲
+
+As I've been finding interesting changes that can be made to the game, I add them to a list to eventually build a randomizer. The list is growing pretty fast, so this may be something I put more effort into sooner since it is more applicable to the community overall than the TAS tools.
+
+Tiny chief is my favorite ability so far:
+
+![me_and_my_son.jpg]({{site.baseurl}}/assets/me_and_my_son.jpg)
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/KPMdsovyeT8" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+---
 
 ### Moving Forward
 
