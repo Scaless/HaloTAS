@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="/HaloTAS/feed.xml" rel="self" type="application/atom+xml" /><link href="/HaloTAS/" rel="alternate" type="text/html" /><updated>2019-10-18T22:14:11-04:00</updated><id>/HaloTAS/feed.xml</id><title type="html">HaloTAS</title><entry><title type="html">Get Up, So I Can Kill You Again!</title><link href="/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html" rel="alternate" type="text/html" title="Get Up, So I Can Kill You Again!" /><published>2019-10-18T00:00:00-04:00</published><updated>2019-10-18T00:00:00-04:00</updated><id>/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again</id><content type="html" xml:base="/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html">&lt;p&gt;Today we’re going to go back in time! (Warning: contains eurobeat):&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.0.0">Jekyll</generator><link href="/HaloTAS/feed.xml" rel="self" type="application/atom+xml" /><link href="/HaloTAS/" rel="alternate" type="text/html" /><updated>2019-10-18T22:25:17-04:00</updated><id>/HaloTAS/feed.xml</id><title type="html">HaloTAS</title><entry><title type="html">Get Up, So I Can Kill You Again!</title><link href="/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html" rel="alternate" type="text/html" title="Get Up, So I Can Kill You Again!" /><published>2019-10-18T00:00:00-04:00</published><updated>2019-10-18T00:00:00-04:00</updated><id>/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again</id><content type="html" xml:base="/HaloTAS/halo/2019/10/18/get-up-so-i-can-kill-you-again.html">&lt;p&gt;Today we’re going to go back in time! (Warning: contains eurobeat):&lt;/p&gt;
 
-&lt;iframe width=&quot;640&quot; height=&quot;360&quot; src=&quot;https://www.youtube.com/embed/iyX9cpZZ-AI&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
+&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/iyX9cpZZ-AI&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
 
 &lt;p&gt;As you can hopefully see, progress is going well on the rewind feature in HaloTAS. We can now easily go forward and backward in time which greatly helps with iteration time on TAS files.&lt;/p&gt;
 
@@ -23,7 +23,7 @@
 
 &lt;p&gt;We spend the last 60 ticks rendering to nowhere&lt;sup&gt;1&lt;/sup&gt;, but doing it this way lets screen effects run to completion and provides us with a smooth transition when traversing through time:&lt;/p&gt;
 
-&lt;iframe width=&quot;640&quot; height=&quot;360&quot; src=&quot;https://www.youtube.com/embed/LUNra1tLzT4&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
+&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/LUNra1tLzT4&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
 
 &lt;hr /&gt;
 
@@ -47,7 +47,7 @@
 &lt;p&gt;Sound Enabled : 0 - 1 - &lt;span style=&quot;color:blue&quot;&gt;2&lt;/span&gt; - &lt;span style=&quot;color:red&quot;&gt;2&lt;/span&gt; - 3 - 4 … &lt;br /&gt;
 Sound Disabled: 0 - 1 - &lt;span style=&quot;color:blue&quot;&gt;2 - 3 - 4 - 5 - 6 - 7 - 8&lt;/span&gt; - &lt;span style=&quot;color:red&quot;&gt;2&lt;/span&gt; - 3 - 4 …&lt;/p&gt;
 
-&lt;p&gt;With sound disabled, we spend 6 extra ticks in the cutscene. During those 6 ticks, events are occuring that advance the RNG counter. When we resume player control, the differing RNG sequence will cause the simulation to diverge and result in a desync. We are still investigating WHY this is the case, but for the time being we need leave the sound system enabled for our TAS adventures. This is especially unfortunate for the fast-forward utilities of the TAS as disabling the sound system speeds up fast-forward by around 50%.&lt;/p&gt;
+&lt;p&gt;With sound disabled, we spend 6 extra ticks in the cutscene. During those 6 ticks, events are occuring that advance the RNG counter. When we resume player control, the differing RNG sequence will cause the simulation to diverge and result in a desync. We are still investigating WHY this is the case, but for the time being we need to leave the sound system enabled for our TAS adventures. This is especially unfortunate for the fast-forward utilities of the TAS as disabling the sound system speeds up fast-forward by around 50%.&lt;/p&gt;
 
 &lt;h3 id=&quot;moving-forward&quot;&gt;Moving Forward&lt;/h3&gt;
 
