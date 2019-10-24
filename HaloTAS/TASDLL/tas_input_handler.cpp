@@ -11,6 +11,7 @@
 #include <fstream>
 #include <atomic>
 #include "halo_constants.h"
+#include "halo_engine.h"
 #include "helpers.h"
 
 using std::vector, std::string;
@@ -191,6 +192,10 @@ void tas_input_handler::pre_tick()
 {
 	const int32_t tick = *SIMULATION_TICK;
 
+	if (tick < 5) {
+		auto f = tick;
+	}
+
 	if (playback) {
 		*DINPUT_MOUSEX = 0;
 		*DINPUT_MOUSEY = 0;
@@ -222,6 +227,12 @@ void tas_input_handler::pre_tick()
 				}
 			}
 		}
+
+		auto& gEngine = halo_engine::get();
+		auto absoluteTickCount = tas_input_handler::inputTickCounter;
+		if (absoluteTickCount >= 1000 && absoluteTickCount % 1000 == 0 && gEngine.is_present_enabled()) {
+			SyncBin("HaloTASFiles\\tas.bin", NULL, 0x20001);
+		}
 	}
 
 	tas_input_handler::inputTickCounter += 1;
@@ -231,23 +242,25 @@ void tas_input_handler::pre_tick()
 	rng_count_histogram_buffer.push_back(static_cast<float>(rng_count_since_last_tick));
 }
 
-static int recordedTick = 0;
+static std::string recordCurrentPath;
 void tas_input_handler::post_tick()
 {
 	const int32_t tick = *SIMULATION_TICK - 1;
+		
+	std::string currentMap{ MAP_STRING };
+	std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
+	std::string saveFileRoot = "HaloTASFiles/Recordings/";
 
 	if (tick == 0) {
-		recordedTick = 0;
+		auto now = std::chrono::system_clock::now();
+		auto epoch = now.time_since_epoch().count();
+		recordCurrentPath = saveFileRoot + currentMap + "_" + std::to_string(epoch) + ".hbin";
 	}
 
-	if (record && recordedTick > static_cast<int32_t>(playback_buffer_current_level.size()) - 1)
+	if (record)
 	{
-		std::string currentMap{ MAP_STRING };
-
 		if (!(currentMap == "levels\\ui\\ui")) {
-			std::replace(currentMap.begin(), currentMap.end(), '\\', '.');
-			std::string saveFileRoot = "HaloTASFiles/Recordings/";
-			std::ofstream logFile(saveFileRoot + currentMap + ".hbin", std::ios::app | std::ios::binary);
+			std::ofstream logFile(recordCurrentPath, std::ios::app | std::ios::binary);
 
 			input_moment im;
 			for (auto i = 0; i < sizeof(im.inputBuf); i++) {
@@ -268,8 +281,6 @@ void tas_input_handler::post_tick()
 			logFile.close();
 		}
 	}
-
-	recordedTick++;
 }
 
 static bool justThisOnce = false;

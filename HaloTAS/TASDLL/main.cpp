@@ -22,10 +22,13 @@
 #include "helpers.h"
 #include "render_d3d9.h"
 #include "hotkeys.h"
+#include "randomizer.h"
+#include <mmsystem.h>
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
 #pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "winmm.lib")
 
 typedef HRESULT(__stdcall * GetDeviceState_t)(LPDIRECTINPUTDEVICE*, DWORD, LPVOID*);
 typedef HRESULT(__stdcall* GetDeviceData_t)(LPDIRECTINPUTDEVICE*, DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
@@ -251,6 +254,13 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		std::filesystem::create_directory("HaloTASFiles/Recordings");
 		std::filesystem::create_directory("HaloTASFiles/Recordings/_Autosave");
 
+		if (!std::filesystem::exists("HaloTASFiles/tas.bin")) {
+			std::string message = "Could not find tas.bin. Make sure to copy the HaloTASFiles folder to your Halo directory.";
+			MessageBox(NULL, message.c_str(), "File Missing", MB_OK);
+			tas_logger::fatal("Could not find tas.bin");
+			FreeLibraryAndExitThread(hDLL, NULL);
+		}
+
 		tas_logger::info("===== HaloTAS Started =====");
 		tas_logger::info("Current working directory: %s", std::filesystem::current_path().string().c_str());
 
@@ -360,7 +370,9 @@ HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE* pDevice, DWORD cbObjectDa
 
 void hkSimulateTick(int ticksAfterThis) {
 	auto& gInputHandler = tas_input_handler::get();
+	auto& gRandomizer = randomizer::get();
 
+	gRandomizer.pre_tick();
 	gInputHandler.pre_tick();
 	originalSimulateTick(ticksAfterThis);
 	gInputHandler.post_tick();
@@ -380,7 +392,9 @@ char hkAdvanceFrame(float deltaTime) {
 
 int __cdecl hkBeginLoop() {
 	auto& gInputHandler = tas_input_handler::get();
+	auto& gRandomizer = randomizer::get();
 
+	gRandomizer.pre_loop();
 	gInputHandler.pre_loop();
 	auto ret = originalBeginLoop();
 	gInputHandler.post_loop();

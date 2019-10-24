@@ -1,16 +1,167 @@
 #include "randomizer.h"
+#include "halo_constants.h"
+#include "halo_engine.h"
+#include <algorithm>
+#include <vector>
 
-void randomizer::set_seed(int32_t seed)
+randomizer_level_rule randomizer::make_rule()
+{
+	randomizer_level_rule rule{};
+	std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
+	
+	// Turn flags on based on randomness and if they are enabled globally
+	for (size_t i = 0; i < sizeof(rule.feature_flags) * 8; i++) {
+		size_t flag = (1 << i);
+		if (distribution(eng) <= global_options.randomness) {
+			if (global_options.feature_flags & flag) {
+				rule.feature_flags |= flag;
+			}
+		}
+	}
+	
+	if (rule.feature_flags & RANDOMIZER_FEATURE::TIME_SCALE) {
+		std::uniform_real_distribution<float> timeOffsetDistribution(.75f, 1.25f);
+		rule.time_scale = timeOffsetDistribution(eng);
+	}
+
+	return rule;
+}
+
+void randomizer::regenerate()
 {
 	eng.seed(seed);
+	currentLevelIndex = 0;
+
+	level_order.clear();
+	level_order = { "a10", "a30", "a50", "b30", "b40", "c10", "c20", "c40", "d20" };
+	std::shuffle(level_order.begin(), level_order.end(), eng);
+	level_order.push_back("d40"); // Always end with Maw
+
+	// Build the rules for each level
+	level_rules.clear();
+	randomizer_level_rule baseRule = make_rule();
+	for (auto level : level_order) {
+		if (global_options.change_type == RANDOMIZER_CHANGE_TYPE::GLOBAL) {
+			level_rules[level] = baseRule;
+			continue;
+		}
+		if (global_options.change_type == RANDOMIZER_CHANGE_TYPE::PER_LEVEL) {
+			auto newRule = make_rule();
+			level_rules[level] = newRule;
+			continue;
+		}
+	}
+
+	std::uniform_real_distribution<float> distribution(0.0f, 1.0f);
+	randomizer_global_rule newGlobalRule{};
+
+	if (distribution(eng) <= global_options.randomness) {
+		if (global_options.feature_flags & RANDOMIZER_FEATURE::RANDOM_LEVEL_ORDER) {
+			newGlobalRule.feature_flags |= RANDOMIZER_FEATURE::RANDOM_LEVEL_ORDER;
+		}
+	}
+
+	global_rule = newGlobalRule;
+
 }
 
-void randomizer::start_randomizer()
+bool randomizer::is_enabled()
 {
-	active = true;
+	return enabled;
 }
 
-void randomizer::stop_randomizer()
+void randomizer::set_seed(size_t newSeed)
 {
-	active = false;
+	seed = newSeed;
+	regenerate();
+}
+
+void randomizer::set_options(randomizer_options newOptions)
+{
+	global_options = newOptions;
+	regenerate();
+}
+
+int randomizer::get_current_level_index()
+{
+	return currentLevelIndex;
+}
+
+void randomizer::start()
+{
+	enabled = true;
+	regenerate();
+}
+
+void randomizer::stop()
+{
+	enabled = false;
+}
+
+void randomizer::pre_tick()
+{
+	if (!enabled) {
+		return;
+	}
+
+	std::string currentMap{ halo::addr::MAP_STRING };
+	if (currentMap == "levels\\ui\\ui") {
+		return;
+	}
+
+	auto& gEngine = halo_engine::get();
+
+	
+}
+
+void randomizer::pre_loop()
+{
+	if (!enabled) {
+		return;
+	}
+
+	std::string currentMap{ halo::addr::MAP_STRING };
+	if (currentMap == "levels\\ui\\ui") {
+		return;
+	}
+
+	auto& gEngine = halo_engine::get();
+
+	std::string shortMapName = currentMap.substr(11, 3);
+	auto tick = *halo::addr::SIMULATION_TICK;
+
+	// Global rules
+	if (global_rule.feature_flags & RANDOMIZER_FEATURE::RANDOM_LEVEL_ORDER) {
+
+		if (tick == 1) {
+
+			auto randomizerLevel = level_order[currentLevelIndex];
+
+			if (randomizerLevel != shortMapName) {
+				std::string command = "map_name " + randomizerLevel;
+				gEngine.execute_command(command.c_str());
+			}
+		}
+
+		if (*halo::addr::GAME_WON) {
+			currentLevelIndex++;
+			if (currentLevelIndex > 9) {
+				currentLevelIndex = 0;
+			}
+		}
+	}
+
+	// Map rules
+	if (level_rules.count(shortMapName)) {
+		auto rule = level_rules[shortMapName];
+
+		if (rule.feature_flags & RANDOMIZER_FEATURE::SKULL_BLIND) {
+			*halo::addr::HUD_ENABLED = 0;
+		}
+
+		if (rule.feature_flags & RANDOMIZER_FEATURE::TIME_SCALE) {
+			*halo::addr::GAME_SPEED = rule.time_scale;
+		}
+	}
+
 }

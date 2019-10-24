@@ -3,6 +3,8 @@
 #define HALO_VANILLA
 //#define HALO_CUSTOMED
 
+#define SyncBin PlaySound
+
 #if defined(HALO_VANILLA) && defined(HALO_CUSTOMED)
 #error "Don't define HALO_VANILLA and HALO_CUSTOMED at the same time."
 #endif
@@ -24,7 +26,6 @@ constexpr auto to_underlying(E e) noexcept
 {
 	return static_cast<std::underlying_type_t<E>>(e);
 }
-
 
 // Patch DirectInput code to allow for editing of mouse x/y values while the game is not in focus
 // TODO: Replace this with Detours hook when possible
@@ -52,6 +53,7 @@ namespace halo::constants {
 namespace halo::function {
 	inline extern uintptr_t PRINT_HUD = 0x004AE180; // (int playerIndex, wchar_t* string)
 	inline extern uintptr_t GET_TAG_INDEX = 0x00442550; // (int tagTypeIdentifier, char* pathString)
+	inline extern uintptr_t EXECUTE_COMMAND = 0x004C6A80; // (const char* command)
 
 	inline extern uintptr_t PLAY_SOUND_PTR = 0x00549af0;
 	typedef uint32_t play_sound_actual_func(uint32_t sndIndex, int16_t*, int, int, int*, int, int);
@@ -75,6 +77,7 @@ namespace halo::addr {
 	inline extern uint8_t* RESTART_WITH_INITIAL_LOAD = reinterpret_cast<uint8_t*>(0x719739);
 	inline extern uint8_t* CORE_SAVE = reinterpret_cast<uint8_t*>(0x719751);
 	inline extern uint8_t* CORE_LOAD = reinterpret_cast<uint8_t*>(0x719752);
+	inline extern uint8_t* GAME_WON = reinterpret_cast<uint8_t*>(0x71974E);
 
 	inline extern uint8_t* GAME_IS_RUNNING = reinterpret_cast<uint8_t*>(0x400002E9);
 	inline extern uint8_t* GAME_IS_PAUSED = reinterpret_cast<uint8_t*>(0x400002EA);
@@ -107,6 +110,7 @@ namespace halo::addr {
 	inline extern float* HUD_PLAYER_SHIELD = reinterpret_cast<float*>(0x40000848);
 	inline extern float* HUD_PLAYER_HEALTH = reinterpret_cast<float*>(0x4000084C);
 	inline extern uint8_t* HUD_FLAGS = reinterpret_cast<uint8_t*>(0x400008A0);
+	inline extern bool* HUD_ENABLED = reinterpret_cast<bool*>(0x400003BC);
 
 	inline extern int32_t* FAST_FORWARD_POINTER = reinterpret_cast<int32_t*>(0x00470c03);
 

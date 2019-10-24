@@ -6,6 +6,10 @@ void hotkeys::load_hotkeys()
 	if (auto engine_map_reset = tas_options::get_value<uint8_t>("HOTKEY::ENGINE_MAP_RESET")) {
 		set_hotkey(HOTKEY_ACTION::ENGINE_MAP_RESET, engine_map_reset.value());
 	}
+	else {
+		set_hotkey(HOTKEY_ACTION::ENGINE_MAP_RESET, (uint8_t)HOTKEY_DEFAULT::ENGINE_MAP_RESET);
+	}
+
 	if (auto engine_core_save = tas_options::get_value<uint8_t>("HOTKEY::ENGINE_CORE_SAVE")) {
 		set_hotkey(HOTKEY_ACTION::ENGINE_CORE_SAVE, engine_core_save.value());
 	}
@@ -17,6 +21,19 @@ void hotkeys::load_hotkeys()
 	}
 	if (auto engine_load_checkpoint = tas_options::get_value<uint8_t>("HOTKEY::ENGINE_LOAD_CHECKPOINT")) {
 		set_hotkey(HOTKEY_ACTION::ENGINE_LOAD_CHECKPOINT, engine_load_checkpoint.value());
+	}
+
+	if (auto engine_play = tas_options::get_value<uint8_t>("HOTKEY::ENGINE_PLAY")) {
+		set_hotkey(HOTKEY_ACTION::ENGINE_PLAY, engine_play.value());
+	}
+	else {
+		set_hotkey(HOTKEY_ACTION::ENGINE_PLAY, (uint8_t)HOTKEY_DEFAULT::ENGINE_PLAY);
+	}
+	if (auto engine_pause = tas_options::get_value<uint8_t>("HOTKEY::ENGINE_PAUSE")) {
+		set_hotkey(HOTKEY_ACTION::ENGINE_PAUSE, engine_pause.value());
+	}
+	else {
+		set_hotkey(HOTKEY_ACTION::ENGINE_PAUSE, (uint8_t)HOTKEY_DEFAULT::ENGINE_PAUSE);
 	}
 
 	if (auto tas_previous_tick = tas_options::get_value<uint8_t>("HOTKEY::TAS_PREVIOUS_TICK")) {

@@ -2,11 +2,14 @@
 #include "tas_input_handler.h"
 #include "tas_options.h"
 #include "render_d3d9.h"
+#include "randomizer.h"
 #include "hotkeys.h"
 #include <unordered_set>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <functional>
+#include <shellapi.h>
 
 using namespace halo;
 using namespace halo::addr;
@@ -20,18 +23,7 @@ tas_info_window::tas_info_window()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	auto& gEngine = halo_engine::get();
-	RECT haloClientRect = gEngine.window_client_rect();
-
-	if (!IsRectEmpty(&haloClientRect)) {
-		int targetWidth = haloClientRect.right - haloClientRect.left;
-		int targetHeight = haloClientRect.bottom - haloClientRect.top;
-		window = glfwCreateWindow(targetWidth, targetHeight, "Game Info", NULL, NULL);
-		glfwSetWindowSize(window, 1280, 720);
-	}
-	else {
-		window = glfwCreateWindow(1280, 720, "Game Info", NULL, NULL);
-	}
+	window = glfwCreateWindow(1280, 720, "HaloTAS - github.com/Scaless/HaloTAS", NULL, NULL);
 
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
@@ -261,7 +253,7 @@ void tas_info_window::render_tas()
 			gEngine.save_checkpoint();
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("Restart Level")) {
+		if (ImGui::Button("Restart Level") || hotkeys::is_action_trigger_once(HOTKEY_ACTION::ENGINE_MAP_RESET)) {
 			gEngine.map_reset();
 		}
 		ImGui::SameLine();
@@ -286,12 +278,12 @@ void tas_info_window::render_tas()
 
 	if (ImGui::TreeNode("TAS Functions"))
 	{
-		if (ImGui::Button("PAUSE")) {
+		if (ImGui::Button("PAUSE") || hotkeys::is_action_trigger_once(HOTKEY_ACTION::ENGINE_PAUSE)) {
 			*GAME_SPEED = 0;
 			gEngine.fast_forward_to(0);
 		}
 		ImGui::SameLine();
-		if (ImGui::Button("PLAY")) {
+		if (ImGui::Button("PLAY") || hotkeys::is_action_trigger_once(HOTKEY_ACTION::ENGINE_PLAY)) {
 			*GAME_SPEED = 1;
 		}
 
@@ -466,29 +458,33 @@ void tas_info_window::render_inputs()
 
 	if (ImGui::TreeNode("TAS Input")) {
 
-		ImGui::SliderInt("Editor Tick Offset", &fixEditorTickOffset, -20, 20);
+		ImGui::PushItemWidth(100);
+		ImGui::InputInt("Editor Tick Offset", &fixEditorTickOffset);
+		ImGui::PopItemWidth();
 
-		ImGui::Text("Remove Ticks");
-		ImGui::SameLine();
 		ImGui::PushItemWidth(100);
 		ImGui::InputInt("##DeleteTickStart", &tick_delete_start);
+		tick_delete_start = std::clamp(tick_delete_start, 0, INT_MAX);
 		ImGui::SameLine();
 		ImGui::InputInt("##DeleteTickEnd", &tick_delete_end);
+		tick_delete_end = std::clamp(tick_delete_end, 0, INT_MAX);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
-		if (ImGui::Button("Delete Tick Range")) {
+		if (ImGui::Button("Delete Ticks (start, end)")) {
+			//TODO: confirmation
 			input->remove_tick_range(tick_delete_start, tick_delete_end);
 		}
 
-		ImGui::Text("Insert Ticks");
-		ImGui::SameLine();
 		ImGui::PushItemWidth(100);
 		ImGui::InputInt("##InsertTickStart", &tick_insert_start);
+		tick_insert_start = std::clamp(tick_insert_start, 0, INT_MAX);
 		ImGui::SameLine();
 		ImGui::InputInt("##InsertTickEnd", &tick_insert_count);
-		ImGui::PopItemWidth();
+		tick_insert_count = std::clamp(tick_insert_count, 0, INT_MAX);
 		ImGui::SameLine();
-		if (ImGui::Button("Insert Tick Range")) {
+		ImGui::PopItemWidth();
+		if (ImGui::Button("Insert Ticks (start, count)")) {
+			//TODO: confirmation
 			input->insert_tick_range(tick_insert_start, tick_insert_count);
 		}
 
@@ -500,7 +496,7 @@ void tas_info_window::render_inputs()
 		ImGui::SetColumnWidth(4, 200);
 		ImGui::SetColumnWidth(5, 300);
 		ImGui::SetColumnWidth(6, 100);
-		ImGui::Text("Pause"); ImGui::NextColumn();
+		ImGui::Text("FWD"); ImGui::NextColumn();
 		ImGui::Text("Tick"); ImGui::NextColumn();
 		ImGui::Text("Pitch"); ImGui::NextColumn();
 		ImGui::Text("Yaw"); ImGui::NextColumn();
@@ -981,6 +977,128 @@ void tas_info_window::render_other()
 
 }
 
+void tas_info_window::render_randomizer()
+{
+	if (ImGui::CollapsingHeader("Randomizer")) {
+
+		auto& randomizer = randomizer::get();
+		auto& engine = halo_engine::get();
+
+		static char seedTextInput[128] = "";
+		static std::string seedTextActual = "";
+		static bool randomizerActive = false;
+
+		if (!engine.hac_is_loaded()) {
+			ImGui::TextColored(ImVec4(1, 0, 0, 1), "HAC2 is required for the randomizer to function.");
+			if (ImGui::Button("Click for more info")) {
+				ShellExecute(0, 0, "https://github.com/Scaless/HaloTAS/blob/2f7075b2efefe981336c5fb99712a3b1bc28bad1/randomizer_readme.txt#L1-L4", 0, 0, SW_SHOW);
+			}
+			return;
+		}
+
+		if (ImGui::Checkbox("##RandomizerActive", &randomizerActive)) {
+			if (randomizerActive) {
+				randomizer.start();
+			}
+			else {
+				randomizer.stop();
+			}
+		}
+
+		ImGui::SameLine();
+		if (randomizerActive) {
+			ImGui::TextColored(ImVec4(0, 1, 0, 1), "Randomizer is ON");
+		}
+		else {
+			ImGui::TextColored(ImVec4(1, 0, 0, 1), "Randomizer is OFF");
+		}
+
+		ImGui::TextColored(ImVec4(0, 1, 0, 1), "Current Seed: %s", seedTextActual.c_str());
+
+		std::string currentMap{ halo::addr::MAP_STRING };
+		if (currentMap != "levels\\ui\\ui") {
+			ImGui::Text("Must be on the main menu to change randomizer settings.");
+			return;
+		}
+
+		ImGui::PushItemWidth(300);
+		ImGui::InputText("##RandomizerSeedText", seedTextInput, IM_ARRAYSIZE(seedTextInput));
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		if (ImGui::Button("Set Seed##RandomizerSetSeed")) {
+			std::string seedStr{ seedTextInput };
+			if (seedStr != "") {
+				std::hash<std::string> strHash;
+				randomizer.set_seed(strHash(seedStr));
+				seedTextActual = seedTextInput;
+				ZeroMemory(seedTextInput, IM_ARRAYSIZE(seedTextInput));
+			}
+		}
+
+		bool optionsNeedUpdate = false;
+		static bool bRANDOM_LEVEL_ORDER = true;
+		static bool bTIME_SCALE = true;
+		static bool bSKULL_BLIND = true;
+		static int randomizer_change_mode_current = 0;
+		static int randomizerRandomness = 5;
+
+		if (ImGui::TreeNode("Customize##RandomizerOptions")) {
+			
+			const char* randomizerChangeMode[] = { "GLOBAL", "PER_LEVEL" };
+			ImGui::Text("Mode: ");
+			ImGui::SameLine();
+			ImGui::PushItemWidth(200);
+			optionsNeedUpdate |= ImGui::Combo("##RandomizerChangeMode", &randomizer_change_mode_current, randomizerChangeMode, IM_ARRAYSIZE(randomizerChangeMode));
+			ImGui::PopItemWidth();
+
+			ImGui::Text("Randomness:  ");
+			ImGui::SameLine();
+			ImGui::Text("Minimum");
+			ImGui::SameLine();
+			ImGui::PushItemWidth(300);
+			optionsNeedUpdate |= ImGui::SliderInt("##RandomizerRandomness", &randomizerRandomness, 0, 10);
+			ImGui::PopItemWidth();
+			ImGui::SameLine();
+			ImGui::Text("Maximum");
+
+			ImGui::Text("Checked features are available to be altered. Just because a feature is checked does not mean it will always be active.");
+
+			optionsNeedUpdate |= ImGui::Checkbox("Random Level Order##Randomizer", &bRANDOM_LEVEL_ORDER);
+			optionsNeedUpdate |= ImGui::Checkbox("Time Scale (Changes the speed of time)##Randomizer", &bTIME_SCALE);
+			optionsNeedUpdate |= ImGui::Checkbox("Blind Skull (Disabled HUD)##Randomizer", &bSKULL_BLIND);
+
+			ImGui::TreePop();
+		}
+
+		if (optionsNeedUpdate) {
+			randomizer_options newOptions;
+
+			// Set Randomness
+			newOptions.randomness = static_cast<float>(randomizerRandomness) / 10.0f;
+
+			// Set Feature Flags
+			if (bRANDOM_LEVEL_ORDER) { newOptions.feature_flags |= RANDOMIZER_FEATURE::RANDOM_LEVEL_ORDER; }
+			if (bTIME_SCALE) { newOptions.feature_flags |= RANDOMIZER_FEATURE::TIME_SCALE; }
+			if (bSKULL_BLIND) { newOptions.feature_flags |= RANDOMIZER_FEATURE::SKULL_BLIND; }
+
+			// Set Change Mode
+			if (randomizer_change_mode_current == 0) {
+				newOptions.change_type = RANDOMIZER_CHANGE_TYPE::GLOBAL;
+			}
+			else if (randomizer_change_mode_current == 1) {
+				newOptions.change_type = RANDOMIZER_CHANGE_TYPE::PER_LEVEL;
+			}
+			else {
+				newOptions.change_type = RANDOMIZER_CHANGE_TYPE::GLOBAL;
+				tas_logger::warning("Randomizer change type is not within bounds, defaulting to global.");
+			}
+
+			// Update the randomizer options
+			randomizer.set_options(newOptions);
+		}
+	}
+}
+
 void tas_info_window::render_imgui()
 {
 	ImGui::SetCurrentContext(imguiCtx);
@@ -990,16 +1108,19 @@ void tas_info_window::render_imgui()
 
 	int width, height;
 	glfwGetWindowSize(window, &width, &height);
+
 	ImGui::SetNextWindowSize(ImVec2(static_cast<float>(width), height - 20.0f));
 	ImGui::SetNextWindowPos(ImVec2(0, 20));
 
+	// Make sure to POP styles below if you push more!
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
 
-	ImGui::Begin("Main", NULL, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
+	ImGui::Begin("##Main", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
 	render_menubar();
 	render_header();
+	render_randomizer();
 	render_rng();
 	render_d3d();
 	render_overlay();

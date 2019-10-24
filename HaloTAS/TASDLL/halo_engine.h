@@ -46,6 +46,8 @@ public:
 	RECT window_window_rect();
 	void focus();
 
+	bool hac_is_loaded();
+
 	void get_snapshot(engine_snapshot& snapshot);
 	bool is_present_enabled();
 
@@ -60,6 +62,7 @@ public:
 	void core_load();
 	void save_checkpoint();
 	void load_checkpoint();
+	void execute_command(const char* command);
 
 	void pre_frame();
 

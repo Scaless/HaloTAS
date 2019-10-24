@@ -135,6 +135,32 @@ void halo_engine::focus()
 	}
 }
 
+bool halo_engine::hac_is_loaded()
+{
+	HMODULE hMods[1024];
+	HANDLE hProcess = GetCurrentProcess();
+	DWORD cbNeeded;
+
+	if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+	{
+		for (int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
+		{
+			TCHAR szModName[MAX_PATH];
+			if (GetModuleFileNameEx(hProcess, hMods[i], szModName, sizeof(szModName) / sizeof(TCHAR)))
+			{
+				std::string moduleNameStr{ szModName };
+				auto found = moduleNameStr.find("hac.dll");
+
+				if (found != std::string::npos) {
+					return true;
+				}
+			}
+		}
+	}
+
+	return false;
+}
+
 void halo_engine::get_snapshot(engine_snapshot& snapshot)
 {
 	if (objectDataPool != nullptr)
@@ -240,6 +266,16 @@ void halo_engine::load_checkpoint()
 	*LOAD_CHECKPOINT = 1;
 }
 
+void halo_engine::execute_command(const char* command)
+{
+	__asm {
+		mov edi, command
+		push edi
+		call halo::function::EXECUTE_COMMAND
+		add esp, 4
+	}
+}
+
 void halo_engine::pre_frame()
 {
 	const int MIN_RENDERED_FRAMES = 60;
@@ -252,7 +288,10 @@ void halo_engine::pre_frame()
 			disable_render();
 		}
 		isPresentEnabled = false;
-		disable_sound();
+
+		if (*SIMULATION_TICK > 100) {
+			disable_sound();
+		}
 	}
 	else if (fastForwardTick > 0 && *SIMULATION_TICK == fastForwardTick) {
 		*GAME_SPEED = 0;
