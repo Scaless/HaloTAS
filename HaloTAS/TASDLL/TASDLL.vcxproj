@@ -85,7 +85,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -106,7 +106,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)\lib\glfw\include;$(SolutionDir)\lib\gl3w;$(SolutionDir)\imgui;$(SolutionDir)\include;$(SolutionDir)\lib\freetype\include;C:\boost_1_70_0;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>4201;%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -148,10 +148,13 @@
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
     <ClCompile Include="gameobject.cpp" />
     <ClCompile Include="halo_engine.cpp" />
+    <ClCompile Include="halo_map_data.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="livesplit.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="plugin.cpp" />
+    <ClCompile Include="plugin_loader.cpp" />
     <ClCompile Include="randomizer.cpp" />
     <ClCompile Include="render_d3d9.cpp" />
     <ClCompile Include="tas_info_window.cpp" />
@@ -163,6 +166,7 @@
     <ClCompile Include="render_cube.cpp" />
     <ClCompile Include="render_opengl.cpp" />
     <ClCompile Include="render_text.cpp" />
+    <ClCompile Include="tinyxml2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\detours\detours.h" />
@@ -182,9 +186,12 @@
     <ClInclude Include="gameobject.h" />
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="halo_engine.h" />
+    <ClInclude Include="halo_map_data.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="hotkeys.h" />
     <ClInclude Include="livesplit.h" />
+    <ClInclude Include="plugin.h" />
+    <ClInclude Include="plugin_loader.h" />
     <ClInclude Include="randomizer.h" />
     <ClInclude Include="render_d3d9.h" />
     <ClInclude Include="tas_info_window.h" />
@@ -196,6 +203,7 @@
     <ClInclude Include="render_cube.h" />
     <ClInclude Include="render_opengl.h" />
     <ClInclude Include="render_text.h" />
+    <ClInclude Include="tinyxml2.h" />
     <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

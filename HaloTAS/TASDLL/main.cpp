@@ -24,6 +24,7 @@
 #include "hotkeys.h"
 #include "randomizer.h"
 #include <mmsystem.h>
+#include <shellapi.h>
 
 #pragma comment(lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
@@ -151,6 +152,23 @@ void run() {
 	}
 
 	gEngine.mouse_directinput_override_disable();
+	glfwTerminate();
+
+}
+
+bool version_supported() {
+	std::string currentVersion{ halo::addr::GAME_VERSION };
+	bool version_supported = (currentVersion == "01.00.10.0621");
+	if (!version_supported) {
+		std::stringstream ss;
+		ss << "The version of halo currently running (" << currentVersion << ") is not supported by HaloTAS.\r\n";
+		ss << "Click YES to open a link to the 1.0.10 patch in your browser, otherwise click NO to close HaloTAS.";
+		if (MessageBox(NULL, ss.str().c_str(), "HaloTAS: Halo Version Unsupported", MB_YESNO) == IDYES) {
+			ShellExecute(0, 0, "https://www.bungie.net/en-US/Forums/Post/64943622", 0, 0, SW_SHOW);
+		}
+		return version_supported;
+	}
+	return version_supported;
 }
 
 void attach_hooks() {
@@ -269,11 +287,16 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			std::this_thread::sleep_for(std::chrono::milliseconds(50));
 		}
 
+		// Check to make sure user is running a supported version
+		if (!version_supported()) {
+			tas_logger::fatal("Unsupported version of halo.exe");
+			FreeLibraryAndExitThread(hDLL, NULL);
+		}
+
 		attach_hooks();
 
 		run();
 
-		glfwTerminate();
 		detach_hooks();
 		tas_logger::info("===== HaloTAS Closed =====");
 	}
@@ -282,6 +305,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		gEngine.mouse_directinput_override_disable();
 		tas_logger::fatal("%s", e.what());
 	}
+	tas_logger::flush_and_exit();
 	FreeLibraryAndExitThread(hDLL, NULL);
 }
 

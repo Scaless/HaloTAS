@@ -10,7 +10,7 @@ tas_logger::tas_logger()
 	spdlog::set_default_logger(file_logger);
 
 	spdlog::set_pattern("[%H:%M:%S.%e] [%^-%L-%$] [thread %t] %v");
-	spdlog::flush_on(spdlog::level::debug);
+	spdlog::flush_on(spdlog::level::trace);
 }
 
 void tas_logger::debug(const char* format, ...)
@@ -61,4 +61,10 @@ void tas_logger::fatal(const char* format, ...)
 	char buffer[2048];
 	vsprintf_s(buffer, format, args);
 	spdlog::critical(buffer);
+}
+
+void tas_logger::flush_and_exit()
+{
+	spdlog::drop_all();
+	spdlog::shutdown();
 }

@@ -124,6 +124,7 @@ namespace halo::addr {
 
 	inline extern float* GAME_SPEED = reinterpret_cast<float*>(0x40000300);
 	inline extern int32_t* RNG = reinterpret_cast<int32_t*>(0x00719CD0);
+	inline extern char* GAME_VERSION = reinterpret_cast<char*>(0x40000104);
 	inline extern uint8_t* GAME_DIFFICULTY_ACTUAL = reinterpret_cast<uint8_t*>(0x40000126);
 	inline extern uint8_t* GAME_DIFFICULTY_ACTUAL_ALTERNATE = reinterpret_cast<uint8_t*>(0x400001E2);
 	inline extern uint8_t* GAME_DIFFICULTY_ON_NEXT_MAP_LOAD = reinterpret_cast<uint8_t*>(0x696564);

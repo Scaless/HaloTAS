@@ -38,6 +38,7 @@ private:
 	void render_rng();
 	void render_other();
 	void render_randomizer();
+	void render_tags();
 
 	void render_imgui();
 

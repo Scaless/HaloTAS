@@ -4,12 +4,18 @@
 #include "render_d3d9.h"
 #include "randomizer.h"
 #include "hotkeys.h"
+#include "halo_map_data.h"
+#include "plugin_loader.h"
 #include <unordered_set>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <functional>
 #include <shellapi.h>
+#include <map>
+#include <sstream>
+#include <iomanip>
+#include <fmt/format.h>
 
 using namespace halo;
 using namespace halo::addr;
@@ -45,11 +51,11 @@ tas_info_window::tas_info_window()
 
 tas_info_window::~tas_info_window()
 {
-	glfwMakeContextCurrent(window);
+	/*glfwMakeContextCurrent(window);
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext(imguiCtx);
-	glfwDestroyWindow(window);
+	glfwDestroyWindow(window);*/
 }
 
 //static glm::vec3 camDistance;
@@ -874,6 +880,9 @@ void tas_info_window::render_menubar()
 			if (ImGui::MenuItem("Close")) {
 				close = true;
 			}
+			/*if (ImGui::MenuItem("About")) {
+				MessageBox(NULL, "halo :)", "HaloTAS - About", MB_OK);
+			}*/
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Options")) {
@@ -1099,6 +1108,68 @@ void tas_info_window::render_randomizer()
 	}
 }
 
+static plugin_loader loader;
+
+void tas_info_window::render_tags()
+{
+	using namespace halo::mapdata;
+
+	if (!loader.loaded()) {
+		loader.reload_plugins();
+	}
+
+	if (ImGui::CollapsingHeader("Map Data")) {
+
+		if (ImGui::Button("Reload Plugins")) {
+			loader.reload_plugins();
+		}
+
+		auto tagHeader = reinterpret_cast<tag_header*>(halo::addr::TAGS_BEGIN);
+		tag_entry* tags = tagHeader->tag_array;
+
+		std::multimap<std::string, tag_entry*> sortedTags;
+
+		// Sort tags
+		for (uint32_t i = 0; i < tagHeader->tag_count; i++) {
+			tag_entry* t = &tags[i];
+			std::string tag_class = t->tag_class_str();
+			sortedTags.insert(std::pair<std::string, tag_entry*>(tag_class, t));
+		}
+
+		// Get unique tag classes
+		std::vector<std::string> tagClasses;
+		for (auto it = sortedTags.begin(), end = sortedTags.end(); it != end; it = sortedTags.upper_bound(it->first))
+		{
+			tagClasses.push_back(it->first);
+		}
+
+		for (auto tagClass : tagClasses) {
+			if (ImGui::TreeNode(tagClass.c_str())) {
+				auto tagsWithClass = sortedTags.equal_range(tagClass);
+
+				for (auto it = tagsWithClass.first; it != tagsWithClass.second; it++) {
+					tag_entry* t = it->second;
+
+					std::stringstream ssTagIndex;
+					ssTagIndex << std::hex << std::uppercase << std::setfill('0') << std::setw(4) << t->tag_index.identifier
+						<< std::setfill('0') << std::setw(4) << t->tag_index.index;
+					std::string treeTagHeader = fmt::format("{0} - {1} - {2}", t->tag_data, ssTagIndex.str().c_str(), t->tag_path);
+					if(ImGui::TreeNode(treeTagHeader.c_str())) {
+
+						auto plugin = loader.get_plugin(t->tag_class_str());
+
+						plugin->imgui_draw_plugin(*t);
+
+						ImGui::TreePop();
+					}
+				}
+
+				ImGui::TreePop();
+			}
+		}
+	}
+}
+
 void tas_info_window::render_imgui()
 {
 	ImGui::SetCurrentContext(imguiCtx);
@@ -1126,6 +1197,7 @@ void tas_info_window::render_imgui()
 	render_overlay();
 	render_other();
 	render_tas();
+	render_tags();
 
 	//ImGui::ShowDemoWindow();
 

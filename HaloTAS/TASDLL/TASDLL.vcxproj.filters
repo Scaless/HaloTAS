@@ -25,6 +25,12 @@
     <Filter Include="Libraries\detours">
       <UniqueIdentifier>{545ea168-58d3-4f51-86a8-4c223060a31d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\plugins">
+      <UniqueIdentifier>{a392c879-6adb-4512-88ee-1e5b45cc2842}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\plugins">
+      <UniqueIdentifier>{f5bf4c45-107c-43d7-a0e4-3e70c94892f1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -97,6 +103,18 @@
       <Filter>Libraries\imgui</Filter>
     </ClCompile>
     <ClCompile Include="hotkeys.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="halo_map_data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="plugin_loader.cpp">
+      <Filter>Source Files\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="plugin.cpp">
+      <Filter>Source Files\plugins</Filter>
+    </ClCompile>
+    <ClCompile Include="tinyxml2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -195,6 +213,18 @@
       <Filter>Libraries\detours</Filter>
     </ClInclude>
     <ClInclude Include="hotkeys.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="halo_map_data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="plugin_loader.h">
+      <Filter>Header Files\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="plugin.h">
+      <Filter>Header Files\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="tinyxml2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
