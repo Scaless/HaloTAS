@@ -55,24 +55,12 @@ namespace halo::mapdata {
 		uint32_t unknown;
 		uint32_t unknown2;
 
-		std::string tag_class_str() {
-			return tag_class_to_str(tag_class);
-		}
-		std::string tag_class_secondary_str() {
-			return tag_class_to_str(tag_class_secondary);
-		}
-		std::string tag_class_tertiary_str() {
-			return tag_class_to_str(tag_class_tertiary);
-		}
+		std::string tag_class_str();
+		std::string tag_class_secondary_str();
+		std::string tag_class_tertiary_str();
 
 	private:
-		std::string tag_class_to_str(uint32_t tag_class) {
-			char c[4];
-			memcpy(&c, &tag_class, 4);
-			std::reverse(c, c + 4);
-			std::string str(c, 4);
-			return str;
-		}
+		std::string tag_class_to_str(uint32_t tag_class);
 	};
 
 	struct tag_header {
