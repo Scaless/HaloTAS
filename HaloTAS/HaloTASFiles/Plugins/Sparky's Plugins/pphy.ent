@@ -1,0 +1,22 @@
+<plugin class="pphy" author="sparky" version="4.0" headersize="Main">
+
+<bitmask32 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+	<option name="Flamethrower Particle Collision" value="31"/>
+	<option name="Collides with Structures" value="30"/>
+	<option name="Collides with Water Surface" value="29"/>
+	<option name="Uses Simple Wind" note="" info="the wind on this point won't have high-frequency variations" info_img="" value="28"/>
+	<option name="Uses Dampened Wind" note="" info="the wind on this point will be artificially slow" info_img="" value="27"/>
+	<option name="No Gravity" note="" info="the point is not affected by gravity" info_img="" value="26"/>
+</bitmask32>
+
+<float name="Particle Translation Wind Coefficient" note="" info="tested by 002. Higher or lower than 0 means a straighter line for the particles to travel" info_img="" offset="0x04" visible="true"/>
+<float name="Particle Translation Wind Sine Modifier" note="" info="tested by 002. Higher or lower than 0 means particles will not spread out as much" info_img="" offset="0x08" visible="true"/>
+<float name="Particle Translation Rate: z" note="world units per second" info="tested by 002. Modifies the speed and distance at which particles travel in a vertical line; positive = upward motion, negative = downward motion" info_img="" offset="0x0C" visible="true"/>
+
+<float name="Density" note="grams per milliliter" info="" info_img="pphy Densities (grams per milliliter).png" offset="0x20" visible="true"/>
+<float name="Air Friction" note="" info="" info_img="" offset="0x24" visible="true"/>
+<float name="Water Friction" note="" info="" info_img="" offset="0x28" visible="true"/>
+<float name="Surface Friction" note="" info="when hitting the ground or interior, percentage of velocity lost in one collision" info_img="" offset="0x2C" visible="true"/>
+<float name="Elasticity" note="" info="0.0 is inelastic collisions (no bounce); 1.0 is perfectly elastic (reflected velocity equals incoming velocity)" info_img="" offset="0x30" visible="true"/>
+
+</plugin>

@@ -1,0 +1,458 @@
+<plugin class="sbsp" author="sparky" version="4.0" headersize="Main">
+
+<long name="TEST: SBSP size / checksum" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+<string4 name="TEST: Signature" note="" info="" info_img="" offset="0x14" visible="true"/>
+
+<dependency name="Lightmaps" note="" info="" info_img="" offset="0x18" visible="true"/>
+<float name="Vehicle Floor" note="world units" info="height below which vehicles get pushed up by an unstoppable force" info_img="" offset="0x28" visible="true"/>
+<float name="Vehicle Ceiling" note="world units" info="height above which vehicles get pushed down by an unstoppable force" info_img="" offset="0x2C" visible="true"/>
+
+<colorRGB name="Default Ambient Color" note="" info="" info_img="" offset="0x44" visible="true"/>
+<colorRGB name="Default Distant Light 0 Color" note="" info="" info_img="" offset="0x54" visible="true"/>
+
+<float name="Default Distant Light 0 Direction: i (1)" note="" info="" info_img="" offset="0x60" visible="true"/>
+<float name="Default Distant Light 0 Direction: i (2)" note="" info="" info_img="" offset="0x64" visible="true"/>
+<float name="Default Distant Light 0 Direction: k" note="" info="" info_img="" offset="0x68" visible="true"/>
+
+<colorRGB name="Default Distant Light 1 Color" note="" info="" info_img="" offset="0x6C" visible="true"/>
+
+<float name="Default Distant Light 1 Direction: i (1)" note="" info="" info_img="" offset="0x78" visible="true"/>
+<float name="Default Distant Light 1 Direction: i (2)" note="" info="" info_img="" offset="0x7C" visible="true"/>
+<float name="Default Distant Light 1 Direction: k" note="" info="" info_img="" offset="0x80" visible="true"/>
+
+<colorARGB name="Default Reflection Tint" note="" info="" info_img="" offset="0x90" visible="true"/>
+
+<float name="Default Shadow Vector: i (1)" note="" info="" info_img="" offset="0xA0" visible="true"/>
+<float name="Default Shadow Vector: i (2)" note="" info="" info_img="" offset="0xA4" visible="true"/>
+<float name="Default Shadow Vector: k" note="" info="" info_img="" offset="0xA8" visible="true"/>
+
+<colorRGB name="Default Shadow Color" note="" info="" info_img="" offset="0xAC" visible="true"/>
+
+<struct name="Collision Materials" note="" info="" info_img="" offset="0xBC" visible="true" size="20">
+	<dependency name="Shader" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<enum16 name="Material Type" note="" info="if this doesn't work, use the material type in the Shader instead" info_img="" offset="0x12" visible="true">
+		<option name="Dirt" value="00"/>
+		<option name="Sand" value="01"/>
+		<option name="Stone" value="02"/>
+		<option name="Snow" value="03"/>
+		<option name="Wood" value="04"/>
+		<option name="Metal (hollow)" value="05"/>
+		<option name="Metal (thin)" value="06"/>
+		<option name="Metal (thick)" value="07"/>
+		<option name="Rubber" value="08"/>
+		<option name="Glass" value="09"/>
+		<option name="Force Field" value="10"/>
+		<option name="Grunt" value="11"/>
+		<option name="Hunter Armor" value="12"/>
+		<option name="Hunter Skin" value="13"/>
+		<option name="Elite" value="14"/>
+		<option name="Jackal" value="15"/>
+		<option name="Jackal Energy Shield" value="16"/>
+		<option name="Engineer Skin" value="17"/>
+		<option name="Engineer Force Field" value="18"/>
+		<option name="Flood Combat Form" value="19"/>
+		<option name="Flood Carrier Form" value="20"/>
+		<option name="Cyborg Armor" value="21"/>
+		<option name="Cyborg Energy Shield" value="22"/>
+		<option name="Human Armor" value="23"/>
+		<option name="Human Skin" value="24"/>
+		<option name="Sentinel" value="25"/>
+		<option name="Monitor" value="26"/>
+		<option name="Plastic" value="27"/>
+		<option name="Water" value="28"/>
+		<option name="Leaves" value="29"/>
+		<option name="Elite Energy Shield" value="30"/>
+		<option name="Ice" value="31"/>
+		<option name="Hunter Shield" value="32"/>
+	</enum16>
+</struct>
+
+<struct name="Collision BSP" note="" info="maximum of 1" info_img="" offset="0xC8" visible="true" size="96">
+	<struct name="BSP3D Nodes" note="" info="" info_img="" offset="0x00" visible="true" size="12">
+		<short name="Plane" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<short name="Back Child" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<short name="Front Child" note="" info="" info_img="" offset="0x08" visible="true"/>
+	</struct>
+	
+	<long name="Planes: Reflexive Count" note="0 = sbsp is nulled" info="step 2 of 3 in nulling the sbsp" info_img="" offset="0x0C" visible="true"/>
+	<struct name="Planes" note="" info="" info_img="" offset="0x0C" visible="true" size="16">
+		<float name="Plane: i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Plane: i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Plane: k" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<float name="Plane: d" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	</struct>
+	
+	<struct name="Leaves" note="" info="" info_img="" offset="0x18" visible="true" size="8">
+		<bitmask8 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+			<option name="Contains Double-Sided Surfaces" value="07"/>
+		</bitmask8>
+		
+		<int8 name="BSP2D Reference Count" note="" info="" info_img="" offset="0x02" visible="true"/>
+		<long name="First BSP2D Reference" note="" info="" info_img="" offset="0x04" visible="true"/>
+	</struct>
+	
+	<long name="BSP2D References: Reflexive Count" note="4294967295 or -1 = sbsp is nulled" info="step 3 of 3 in nulling the sbsp" info_img="" offset="0x24" visible="true"/>
+	<struct name="BSP2D References" note="" info="" info_img="" offset="0x24" visible="true" size="8">
+		<long name="Plane" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<long name="BSP2D Node" note="" info="" info_img="" offset="0x04" visible="true"/>
+	</struct>
+	
+	<struct name="BSP2D Nodes" note="" info="" info_img="" offset="0x30" visible="true" size="20">
+		<float name="Plane: i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Plane: i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Plane: d" note="" info="" info_img="" offset="0x08" visible="true"/>
+		
+		<long name="Left Child" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		<long name="Right Child" note="" info="" info_img="" offset="0x10" visible="true"/>
+	</struct>
+	
+	<struct name="Surfaces" note="" info="" info_img="" offset="0x3C" visible="true" size="12">
+		<long name="Plane" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<long name="First Edge" note="" info="" info_img="" offset="0x04" visible="true"/>
+		
+		<bitmask16 name="Flags" note="" info="" info_img="" offset="0x08" visible="true">
+			<option name="Two Sided" value="15"/>
+			<option name="Invisible" value="14"/>
+			<option name="Climbable" value="13"/>
+			<option name="Breakable" value="12"/>
+		</bitmask16>
+		
+		<int8 name="Breakable Surface" note="" info="" info_img="" offset="0x09" visible="true"/>
+		<short name="Material" note="" info="" info_img="" offset="0x0A" visible="true"/>
+	</struct>
+	
+	<struct name="Edges" note="" info="" info_img="" offset="0x48" visible="true" size="24">
+		<long name="Start Vertex" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<long name="End Vertex" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<long name="Forward Edge" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<long name="Reverse Edge" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		<long name="Left Surface" note="" info="" info_img="" offset="0x10" visible="true"/>
+		<long name="Right Surface" note="" info="" info_img="" offset="0x14" visible="true"/>
+	</struct>
+	
+	<struct name="Vertices" note="" info="" info_img="" offset="0x54" visible="true" size="16">
+		<float name="Point: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Point: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Point: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+		
+		<long name="First Edge" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Nodes" note="" info="" info_img="" offset="0xD4" visible="true" size="6">
+	<short name="(?) Compressed Vertices.Node0 Index (x3)" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="(?) Compressed Vertices.Node1 Index (x3)" note="" info="" info_img="" offset="0x02" visible="true"/>
+	<short name="(?) Compressed Vertices.Node0 Weight (16-bit)" note="" info="" info_img="" offset="0x04" visible="true"/>
+</struct>
+
+<float name="World Bounds X: from" note="" info="" info_img="" offset="0xE0" visible="true"/>
+<float name="World Bounds X: to" note="" info="" info_img="" offset="0xE4" visible="true"/>
+<float name="World Bounds Y: from" note="" info="" info_img="" offset="0xE8" visible="true"/>
+<float name="World Bounds Y: to" note="" info="" info_img="" offset="0xEC" visible="true"/>
+<float name="World Bounds Z: from" note="" info="" info_img="" offset="0xF0" visible="true"/>
+<float name="World Bounds Z: to" note="" info="" info_img="" offset="0xF4" visible="true"/>
+
+<struct name="Leaves" note="" info="" info_img="" offset="0xF8" visible="true" size="16">
+	<short name="(?) Vertex 0" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="(?) Vertex 1" note="" info="" info_img="" offset="0x02" visible="true"/>
+	<short name="(?) Vertex 2" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<short name="Cluster" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<short name="Surface Reference Count" note="" info="" info_img="" offset="0x0A" visible="true"/>
+	<index name="Surface References" note="" info="" info_img="" offset="0x0C" reflexive="main:Leaf Surfaces" visible="true"/>
+</struct>
+
+<struct name="Leaf Surfaces" note="" info="" info_img="" offset="0x104" visible="true" size="8">
+	<index name="Surface" note="" info="" info_img="" offset="0x00" reflexive="main:Surfaces" visible="true"/>
+	<index name="Node" note="" info="" info_img="" offset="0x04" reflexive="main:Nodes" visible="true"/>
+</struct>
+
+<long name="Surfaces: Reflexive Count" note="0 = sbsp is nulled" info="step 1 of 3 in nulling the sbsp" info_img="" offset="0x110" visible="true"/>
+<struct name="Surfaces" note="" info="" info_img="" offset="0x110" visible="true" size="6">
+	<short name="a (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="a (2)" note="" info="" info_img="" offset="0x02" visible="true"/>
+	<short name="a (3)" note="" info="" info_img="" offset="0x04" visible="true"/>
+</struct>
+
+<struct name="Lightmaps" note="" info="" info_img="" offset="0x11C" visible="true" size="32">
+	<short name="Bitmap" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<struct name="Materials" note="" info="" info_img="" offset="0x14" visible="true" size="256">
+		<dependency name="Shader" note="" info="" info_img="" offset="0x00" visible="true"/>
+		
+		<short name="Shader Permutation" note="" info="" info_img="" offset="0x10" visible="true"/>
+		
+		<bitmask16 name="Flags" note="" info="" info_img="" offset="0x12" visible="true">
+			<option name="Coplanar" value="15"/>
+			<option name="Fog Plane" value="14"/>
+		</bitmask16>
+		
+		<index name="Surfaces" note="" info="" info_img="" offset="0x14" reflexive="main:Surfaces" visible="true"/>
+		
+		<long name="Surface Count" note="" info="" info_img="" offset="0x18" visible="true"/>
+		
+		<float name="Centroid: x" note="" info="" info_img="" offset="0x1C" visible="true"/>
+		<float name="Centroid: y" note="" info="" info_img="" offset="0x20" visible="true"/>
+		<float name="Centroid: z" note="" info="" info_img="" offset="0x24" visible="true"/>
+		
+		<colorRGB name="Ambient Color" note="" info="" info_img="" offset="0x28" visible="true"/>
+		
+		<short name="Distant Light Count" note="" info="" info_img="" offset="0x34" visible="true"/>
+		
+		<colorRGB name="Distant Light 0 Color" note="" info="" info_img="" offset="0x38" visible="true"/>
+		
+		<float name="Distant Light 0 Direction: i (1)" note="" info="" info_img="" offset="0x44" visible="true"/>
+		<float name="Distant Light 0 Direction: i (2)" note="" info="" info_img="" offset="0x48" visible="true"/>
+		<float name="Distant Light 0 Direction: k" note="" info="" info_img="" offset="0x4C" visible="true"/>
+		
+		<colorRGB name="Distant Light 1 Color" note="" info="" info_img="" offset="0x50" visible="true"/>
+		
+		<float name="Distant Light 1 Direction: i (1)" note="" info="" info_img="" offset="0x5C" visible="true"/>
+		<float name="Distant Light 1 Direction: i (2)" note="" info="" info_img="" offset="0x60" visible="true"/>
+		<float name="Distant Light 1 Direction: k" note="" info="" info_img="" offset="0x64" visible="true"/>
+		
+		<colorRGB name="(?)" note="" info="" info_img="" offset="0x68" visible="true"/>
+		<colorARGB name="Reflection Tint" note="" info="" info_img="" offset="0x74" visible="true"/>
+		
+		<float name="Shadow Vector: i (1)" note="" info="" info_img="" offset="0x84" visible="true"/>
+		<float name="Shadow Vector: i (2)" note="" info="" info_img="" offset="0x88" visible="true"/>
+		<float name="Shadow Vector: k" note="" info="" info_img="" offset="0x8C" visible="true"/>
+		
+		<colorRGB name="Shadow Color" note="" info="" info_img="" offset="0x90" visible="true"/>
+		
+		<float name="Plane: i (1)" note="" info="" info_img="" offset="0x9C" visible="true"/>
+		<float name="Plane: i (2)" note="" info="" info_img="" offset="0xA0" visible="true"/>
+		<float name="Plane: k" note="" info="" info_img="" offset="0xA4" visible="true"/>
+		<float name="Plane: d" note="" info="" info_img="" offset="0xA8" visible="true"/>
+		
+		<short name="Breakable Surface" note="" info="" info_img="" offset="0xAC" visible="true"/>
+		
+		<long name="Count (1)" note="" info="" info_img="" offset="0xB4" visible="true"/>
+		<long name="Offset (1)" note="" info="" info_img="" offset="0xB8" visible="true"/>
+		
+		<long name="Count (2)" note="" info="" info_img="" offset="0xC8" visible="true"/>
+		<long name="Offset (2)" note="" info="" info_img="" offset="0xCC" visible="true"/>
+		
+		<long name="Uncompressed Vertices" note="bytes" info="" info_img="" offset="0xD8" visible="true"/>
+		<long name="Compressed Vertices" note="bytes" info="sorry, this is wrong, it's an index offset instead!" info_img="" offset="0xE4" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Lens Flares" note="" info="" info_img="" offset="0x134" visible="true" size="16">
+	<dependency name="Lens Flare" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Lens Flare Markers" note="" info="" info_img="" offset="0x140" visible="true" size="16">
+	<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<int8 name="Direction i-component" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<int8 name="Direction j-component" note="" info="" info_img="" offset="0x0D" visible="true"/>
+	<int8 name="Direction k-component" note="" info="" info_img="" offset="0x0E" visible="true"/>
+	<int8 name="Lens Flare Index" note="" info="" info_img="" offset="0x0F" visible="true"/>
+</struct>
+
+<struct name="Clusters" note="" info="" info_img="" offset="0x14C" visible="true" size="104">
+	<short name="Sky" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="Fog" note="" info="" info_img="" offset="0x02" visible="true"/>
+	
+	<index name="Background Sound" note="" info="" info_img="" offset="0x04" reflexive="main:Background Sound Palette" visible="true"/>
+	<index name="Sound Environment" note="" info="" info_img="" offset="0x06" reflexive="main:Sound Environment Palette" visible="true"/>
+	<index name="Weather" note="" info="" info_img="" offset="0x08" reflexive="main:Weather Palette" visible="true"/>
+	
+	<short name="Transition Structure BSP" note="" info="" info_img="" offset="0x0A" visible="true"/>
+	
+	<struct name="Predicted Resources" note="" info="not built into map file" info_img="" offset="0x0C" visible="true" size="6">
+		<enum16 name="Type" note="" info="" info_img="" offset="0x00" visible="true">
+			<option name="Bitmap" value="00"/>
+			<option name="Sound" value="01"/>
+		</enum16>
+		
+		<short name="Resource Index" note="" info="" info_img="" offset="0x02" visible="true"/>
+		<short name="Tag Index" note="" info="" info_img="" offset="0x04" visible="true"/>
+	</struct>
+	
+	<struct name="Lightmaps / Shaders Palette" note="" info="" info_img="" offset="0x28" visible="true" size="8">
+		<short name="Bitmap Sequence Index" note="" info="" info_img="" offset="0x02" visible="true"/>
+		<loneID name="Bitmap" note="" info="" info_img="" offset="0x04" visible="true"/>
+	</struct>
+	
+	<struct name="Subclusters" note="" info="" info_img="" offset="0x34" visible="true" size="36">
+		<float name="World Bounds X: from" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="World Bounds X: to" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="World Bounds Y: from" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<float name="World Bounds Y: to" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		<float name="World Bounds Z: from" note="" info="" info_img="" offset="0x10" visible="true"/>
+		<float name="World Bounds Z: to" note="" info="" info_img="" offset="0x14" visible="true"/>
+		
+		<struct name="Surface Indices" note="" info="" info_img="" offset="0x18" visible="true" size="4">
+			<short name="Index" note="" info="" info_img="" offset="0x00" visible="true"/>
+		</struct>
+	</struct>
+	
+	<short name="First Lens Flare Marker Index" note="" info="" info_img="" offset="0x40" visible="true"/>
+	<short name="Lens Flare Marker Count" note="" info="" info_img="" offset="0x42" visible="true"/>
+	
+	<struct name="Surface Indices" note="" info="" info_img="" offset="0x44" visible="true" size="4">
+		<long name="Index" note="" info="" info_img="" offset="0x00" visible="true"/>
+	</struct>
+	
+	<struct name="Mirrors" note="" info="" info_img="" offset="0x50" visible="true" size="64">
+		<float name="Plane: i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Plane: i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Plane: k" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<float name="Plane: d" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		
+		<dependency name="Shader" note="" info="" info_img="" offset="0x24" visible="true"/>
+		
+		<struct name="Vertices" note="" info="" info_img="" offset="0x34" visible="true" size="12">
+			<float name="Point: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<float name="Point: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<float name="Point: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+		</struct>
+	</struct>
+	
+	<struct name="Portals" note="" info="" info_img="" offset="0x5C" visible="true" size="2">
+		<short name="Portal" note="" info="" info_img="" offset="0x00" visible="true"/>
+	</struct>
+</struct>
+
+<long name="Cluster Data" note="bytes" info="the cluster data immediately follows the Clusters reflexive chunks" info_img="" offset="0x158" visible="true"/>
+
+<struct name="Cluster Portals" note="" info="" info_img="" offset="0x16C" visible="true" size="64">
+	<short name="Front Cluster" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="Back Cluster" note="" info="" info_img="" offset="0x02" visible="true"/>
+	
+	<long name="Plane Index" note="" info="" info_img="" offset="0x04" visible="true"/>
+	
+	<float name="Centroid: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Centroid: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Centroid: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	
+	<float name="Bounding Radius" note="" info="" info_img="" offset="0x14" visible="true"/>
+	
+	<bitmask8 name="Flags" note="" info="" info_img="" offset="0x18" visible="true">
+		<option name="AI Can't Hear Through This" value="07"/>
+	</bitmask8>
+	
+	<struct name="Vertices" note="" info="" info_img="" offset="0x34" visible="true" size="12">
+		<float name="Point: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Point: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Point: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Breakable Surfaces" note="" info="" info_img="" offset="0x184" visible="true" size="48">
+	<float name="Centroid: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="Centroid: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Centroid: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<float name="Radius" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	
+	<long name="Collision Surface Index" note="" info="" info_img="" offset="0x10" visible="true"/>
+</struct>
+
+<struct name="Fog Planes" note="" info="" info_img="" offset="0x190" visible="true" size="32">
+	<index name="Front Region" note="" info="" info_img="" offset="0x00" reflexive="main:Fog Regions" visible="true"/>
+		
+	<float name="Plane: i (1)" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Plane: i (2)" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Plane: k" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Plane: d" note="" info="" info_img="" offset="0x10" visible="true"/>
+	
+	<struct name="Vertices" note="" info="" info_img="" offset="0x14" visible="true" size="12">
+		<float name="Point: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Point: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Point: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Fog Regions" note="" info="" info_img="" offset="0x19C" visible="true" size="40">
+	<index name="Fog Palette" note="" info="" info_img="" offset="0x24" reflexive="main:Fog Palette" visible="true"/>
+	<index name="Weather Palette" note="" info="" info_img="" offset="0x26" reflexive="main:Weather Palette" visible="true"/>
+</struct>
+
+<struct name="Fog Palette" note="" info="" info_img="" offset="0x1A8" visible="true" size="136">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<dependency name="Fog" note="" info="" info_img="" offset="0x20" visible="true"/>
+	
+	<string32 name="Fog Scale Function" note="" info="" info_img="" offset="0x34" visible="true"/>
+</struct>
+
+<struct name="Weather Palette" note="" info="" info_img="" offset="0x1CC" visible="true" size="240">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<dependency name="Particle System" note="" info="" info_img="" offset="0x20" visible="true"/>
+	
+	<string32 name="Particle System Function" note="" info="" info_img="" offset="0x34" visible="true"/>
+	
+	<dependency name="Wind" note="" info="" info_img="" offset="0x80" visible="true"/>
+	
+	<float name="Wind Direction: i (1)" note="" info="" info_img="" offset="0x90" visible="true"/>
+	<float name="Wind Direction: i (2)" note="" info="" info_img="" offset="0x94" visible="true"/>
+	<float name="Wind Direction: k" note="" info="" info_img="" offset="0x98" visible="true"/>
+	
+	<float name="Wind Magnitude" note="" info="" info_img="" offset="0x9C" visible="true"/>
+	
+	<string32 name="Wind Scale Function" note="" info="" info_img="" offset="0xA4" visible="true"/>
+</struct>
+
+<struct name="Weather Polyhedra" note="" info="" info_img="" offset="0x1D8" visible="true" size="32">
+	<float name="Bounding Sphere Center: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="Bounding Sphere Center: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Bounding Sphere Center: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<float name="Bounding Sphere Radius" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	
+	<struct name="Planes" note="" info="" info_img="" offset="0x14" visible="true" size="16">
+		<float name="Plane: i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Plane: i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Plane: k" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<float name="Plane: d" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Pathfinding Surfaces" note="" info="" info_img="" offset="0x1FC" visible="true" size="1">
+	<int8 name="Data" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Pathfinding Edges" note="" info="" info_img="" offset="0x208" visible="true" size="1">
+	<int8 name="Midpoint" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Background Sound Palette" note="" info="" info_img="" offset="0x214" visible="true" size="116">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<dependency name="Background Sound" note="" info="" info_img="" offset="0x20" visible="true"/>
+	
+	<string32 name="Scale Function" note="" info="" info_img="" offset="0x34" visible="true"/>
+</struct>
+
+<struct name="Sound Environment Palette" note="" info="" info_img="" offset="0x220" visible="true" size="80">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<dependency name="Sound Environment" note="" info="" info_img="" offset="0x20" visible="true"/>
+</struct>
+
+<long name="Sound PAS Data" note="bytes" info="this data follows the Sound Environment Palette reflexives" info_img="" offset="0x22C" visible="true"/>
+
+<struct name="Markers" note="" info="" info_img="" offset="0x258" visible="true" size="60">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<float name="Rotation: i (1)" note="" info="" info_img="" offset="0x20" visible="true"/>
+	<float name="Rotation: i (2)" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<float name="Rotation: k" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Rotation: w" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	
+	<float name="Position: x" note="" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x34" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x38" visible="true"/>
+</struct>
+
+<struct name="Runtime Decals" note="" info="decals referenced in the scnr tag" info_img="" offset="0x270" visible="true" size="32">
+</struct>
+
+</plugin>

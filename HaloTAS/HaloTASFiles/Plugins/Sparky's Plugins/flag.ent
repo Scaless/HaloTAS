@@ -1,0 +1,37 @@
+<plugin class="flag" author="sparky" version="4.0" headersize="Main">
+
+<enum16 name="Trailing Edge Shape" note="" info="" info_img="" offset="0x04" visible="true">
+	<option name="Flat" value="00"/>
+	<option name="Concave Triangular" value="01"/>
+	<option name="Convex Triangular" value="02"/>
+	<option name="Trapezoid, Short Top" value="03"/>
+	<option name="Trapezoid, Short Bottom" value="04"/>
+</enum16>
+
+<short name="Trailing Edge Shape Offset" note="vertices" info="zero places the shape exactly on the trailing edge, positive numbers push it off the edge" info_img="" offset="0x06" visible="true"/>
+
+<enum16 name="Attached Edge Shape" note="" info="" info_img="" offset="0x08" visible="true">
+	<option name="Flat" value="00"/>
+	<option name="Concave Triangular" value="01"/>
+</enum16>
+
+<short name="Width" note="vertices" info="flag size from attached to trailing edge" info_img="" offset="0x0C" visible="true"/>
+<short name="Height" note="vertices" info="flag size along the direction of attachment (should be odd)" info_img="" offset="0x0E" visible="true"/>
+
+<float name="Cell Width" note="world units" info="width of the cell between each pair of vertices" info_img="" offset="0x10" visible="true"/>
+<float name="Cell Height" note="world units" info="height of the cell between each pair of vertices" info_img="" offset="0x14" visible="true"/>
+
+<dependency name="Red Flag Shader" note="" info="" info_img="" offset="0x18" visible="true"/>
+<dependency name="Physics" note="" info="" info_img="" offset="0x28" visible="true"/>
+
+<float name="Wind Noise" note="world units per second" info="" info_img="" offset="0x38" visible="true"/>
+
+<dependency name="Blue Flag Shader" note="" info="" info_img="" offset="0x44" visible="true"/>
+
+<struct name="Attachment Points" note="" info="" info_img="" offset="0x54" visible="true" size="52">
+	<short name="Height to Next Attachment" note="vertices" info="flag vertices between this attachment point and the next" info_img="" offset="0x00" visible="true"/>
+	
+	<string32 name="Marker Name" note="" info="" info_img="" offset="0x14" visible="true"/>
+</struct>
+
+</plugin>

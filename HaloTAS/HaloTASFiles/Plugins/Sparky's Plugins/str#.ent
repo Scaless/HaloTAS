@@ -1,0 +1,11 @@
+<plugin class="str#" author="sparky" version="4.0" headersize="Main">
+
+<struct name="String References" note="" info="" info_img="" offset="0x00" visible="true" size="20">
+	<long name="String Length" note="bytes" info="Sparky warns: 'Be careful with this!'" info_img="" offset="0x00" visible="true"/>
+	
+	<struct name="String" note="" info="" info_img="" offset="0x08" visible="true" size="128">
+		<string128 name="String" note="" info="Sparky warns: 'Be careful with this!'" info_img="" offset="0x00" visible="true"/>	
+	</struct>
+</struct>
+
+</plugin>

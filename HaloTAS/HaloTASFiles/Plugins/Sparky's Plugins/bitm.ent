@@ -1,0 +1,139 @@
+<plugin class="bitm" author="sparky" version="4.0" headersize="Main">
+
+<enum16 name="Type" note="" info="" info_img="bitm Type.png" offset="0x00" visible="true">
+	<option name="2D Textures" value="00"/>
+	<option name="3D Textures" value="01"/>
+	<option name="Cube Maps" value="02"/>
+	<option name="Sprites" value="03"/>
+	<option name="Interface Bitmaps" value="04"/>
+</enum16>
+
+<enum16 name="Format" note="" info="" info_img="bitm Format.png" offset="0x02" visible="true">
+	<option name="Compressed with Color-Key Transparency" value="00"/>
+	<option name="Compressed with Explicit Alpha" value="01"/>
+	<option name="Compressed with Interpolated Alpha" value="02"/>
+	<option name="16-bit Color" value="03"/>
+	<option name="32-bit Color" value="04"/>
+	<option name="Monochrome" value="05"/>
+</enum16>
+
+<enum16 name="Usage" note="" info="" info_img="bitm Usage.png" offset="0x04" visible="true">
+	<option name="Alpha-Blend" value="00"/>
+	<option name="Default" value="01"/>
+	<option name="Height Map" value="02"/>
+	<option name="Detail Map" value="03"/>
+	<option name="Light Map" value="04"/>
+	<option name="Vector Map" value="05"/>
+</enum16>
+
+<bitmask16 name="Usage.Flags" note="" info="" info_img="" offset="0x06" visible="true">
+	<option name="Enable Diffusion Dithering" value="15"/>
+	<option name="Disable Height Map Compression" value="14"/>
+	<option name="Uniform Sprite Sequences" value="13"/>
+	<option name="Filthy Sprite Bug Fix" value="12"/>
+</bitmask16>
+
+<float name="Post-Processing.Detail Fade Factor" note="0 - 1 only" info="0 = fade to gray by last mipmap; 1 = fade to gray by first mipmap" info_img="bitm Post-Processing.png" offset="0x08" visible="true"/>
+<float name="Post-Processing.Sharpen Amount" note="0 - 1 only" info="sharpens mipmap after downsampling" info_img="bitm Post-Processing.png" offset="0x0C" visible="true"/>
+<float name="Post-Processing.Bump Height" note="texture repeats" info="the apparent height of the bump map above the triangle it is textured onto (ie, 1.0 = as high as the texture is wide)" info_img="bitm Post-Processing.png" offset="0x10" visible="true"/>
+
+<enum16 name="Sprite Processing.Sprite Budget Size" note="" info="" info_img="bitm Sprite Processing.png" offset="0x14" visible="true">
+	<option name="32x32" value="00"/>
+	<option name="64x64" value="01"/>
+	<option name="128x128" value="02"/>
+	<option name="256x256" value="03"/>
+	<option name="512x512" value="04"/>
+</enum16>
+
+<short name="Sprite Processing.Sprite Budget Count" note="" info="" info_img="bitm Sprite Processing.png" offset="0x16" visible="true"/>
+
+<short name="Color Plate.Color Plate Width" note="pixels" info="" info_img="bitm Color Plate.png" offset="0x18" visible="true"/>
+<short name="Color Plate.Color Plate Height" note="pixels" info="" info_img="bitm Color Plate.png" offset="0x1A" visible="true"/>
+<long name="Color Plate.Compressed Color Plate Data" note="bytes" info="this is only a pointer if the actual value is 0" info_img="bitm Color Plate.png" offset="0x1C" visible="true"/>
+
+<long name="Processed Pixel Data" note="bytes" info="this is only a pointer, don't change this" info_img="bitm Processed Pixel Data.png" offset="0x38" visible="true"/>
+
+<float name="Miscellaneous.Blur Filter Size" note="pixels; 0 - 10 only" info="blurs the bitmap before generating mipmaps" info_img="" offset="0x44" visible="true"/>
+<float name="Miscellaneous.Alpha Bias" note="-1 to 1 only" info="affects alpha mipmap generation" info_img="" offset="0x48" visible="true"/>
+<short name="Miscellaneous.Mipmap Count" note="levels; 0 defaults to all levels" info="" info_img="" offset="0x4C" visible="true"/>
+
+<enum16 name="...More Sprite Processing.Sprite Usage" note="" info="" info_img="bitm ...More Sprite Processing.png" offset="0x4E" visible="true">
+	<option name="Blend/Add/Subtract/Max" value="00"/>
+	<option name="Multiply/Min" value="01"/>
+	<option name="Double Multiply" value="02"/>
+</enum16>
+
+<short name="...More Sprite Processing.Sprite Spacing" note="" info="" info_img="bitm ...More Sprite Processing.png" offset="0x50" visible="true"/>
+
+<struct name="Sequences" note="" info="" info_img="" offset="0x54" visible="true" size="64">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<struct name="Sequences" note="" info="" info_img="" offset="0x34" visible="true" size="32">
+		<short name="Bitmap Index" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+		<float name="Left" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<float name="Right" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		<float name="Top" note="" info="" info_img="" offset="0x10" visible="true"/>
+		<float name="Bottom" note="" info="" info_img="" offset="0x14" visible="true"/>
+		<float name="Registration Point: x" note="" info="" info_img="" offset="0x18" visible="true"/>
+		<float name="Registration Point: y" note="" info="" info_img="" offset="0x1C" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Bitmaps" note="" info="" info_img="" offset="0x60" visible="true" size="48">
+	<string4 name="Signature" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<short name="Width" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<short name="Height" note="" info="" info_img="" offset="0x06" visible="true"/>
+	<int8 name="Depth" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<enum16 name="Type" note="" info="" info_img="" offset="0x0A" visible="true">
+		<option name="2D Texture" value="00"/>
+		<option name="3D Texture" value="01"/>
+		<option name="Cube Map" value="02"/>
+		<option name="White" value="03"/>
+	</enum16>
+	
+	<enum16 name="Format" note="" info="" info_img="" offset="0x0C" visible="true">
+		<option name="a8" value="00"/>
+		<option name="y8" value="01"/>
+		<option name="ay8" value="02"/>
+		<option name="a8y8" value="03"/>
+		<option name="unused1" value="04"/>
+		<option name="unused2" value="05"/>
+		<option name="r5g6b5" value="06"/>
+		<option name="unused3" value="07"/>
+		<option name="a1r5g5b5" value="08"/>
+		<option name="a4r4g4b4" value="09"/>
+		<option name="x8r8g8b8" value="10"/>
+		<option name="a8r8g8b8" value="11"/>
+		<option name="unused4" value="12"/>
+		<option name="unused5" value="13"/>
+		<option name="dxt1" value="14"/>
+		<option name="dxt3" value="15"/>
+		<option name="dxt5" value="16"/>
+		<option name="p8-bump" value="17"/>
+		<option name="R2D2" value="18"/>
+		<option name="C3P0" value="19"/>
+		<option name="OB1" value="20"/>
+	</enum16>
+	
+	<bitmask16 name="Flags" note="" info="" info_img="" offset="0x0E" visible="true">
+		<option name="Power of Two Dimensions" value="15"/>
+		<option name="Compressed" value="14"/>
+		<option name="Palettized" value="13"/>
+		<option name="Swizzled" value="12"/>
+		<option name="Linear" value="11"/>
+		<option name="v16u16" value="10"/>
+	</bitmask16>
+	
+	<short name="Registration Point: x" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<short name="Registration Point: y" note="" info="" info_img="" offset="0x12" visible="true"/>
+	<short name="Mipmap Count" note="" info="" info_img="" offset="0x14" visible="true"/>
+	
+	<long name="Pixels Offset" note="pixels" info="In CE tags, this offset starts at 0, because the image is referenced within that particular tag. In compiled map files, it seems the offsets are cumulative, and perhaps become offsets within the bitmaps.map file." info_img="" offset="0x18" visible="true"/>
+	<long name="Pixel Count" note="pixels" info="number of pixels used in this bitmap sub-image" info_img="" offset="0x1C" visible="true"/>
+	<loneID name="Bitmap" note="" info="" info_img="" offset="0x20" visible="true"/>
+</struct>
+
+</plugin>

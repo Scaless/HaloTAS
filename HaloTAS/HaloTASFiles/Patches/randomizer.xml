@@ -1,0 +1,36 @@
+<!-- EXAMPLE PATCH 
+
+
+
+-->
+
+<patch_group>
+	<level>a10</level>
+	<patch>
+		<name>Assault Rifle Change Projectile</name>
+		<address></address>
+		<type>reference</type>
+		<value></value>
+	</patch>
+</patch_group>
+
+<patch>
+	<name>NEW_PATCH</name>
+	<address>4067657C</address>
+	<type>float</type>
+	<value>0.450000</value>
+</patch>
+<patch>
+	<name>NEW_PATCH</name>
+	<address>40553508</address>
+	<type>float</type>
+	<value>0.000000</value>
+</patch>
+
+<patch>
+	<name>NEW_PATCH</name>
+	<optional_name>Bounding Radius</optional_name>
+	<address>406791FC</address>
+	<type>float</type>
+	<value>0.600000</value>
+</patch>

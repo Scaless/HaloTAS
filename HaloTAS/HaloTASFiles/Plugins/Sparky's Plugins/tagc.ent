@@ -1,0 +1,7 @@
+<plugin class="tagc" author="sparky" version="4.0" headersize="Main">
+
+<struct name="Tag References" note="" info="" info_img="" offset="0x00" visible="true" size="16">
+	<dependency name="Tag" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+</plugin>

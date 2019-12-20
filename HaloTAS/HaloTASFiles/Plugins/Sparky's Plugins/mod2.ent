@@ -1,0 +1,126 @@
+<plugin class="mod2" author="sparky" version="4.0a" headersize="Main">
+
+<bitmask16 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+	<option name="Blend Shared Normals" value="15"/>
+	<option name="Parts Have Local Nodes" value="14"/>
+	<option name="Ignore Skinning" value="13"/>
+</bitmask16>
+
+<long name="Node List Checksumo Wrestling" note="" info="" info_img="" offset="0x04" visible="true"/>
+
+<float name="Super-High Detail Cutoff" note="" info="switch to less detail when fewer than these pixels are visible" info_img="" offset="0x18" visible="true"/>
+<float name="High Detail Cutoff" note="" info="switch to less detail when fewer than these pixels are visible" info_img="" offset="0x14" visible="true"/>
+<float name="Medium Detail Cutoff" note="" info="switch to less detail when fewer than these pixels are visible" info_img="" offset="0x10" visible="true"/>
+<float name="Low Detail Cutoff" note="" info="switch to less detail when fewer than these pixels are visible" info_img="" offset="0x0C" visible="true"/>
+<float name="Super-Low Detail Cutoff" note="" info="switch to less detail (clip disappear?) when fewer than these pixels are visible" info_img="" offset="0x08" visible="true"/>
+
+<short name="Super-High Detail Node Count" note="nodes" info="" info_img="" offset="0x1C" visible="true"/>
+<short name="High Detail Node Count" note="nodes" info="" info_img="" offset="0x1E" visible="true"/>
+<short name="Medium Detail Node Count" note="nodes" info="" info_img="" offset="0x20" visible="true"/>
+<short name="Low Detail Node Count" note="nodes" info="" info_img="" offset="0x22" visible="true"/>
+<short name="Super-Low Detail Node Count" note="nodes" info="" info_img="" offset="0x24" visible="true"/>
+
+<float name="Base Map U-Scale" note="" info="UVW mapping (scale/position of overlaying bitmap image); W is unused" info_img="" offset="0x30" visible="true"/>
+<float name="Base Map V-Scale" note="" info="UVW mapping (scale/position of overlaying bitmap image); W is unused" info_img="" offset="0x34" visible="true"/>
+
+<struct name="Markers" note="" info="" info_img="" offset="0xAC" visible="true" size="64">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<short name="Magic Identifier" note="" info="" info_img="" offset="0x20" visible="true"/>
+	
+	<struct name="Instances" note="" info="" info_img="" offset="0x34" visible="true" size="32">
+		<int8 name="Region Index" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<int8 name="Permutation Index" note="" info="" info_img="" offset="0x01" visible="true"/>
+		<int8 name="Node Index" note="" info="" info_img="" offset="0x02" visible="true"/>
+		
+		<float name="Translation: x" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Translation: y" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<float name="Translation: z" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		<float name="Rotation: i (1)" note="" info="" info_img="" offset="0x10" visible="true"/>
+		<float name="Rotation: i (2)" note="" info="" info_img="" offset="0x14" visible="true"/>
+		<float name="Rotation: k" note="" info="" info_img="" offset="0x18" visible="true"/>
+		<float name="Rotation: w" note="" info="" info_img="" offset="0x1C" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Nodes" note="" info="" info_img="" offset="0xB8" visible="true" size="156">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<index name="Next Sibling Node Index" note="" info="" info_img="" offset="0x20" reflexive="main:Nodes" visible="true"/>
+	<index name="First Child Node Index" note="" info="" info_img="" offset="0x22" reflexive="main:Nodes" visible="true"/>
+	<index name="Parent Node Index" note="" info="" info_img="" offset="0x24" reflexive="main:Nodes" visible="true"/>
+
+	<float name="Default Translation: x" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Default Translation: y" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	<float name="Default Translation: z" note="" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Default Rotation: i (1)" note="" info="" info_img="" offset="0x34" visible="true"/>
+	<float name="Default Rotation: i (2)" note="" info="" info_img="" offset="0x38" visible="true"/>
+	<float name="Default Rotation: k" note="" info="" info_img="" offset="0x3C" visible="true"/>
+	<float name="Default Rotation: w" note="" info="" info_img="" offset="0x40" visible="true"/>
+
+	<float name="Node Distance From Parent" note="" info="" info_img="" offset="0x44" visible="true"/>
+</struct>
+
+<struct name="Regions" note="" info="" info_img="" offset="0xC4" visible="true" size="76">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<struct name="Permutations" note="" info="" info_img="" offset="0x40" visible="true" size="88">
+		<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+		<bitmask8 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+			<option name="Cannot Be Chosen Randomly" value="7"/>
+		</bitmask8>
+		
+		<index name="Super Low" note="" info="" info_img="" offset="0x40" reflexive="main:Geometries" visible="true"/>
+		<index name="Low" note="" info="" info_img="" offset="0x42" reflexive="main:Geometries" visible="true"/>
+		<index name="Medium" note="" info="" info_img="" offset="0x44" reflexive="main:Geometries" visible="true"/>
+		<index name="High" note="" info="" info_img="" offset="0x46" reflexive="main:Geometries" visible="true"/>
+		<index name="Super High" note="" info="" info_img="" offset="0x48" reflexive="main:Geometries" visible="true"/>
+		
+		<struct name="Markers" note="" info="" info_img="" offset="0x4C" visible="true" size="80">
+			<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+			
+			<index name="Node Index" note="" info="" info_img="" offset="0x20" reflexive="main:Nodes" visible="true"/>
+			
+			<float name="Rotation: i (1)" note="" info="" info_img="" offset="0x24" visible="true"/>
+			<float name="Rotation: i (2)" note="" info="" info_img="" offset="0x28" visible="true"/>
+			<float name="Rotation: k" note="" info="" info_img="" offset="0x2C" visible="true"/>
+			<float name="Rotation: w" note="" info="" info_img="" offset="0x30" visible="true"/>
+			
+			<float name="Translation: x" note="" info="" info_img="" offset="0x34" visible="true"/>
+			<float name="Translation: y" note="" info="" info_img="" offset="0x38" visible="true"/>
+			<float name="Translation: z" note="" info="" info_img="" offset="0x3C" visible="true"/>
+		</struct>
+	</struct>
+</struct>
+
+<struct name="Geometries" note="" info="" info_img="" offset="0xD0" visible="true" size="48">
+	<struct name="Parts" note="" info="" info_img="" offset="0x24" visible="true" size="132">
+		<bitmask8 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+			<option name="Stripped (Internal)" value="7"/>
+			<option name="ZONER" value="6"/>
+		</bitmask8>
+		
+		<index name="Shader Index" note="" info="" info_img="" offset="0x04" reflexive="main:Shaders" visible="true"/>
+		
+		<int8 name="Previous Filthy Part Index" note="" info="" info_img="" offset="0x06" visible="true"/>
+		<int8 name="Next Filthy Part Index" note="" info="" info_img="" offset="0x07" visible="true"/>
+		
+		<short name="Centroid Primary Node" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<short name="Centroid Secondary Node" note="" info="" info_img="" offset="0x0A" visible="true"/>
+		
+		<float name="Centroid Primary Weight" note="0 - 1 only" info="" info_img="" offset="0x0C" visible="true"/>
+		<float name="Centroid Secondary Weight" note="0 - 1 only" info="" info_img="" offset="0x10" visible="true"/>
+		
+		<float name="Centroid: x" note="" info="" info_img="" offset="0x14" visible="true"/>
+		<float name="Centroid: y" note="" info="" info_img="" offset="0x18" visible="true"/>
+		<float name="Centroid: z" note="" info="" info_img="" offset="0x1C" visible="true"/>		
+	</struct>
+</struct>
+
+<struct name="Shaders" note="" info="" info_img="" offset="0xDC" visible="true" size="32">
+	<dependency name="Shader" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="Permutation" note="" info="" info_img="" offset="0x10" visible="true"/>
+</struct>
+
+</plugin>

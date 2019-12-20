@@ -1,0 +1,267 @@
+<plugin class="coll" author="sparky" version="4.0" headersize="Main">
+
+<bitmask32 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+	<option name="Takes Shield Damage for Children" value="31"/>
+	<option name="Takes Body Damage for Children" value="30"/>
+	<option name="Always Shields Friendly Damage" value="29"/>
+	<option name="Passes Area Damage to Children" value="28"/>
+	<option name="Parent Never Takes Body Damage for Us" value="27"/>
+	<option name="Only Damaged by Explosives" value="26"/>
+	<option name="Only Damaged While Occupied" value="25"/>
+</bitmask32>
+
+<index name="Indirect Damage Material" note="" info="the material we use when shielding child objects or getting hit by area of effect damage" info_img="" offset="0x04" reflexive="main:Materials" visible="true"/>
+
+<float name="Body.Maximum Body Vitality" note="" info="the default initial and maximum body vitality of this object" info_img="" offset="0x08" visible="true"/>
+<float name="Body.Body System Shock" note="" info="anything that kills us (body depleted) doing more than this amount of damage also destroys us" info_img="" offset="0x0C" visible="true"/>
+<float name="Body.Friendly Damage Resistance" note="0 - 1 only; 0 = full damage" info="the fraction of damage caused by friendly units ignored by this object" info_img="" offset="0x44" visible="true"/>
+
+<dependency name="Body.Localized Damage Effect" note="" info="" info_img="" offset="0x70" visible="true"/>
+
+<float name="Body.Area Damage Effect Threshold" note="0 - 1 only" info="" info_img="" offset="0x80" visible="true"/>
+
+<dependency name="Body.Area Damage Effect" note="" info="" info_img="" offset="0x84" visible="true"/>
+
+<float name="Body.Body Damaged Threshold" note="" info="when passing this vitality, the 'body damaged effect' is created" info_img="" offset="0x94" visible="true"/>
+
+<dependency name="Body.Body Damaged Effect" note="" info="" info_img="" offset="0x98" visible="true"/>
+<dependency name="Body.Body Depleted Effect" note="" info="" info_img="" offset="0xA8" visible="true"/>
+
+<float name="Body.Body Destroyed Threshold" note="" info="when passing this vitality (usually negative), the object is deleted" info_img="" offset="0xB8" visible="true"/>
+
+<dependency name="Body.Body Destroyed Effect" note="" info="" info_img="" offset="0xBC" visible="true"/>
+
+<float name="Shield.Maximum Shield Vitality" note="" info="the default initial and maximum shield vitality of this object" info_img="" offset="0xCC" visible="true"/>
+
+<enum16 name="Shield.Shield Material Type" note="" info="material type used when projectiles impact the shield instead of the body" info_img="" offset="0xD2" visible="true">
+	<option name="Dirt" value="00"/>
+	<option name="Sand" value="01"/>
+	<option name="Stone" value="02"/>
+	<option name="Snow" value="03"/>
+	<option name="Wood" value="04"/>
+	<option name="Metal (hollow)" value="05"/>
+	<option name="Metal (thin)" value="06"/>
+	<option name="Metal (thick)" value="07"/>
+	<option name="Rubber" value="08"/>
+	<option name="Glass" value="09"/>
+	<option name="Force Field" value="10"/>
+	<option name="Grunt" value="11"/>
+	<option name="Hunter Armor" value="12"/>
+	<option name="Hunter Skin" value="13"/>
+	<option name="Elite" value="14"/>
+	<option name="Jackal" value="15"/>
+	<option name="Jackal Energy Shield" value="16"/>
+	<option name="Engineer Skin" value="17"/>
+	<option name="Engineer Force Field" value="18"/>
+	<option name="Flood Combat Form" value="19"/>
+	<option name="Flood Carrier Form" value="20"/>
+	<option name="Cyborg Armor" value="21"/>
+	<option name="Cyborg Energy Shield" value="22"/>
+	<option name="Human Armor" value="23"/>
+	<option name="Human Skin" value="24"/>
+	<option name="Sentinel" value="25"/>
+	<option name="Monitor" value="26"/>
+	<option name="Plastic" value="27"/>
+	<option name="Water" value="28"/>
+	<option name="Leaves" value="29"/>
+	<option name="Elite Energy Shield" value="30"/>
+	<option name="Ice" value="31"/>
+	<option name="Hunter Shield" value="32"/>
+</enum16>
+
+<enum16 name="Shield.Shield Failure Function" note="" info="how fast the shield begins to leak" info_img="" offset="0xEC" visible="true">
+	<option name="Linear" value="00"/>
+	<option name="Early" value="01"/>
+	<option name="Very Early" value="02"/>
+	<option name="Late" value="03"/>
+	<option name="Very Late" value="04"/>
+	<option name="Cosine" value="05"/>
+</enum16>
+
+<float name="Shield.Shield Failure Threshold" note="0 - 1 only; 0.5 = begin to fail after taking half damage" info="when the shield begins to leak" info_img="" offset="0xF0" visible="true"/>
+<float name="Shield.Failing Shield Leak Fraction " note="0 - 1 only" info="the maximum percent of damage a failing shield will leak through to the body" info_img="" offset="0xF4" visible="true"/>
+
+<float name="Shield.Minimum Stun Damage" note="" info="the minimum damage required to stun this object's shields" info_img="" offset="0x108" visible="true"/>
+<float name="Shield.Stun Time" note="seconds" info="the length of time the shields stay stunned (don't recharge) after taking damage" info_img="" offset="0x10C" visible="true"/>
+<float name="Shield.Recharge Time" note="seconds" info="how long it takes the shields to fully recharge after being completely depleted" info_img="" offset="0x110" visible="true"/>
+<float name="Shield.Recharge Rate Modifier" note="0 - 1 only" info="tested by 002. 0 = normal; 1 = instant. Default for Cyborg = 0.0083333; Elite = 0.0033333; all else = 1" info_img="" offset="0x1C0" visible="true"/>
+<float name="Shield.Shield Damage Threshold" note="" info="" info_img="" offset="0x184" visible="true"/>
+
+<dependency name="Shield.Shield Damaged Effect" note="" info="" info_img="" offset="0x188" visible="true"/>
+<dependency name="Shield.Shield Depleted Effect" note="" info="" info_img="" offset="0x198" visible="true"/>
+<dependency name="Shield.Shield Recharging Effect" note="" info="" info_img="" offset="0x1A8" visible="true"/>
+
+<struct name="Materials" note="" info="" info_img="" offset="0x234" visible="true" size="72">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask8 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Head" value="07"/>
+	</bitmask8>
+	
+	<enum16 name="Material Type" note="" info="" info_img="" offset="0x24" visible="true">
+		<option name="Dirt" value="00"/>
+		<option name="Sand" value="01"/>
+		<option name="Stone" value="02"/>
+		<option name="Snow" value="03"/>
+		<option name="Wood" value="04"/>
+		<option name="Metal (hollow)" value="05"/>
+		<option name="Metal (thin)" value="06"/>
+		<option name="Metal (thick)" value="07"/>
+		<option name="Rubber" value="08"/>
+		<option name="Glass" value="09"/>
+		<option name="Force Field" value="10"/>
+		<option name="Grunt" value="11"/>
+		<option name="Hunter Armor" value="12"/>
+		<option name="Hunter Skin" value="13"/>
+		<option name="Elite" value="14"/>
+		<option name="Jackal" value="15"/>
+		<option name="Jackal Energy Shield" value="16"/>
+		<option name="Engineer Skin" value="17"/>
+		<option name="Engineer Force Field" value="18"/>
+		<option name="Flood Combat Form" value="19"/>
+		<option name="Flood Carrier Form" value="20"/>
+		<option name="Cyborg Armor" value="21"/>
+		<option name="Cyborg Energy Shield" value="22"/>
+		<option name="Human Armor" value="23"/>
+		<option name="Human Skin" value="24"/>
+		<option name="Sentinel" value="25"/>
+		<option name="Monitor" value="26"/>
+		<option name="Plastic" value="27"/>
+		<option name="Water" value="28"/>
+		<option name="Leaves" value="29"/>
+		<option name="Elite Energy Shield" value="30"/>
+		<option name="Ice" value="31"/>
+		<option name="Hunter Shield" value="32"/>
+	</enum16>
+	
+	<float name="Shield Leak Percentage" note="0 - 1 only" info="amount of damage the shield always leaks through to this body material" info_img="" offset="0x28" visible="true"/>
+	<float name="Shield Damage Multiplier" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	<float name="Body Damage Multiplier" note="1.0 = normal" info="multiplier to body damage against this material" info_img="" offset="0x3C" visible="true"/>
+</struct>
+
+<struct name="Regions" note="" info="" info_img="" offset="0x240" visible="true" size="84">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Lives Until Object Dies" value="31"/>
+		<option name="Forces Object to Die" value="30"/>
+		<option name="Dies When Object Dies" value="29"/>
+		<option name="Dies When Object is Damaged" value="28"/>
+		<option name="Disappears When Shield is Off" value="27"/>
+		<option name="Inhibits Melee Attack" value="26"/>
+		<option name="Inhibits Weapon Attack" value="25"/>
+		<option name="Inhibits Walking" value="24"/>
+		<option name="Forces Drop Weapon" value="23"/>
+		<option name="Causes Head-Maimed Scream" value="22"/>
+	</bitmask32>
+	
+	<float name="Damage Threshold" note="" info="if this region takes this amount of damage, it will be destroyed" info_img="" offset="0x28" visible="true"/>
+	
+	<dependency name="Destroyed Effect" note="" info="" info_img="" offset="0x38" visible="true"/>
+	
+	<struct name="Permutations" note="" info="" info_img="" offset="0x48" visible="true" size="32">
+		<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Modifiers" note="" info="" info_img="" offset="0x24C" visible="true" size="32">
+	
+</struct>
+
+<float name="Pathfinding Box.X: from" note="" info="" info_img="" offset="0x268" visible="true"/>
+<float name="Pathfinding Box.X: to" note="" info="" info_img="" offset="0x26C" visible="true"/>
+<float name="Pathfinding Box.Y: from" note="" info="" info_img="" offset="0x270" visible="true"/>
+<float name="Pathfinding Box.Y: to" note="" info="" info_img="" offset="0x274" visible="true"/>
+<float name="Pathfinding Box.Z: from" note="" info="" info_img="" offset="0x278" visible="true"/>
+<float name="Pathfinding Box.Z: to" note="" info="" info_img="" offset="0x27C" visible="true"/>
+
+<struct name="Pathfinding Spheres" note="" info="" info_img="" offset="0x280" visible="true" size="32">
+	<index name="Node" note="" info="" info_img="" offset="0x00" reflexive="main:Nodes" visible="true"/>
+	
+	<float name="Center: x" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Center: y" note="" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Center: z" note="" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Radius" note="" info="" info_img="" offset="0x1C" visible="true"/>
+</struct>
+
+<struct name="Nodes" note="" info="" info_img="" offset="0x28C" visible="true" size="64">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<index name="Region" note="" info="" info_img="" offset="0x20" reflexive="main:Regions" visible="true"/>
+	
+	<index name="Parent Node" note="" info="" info_img="" offset="0x22" reflexive="main:Nodes" visible="true"/>
+	<index name="Next Sibling Node" note="" info="" info_img="" offset="0x24" reflexive="main:Nodes" visible="true"/>
+	<index name="First Child Node" note="" info="" info_img="" offset="0x26" reflexive="main:Nodes" visible="true"/>
+	
+	<struct name="BSPS" note="" info="" info_img="" offset="0x34" visible="true" size="96">
+		<struct name="BSP3D Nodes" note="" info="" info_img="" offset="0x00" visible="true" size="12">
+			<long name="Plane" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<long name="Back Child" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<long name="Front Child" note="" info="" info_img="" offset="0x08" visible="true"/>
+		</struct>
+		
+		<struct name="Planes" note="" info="" info_img="" offset="0x0C" visible="true" size="16">
+			<float name="Plane: i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<float name="Plane: i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<float name="Plane: k" note="" info="" info_img="" offset="0x08" visible="true"/>
+			<float name="Plane: d" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		</struct>
+		
+		<struct name="Leaves" note="" info="" info_img="" offset="0x18" visible="true" size="8">
+			<bitmask8 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+				<option name="Contains Double-Sided Surfaces" value="07"/>
+			</bitmask8>
+			
+			<short name="BSP2D Reference Count" note="" info="" info_img="" offset="0x02" visible="true"/>
+			<long name="First BSP2D Reference" note="" info="" info_img="" offset="0x04" visible="true"/>
+		</struct>
+		
+		<struct name="BSP2D References" note="" info="" info_img="" offset="0x24" visible="true" size="8">
+			<long name="Plane" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<long name="BSP2D Node" note="" info="" info_img="" offset="0x04" visible="true"/>
+		</struct>
+		
+		<struct name="BSP2D Nodes" note="" info="" info_img="" offset="0x30" visible="true" size="20">
+			<float name="Plane: i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<float name="Plane: i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<float name="Plane: d" note="" info="" info_img="" offset="0x08" visible="true"/>
+			
+			<long name="Left Child" note="" info="" info_img="" offset="0x0C" visible="true"/>
+			<long name="Right Child" note="" info="" info_img="" offset="0x10" visible="true"/>
+		</struct>
+		
+		<struct name="Surfaces" note="" info="" info_img="" offset="0x3C" visible="true" size="12">
+			<long name="Plane" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<long name="First Edge" note="" info="" info_img="" offset="0x04" visible="true"/>
+			
+			<bitmask16 name="Flags" note="" info="" info_img="" offset="0x08" visible="true">
+				<option name="Two Sided" value="15"/>
+				<option name="Invisible" value="14"/>
+				<option name="Climbable" value="13"/>
+				<option name="Breakable" value="12"/>
+			</bitmask16>
+			
+			<int8 name="Breakable Surface" note="" info="" info_img="" offset="0x09" visible="true"/>
+			<short name="Material" note="" info="" info_img="" offset="0x0A" visible="true"/>
+		</struct>
+		
+		<struct name="Edges" note="" info="" info_img="" offset="0x48" visible="true" size="24">
+			<long name="Start Vertex" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<long name="End Vertex" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<long name="Forward Edge" note="" info="" info_img="" offset="0x08" visible="true"/>
+			<long name="Reverse Edge" note="" info="" info_img="" offset="0x0C" visible="true"/>
+			<long name="Left Surface" note="" info="" info_img="" offset="0x10" visible="true"/>
+			<long name="Right Surface" note="" info="" info_img="" offset="0x14" visible="true"/>
+		</struct>
+		
+		<struct name="Vertices" note="" info="" info_img="" offset="0x54" visible="true" size="16">
+			<float name="Point: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<float name="Point: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<float name="Point: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+			
+			<long name="First Edge" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		</struct>
+	</struct>
+</struct>
+
+</plugin>

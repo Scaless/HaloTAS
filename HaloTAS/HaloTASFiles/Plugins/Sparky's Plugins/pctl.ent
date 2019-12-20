@@ -1,0 +1,247 @@
+<plugin class="pctl" author="sparky" version="4.0" headersize="Main">
+
+<dependency name="System Behavior.Point Physics" note="" info="" info_img="pctl System Behavior.png" offset="0x38" visible="true"/>
+
+<enum16 name="System Behavior.System Update Physics" note="" info="" info_img="pctl System Behavior.png" offset="0x48" visible="true">
+	<option name="Default" value="00"/>
+	<option name="Explosion" value="01"/>
+</enum16>
+
+<struct name="Physics Constants" note="" info="" info_img="" offset="0x50" visible="true" size="4">
+	<float name="K" note="" info="the meaning of this constant depends upon the selected physics creation/update function" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Particle Types" note="" info="" info_img="" offset="0x5C" visible="true" size="128">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Type States Loop" value="31"/>
+		<option name="... Forward/Backward" value="30"/>
+		<option name="Particle States Loop" value="29"/>
+		<option name="... Forward/Backward" value="28"/>
+		<option name="Particles Die in Water" value="27"/>
+		<option name="Particles Die in Air" value="26"/>
+		<option name="Particles Die on Ground" value="25"/>
+		<option name="Rotational Sprites Animate Sideways" note="" info="if the complex sprite mode is rotational and this flag is set, the sideways sequence contains an animation rather than a set of permutations" info_img="" value="24"/>
+		<option name="Disabled" value="23"/>
+		<option name="Tint by Effect Color" value="22"/>
+		<option name="Initial Count Scales with Effect" value="21"/>
+		<option name="Minimum Count Scales with Effect" value="20"/>
+		<option name="Creation Rate Scales with Effect" value="19"/>
+		<option name="Scale Scales with Effect" value="18"/>
+		<option name="Animation Rate Scales with Effect" value="17"/>
+		<option name="Rotation Rate Scales with Effect" value="16"/>
+		<option name="Don't Draw in First Person" value="15"/>
+		<option name="Don't Draw in Third Person" value="14"/>
+	</bitmask32>
+	
+	<short name="Initial Particle Count" note="" info="" info_img="" offset="0x24" visible="true"/>
+	
+	<enum16 name="Complex Sprite Render Modes" note="" info="" info_img="" offset="0x28" visible="true">
+		<option name="Simple" value="00"/>
+		<option name="Rotational" value="01"/>
+	</enum16>
+	
+	<float name="Radius" note="world units" info="" info_img="" offset="0x2C" visible="true"/>
+	
+	<enum16 name="Particle Creation Physics" note="" info="this controls the initial placement of particles" info_img="" offset="0x54" visible="true">
+		<option name="Default" value="00"/>
+		<option name="Explosion" value="01"/>
+		<option name="Jet" value="02"/>
+	</enum16>
+	
+	<struct name="Physics Constants" note="" info="" info_img="" offset="0x5C" visible="true" size="4">
+		<float name="K" note="" info="the meaning of this constant depends upon the selected physics creation/update function" info_img="" offset="0x00" visible="true"/>
+	</struct>
+	
+	<struct name="States" note="" info="" info_img="" offset="0x68" visible="true" size="192">
+		<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+		
+		<float name="Duration Bounds: from" note="seconds" info="time spent in this state (use transition timing instead for smoother dynamic events)" info_img="" offset="0x20" visible="true"/>
+		<float name="Duration Bounds: to" note="seconds" info="time spent in this state (use transition timing instead for smoother dynamic events)" info_img="" offset="0x24" visible="true"/>
+		<float name="Transition Time Bounds: from" note="seconds" info="time spent in transition to the next state" info_img="" offset="0x28" visible="true"/>
+		<float name="Transition Time Bounds: to" note="seconds" info="time spent in transition to the next state" info_img="" offset="0x2C" visible="true"/>
+		<float name="Scale Multiplier" note="" info="" info_img="" offset="0x34" visible="true"/>
+		<float name="Animation_Rate_Multiplier" note="" info="this value will be multiplied into the scale computed by the particles' state" info_img="" offset="0x38" visible="true"/>
+		<float name="Rotation Rate Multiplier" note="" info="this value will be multiplied into the rotation rate computed by the particles' state" info_img="" offset="0x3C" visible="true"/>
+		
+		<colorARGB name="Color Multiplier" note="" info="this value will be multiplied into the color computed by the particles' state" info_img="" offset="0x40" visible="true"/>
+		
+		<float name="Radius Multiplier" note="" info="this value will be multiplied into the radius computed by the particles' state" info_img="" offset="0x50" visible="true"/>
+		<float name="Minimum Particle Count" note="" info="" info_img="" offset="0x54" visible="true"/>
+		<float name="Particle Creation Rate" note="particles per second" info="" info_img="" offset="0x58" visible="true"/>
+		
+		<enum16 name="Particle Creation Physics" note="" info="this controls the placement of particles created during this state" info_img="" offset="0xB0" visible="true">
+			<option name="Default" value="00"/>
+			<option name="Explosion" value="01"/>
+			<option name="Jet" value="02"/>
+		</enum16>
+		
+		<enum16 name="Particle Update Physics" note="" info="this controls the motion of particles during this state" info_img="" offset="0xB2" visible="true">
+			<option name="Default" value="00"/>
+		</enum16>
+		
+		<struct name="Physics Constants" note="" info="" info_img="" offset="0xB4" visible="true" size="4">
+			<float name="K" note="" info="the meaning of this constant depends upon the selected physics creation/update function" info_img="" offset="0x00" visible="true"/>
+		</struct>
+	</struct>
+	
+	<struct name="Particle States" note="" info="" info_img="" offset="0x74" visible="true" size="376">
+		<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+		
+		<float name="Duration Bounds: from" note="seconds" info="time spent in this state (use transition timing instead for smoother dynamic events)" info_img="" offset="0x20" visible="true"/>
+		<float name="Duration Bounds: to" note="seconds" info="time spent in this state (use transition timing instead for smoother dynamic events)" info_img="" offset="0x24" visible="true"/>
+		<float name="Transition Time Bounds: from" note="seconds" info="time spent in transition to the next state" info_img="" offset="0x28" visible="true"/>
+		<float name="Transition Time Bounds: to" note="seconds" info="time spent in transition to the next state" info_img="" offset="0x2C" visible="true"/>
+		
+		<dependency name="Bitmaps" note="" info="" info_img="" offset="0x30" visible="true"/>
+		
+		<short name="Sequence Index" note="" info="" info_img="" offset="0x40" visible="true"/>
+		
+		<float name="Scale: from" note="world units per pixel" info="apparent size of the particles" info_img="" offset="0x48" visible="true"/>
+		<float name="Scale: to" note="world units per pixel" info="apparent size of the particles" info_img="" offset="0x4C" visible="true"/>
+		<float name="Animation Rate: from" note="frames per second" info="rate of sprite animation" info_img="" offset="0x50" visible="true"/>
+		<float name="Animation Rate: to" note="frames per second" info="rate of sprite animation" info_img="" offset="0x54" visible="true"/>
+		<float name="Rotation Rate: from" note="radians per second" info="rate of texture rotation" info_img="" offset="0x58" visible="true"/>
+		<float name="Rotation Rate: to" note="radians per second" info="rate of texture rotation" info_img="" offset="0x5C" visible="true"/>
+		
+		<colorARGB name="Color 1" note="" info="particle will have a random color in the range determined by these two colors" info_img="" offset="0x60" visible="true"/>
+		<colorARGB name="Color 2" note="" info="particle will have a random color in the range determined by these two colors" info_img="" offset="0x70" visible="true"/>
+		
+		<float name="Radius Multiplier" note="" info="this value will be multiplied into the radius computed by the type" info_img="" offset="0x80" visible="true"/>
+		
+		<dependency name="Point Physics" note="" info="" info_img="" offset="0x84" visible="true"/>
+		
+		<long name="Unknown Usage (1)" note="multiplier?" info="sequence layer count?" info_img="" offset="0xDC" visible="true"/>
+		
+		<bitmask16 name="Shader Flags" note="" info="" info_img="" offset="0xE0" visible="true">
+			<option name="Sort Bias" value="15"/>
+			<option name="Nonlinear Tint" value="14"/>
+			<option name="Don't Overdraw First-Person Weapon" value="13"/>
+		</bitmask16>
+		
+		<enum16 name="Framebuffer Blend Function" note="" info="" info_img="" offset="0xE2" visible="true">
+			<option name="Alpha Blend" value="00"/>
+			<option name="Multiply" value="01"/>
+			<option name="Double Multiply" value="02"/>
+			<option name="Add" value="03"/>
+			<option name="Subtract" value="04"/>
+			<option name="Component Minimum" value="05"/>
+			<option name="Component Maximum" value="06"/>
+			<option name="Alpha-Multiply Add" value="07"/>
+		</enum16>
+		
+		<enum16 name="Framebuffer Fade Mode" note="" info="" info_img="" offset="0xE4" visible="true">
+			<option name="None" value="00"/>
+			<option name="Fade when Perpendicular" value="01"/>
+			<option name="Fade when Parallel" value="02"/>
+		</enum16>
+		
+		<bitmask16 name="Map Flags" note="" info="" info_img="" offset="0xE6" visible="true">
+			<option name="Unfiltered" value="07"/>
+		</bitmask16>
+		
+		<dependency name="Secondary Map.Bitmap" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x104" visible="true"/>
+	
+		<enum16 name="Secondary Map.Anchor" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x114" visible="true">
+			<option name="With Primary" value="00"/>
+			<option name="With Screen Space" value="01"/>
+			<option name="Z Sprite" value="02"/>
+		</enum16>
+		
+		<bitmask32 name="Secondary Map.Flags" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x116" visible="true">
+			<option name="Unfiltered" value="31"/>
+		</bitmask32>
+		
+		<enum16 name="Secondary Map.U-Animation Source" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x118" visible="true">
+			<option name="None" value="00"/>
+			<option name="A out" value="01"/>
+			<option name="B out" value="02"/>
+			<option name="C out" value="03"/>
+			<option name="D out" value="04"/>
+		</enum16>
+		
+		<enum16 name="Secondary Map.U-Animation Function" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x11A" visible="true">
+			<option name="One" value="00"/>
+			<option name="Zero" value="01"/>
+			<option name="Cosine" value="02"/>
+			<option name="Cosine (variable period)" value="03"/>
+			<option name="Diagonal Wave" value="04"/>
+			<option name="Diagonal Wave (variable period)" value="05"/>
+			<option name="Slide" value="06"/>
+			<option name="Slide (variable period)" value="07"/>
+			<option name="Noise" value="08"/>
+			<option name="Jitter" value="09"/>
+			<option name="Wander" value="10"/>
+			<option name="Spark" value="11"/>
+		</enum16>
+		
+		<float name="Secondary Map.U-Animation Period" note="seconds; 0 defaults to 1" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x11C" visible="true"/>
+		<float name="Secondary Map.U-Animation Phase" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x120" visible="true"/>
+		<float name="Secondary Map.U-Animation Scale" note="repeats; 0 defaults to 1" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x124" visible="true"/>
+		
+		<enum16 name="Secondary Map.V-Animation Source" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x128" visible="true">
+			<option name="None" value="00"/>
+			<option name="A out" value="01"/>
+			<option name="B out" value="02"/>
+			<option name="C out" value="03"/>
+			<option name="D out" value="04"/>
+		</enum16>
+		
+		<enum16 name="Secondary Map.V-Animation Function" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x12A" visible="true">
+			<option name="One" value="00"/>
+			<option name="Zero" value="01"/>
+			<option name="Cosine" value="02"/>
+			<option name="Cosine (variable period)" value="03"/>
+			<option name="Diagonal Wave" value="04"/>
+			<option name="Diagonal Wave (variable period)" value="05"/>
+			<option name="Slide" value="06"/>
+			<option name="Slide (variable period)" value="07"/>
+			<option name="Noise" value="08"/>
+			<option name="Jitter" value="09"/>
+			<option name="Wander" value="10"/>
+			<option name="Spark" value="11"/>
+		</enum16>
+		
+		<float name="Secondary Map.V-Animation Period" note="seconds; 0 defaults to 1" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x12C" visible="true"/>
+		<float name="Secondary Map.V-Animation Phase" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x130" visible="true"/>
+		<float name="Secondary Map.V-Animation Scale" note="repeats; 0 defaults to 1" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x134" visible="true"/>
+		
+		<enum16 name="Secondary Map.Rotation-Animation Source" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x138" visible="true">
+			<option name="None" value="00"/>
+			<option name="A out" value="01"/>
+			<option name="B out" value="02"/>
+			<option name="C out" value="03"/>
+			<option name="D out" value="04"/>
+		</enum16>
+		
+		<enum16 name="Secondary Map.Rotation-Animation Function" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x13A" visible="true">
+			<option name="One" value="00"/>
+			<option name="Zero" value="01"/>
+			<option name="Cosine" value="02"/>
+			<option name="Cosine (variable period)" value="03"/>
+			<option name="Diagonal Wave" value="04"/>
+			<option name="Diagonal Wave (variable period)" value="05"/>
+			<option name="Slide" value="06"/>
+			<option name="Slide (variable period)" value="07"/>
+			<option name="Noise" value="08"/>
+			<option name="Jitter" value="09"/>
+			<option name="Wander" value="10"/>
+			<option name="Spark" value="11"/>
+		</enum16>
+		
+		<float name="Secondary Map.Rotation-Animation Period" note="seconds; 0 defaults to 1" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x13C" visible="true"/>
+		<float name="Secondary Map.Rotation-Animation Phase" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x140" visible="true"/>
+		<float name="Secondary Map.Rotation-Animation Scale" note="degrees; 0 defaults to 360" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x144" visible="true"/>
+		<float name="Secondary Map.Rotation-Animation Center: x" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x148" visible="true"/>
+		<float name="Secondary Map.Rotation-Animation Center: y" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x14C" visible="true"/>
+		
+		<float name="Secondary Map.Zsprite Radius Scale" note="" info="" info_img="pctl Particle Types.Particle States.Secondary Map.png" offset="0x154" visible="true"/>
+		
+		<struct name="Physics Constants" note="" info="" info_img="" offset="0x16C" visible="true" size="4">
+			<float name="K" note="" info="the meaning of this constant depends upon the selected physics creation/update function" info_img="" offset="0x00" visible="true"/>
+		</struct>
+	</struct>
+</struct>
+
+</plugin>

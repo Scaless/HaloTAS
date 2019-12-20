@@ -1,0 +1,6 @@
+<plugin class="boom" author="sparky" version="4.0" headersize="Main">
+
+<short name="From Velocity" note="" info="" info_img="" offset="0x00" visible="true"/>
+<short name="From Acceleration" note="" info="" info_img="" offset="0x02" visible="true"/>
+
+</plugin>

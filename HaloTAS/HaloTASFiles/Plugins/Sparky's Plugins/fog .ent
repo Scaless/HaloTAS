@@ -1,0 +1,50 @@
+<plugin class="fog " author="sparky" version="4.0" headersize="Main">
+
+<bitmask16 name="Flags.Flags" note="" info="" info_img="fog Flags.png" offset="0x00" visible="true">
+	<option name="Is Water" value="15"/>
+	<option name="Atmosphere Dominant" value="14"/>
+	<option name="Fog Screen Only" value="13"/>
+</bitmask16>
+
+<float name="Density.Maximum Density" note="0 - 1 only" info="planar fog density is clamped to this value" info_img="" offset="0x58" visible="true"/>
+<float name="Density.Opaque Distance" note="world units" info="the fog becomes opaque at this distance from the viewer" info_img="" offset="0x60" visible="true"/>
+<float name="Density.Opaque Depth" note="world units" info="the fog becomes opaque at this distance from its surface" info_img="" offset="0x68" visible="true"/>
+<float name="Density.Distance to Water Plane" note="world units" info="the fog becomes water at this distance from its surface" info_img="" offset="0x74" visible="true"/>
+
+<colorRGB name="Color.Color" note="" info="" info_img="" offset="0x78" visible="true"/>
+
+<bitmask16 name="Screen Layers.Flags" note="" info="" info_img="" offset="0x84" visible="true">
+	<option name="No Environment Multipass" value="15"/>
+	<option name="No Model Multipass" value="14"/>
+	<option name="No Texture-Based Falloff" value="13"/>
+</bitmask16>
+
+<short name="Screen Layers.Layer Count" note="0 - 4 only; 0 layers disables the effect" info="" info_img="" offset="0x86" visible="true"/>
+
+<float name="Screen Layers.Distance to Gradient: from" note="world units" info="" info_img="" offset="0x88" visible="true"/>
+<float name="Screen Layers.Distance to Gradient: to" note="world units" info="" info_img="" offset="0x8C" visible="true"/>
+<float name="Screen Layers.Density Gradient: from" note="0 - 1 only" info="" info_img="" offset="0x90" visible="true"/>
+<float name="Screen Layers.Density Gradient: to" note="0 - 1 only" info="" info_img="" offset="0x94" visible="true"/>
+<float name="Screen Layers.Start Distance From Fog Plane" note="" info="do NOT set this to the same value as 'maximum depth' {Sparky says, 'do they mean maximum density???'}" info_img="" offset="0x98" visible="true"/>
+
+<colorbyte name="Screen Layers.Color" note="0 defaults to planar fog color" info="" info_img="" offset="0xA0" visible="true"/>
+
+<float name="Screen Layers.Rotation Multiplier" note="0 - 1 only" info="" info_img="" offset="0xA4" visible="true"/>
+<float name="Screen Layers.Strafing Multiplier" note="0 - 1 only" info="" info_img="" offset="0xA8" visible="true"/>
+<float name="Screen Layers.Zoom Multiplier" note="0 - 1 only" info="" info_img="" offset="0xAC" visible="true"/>
+<float name="Screen Layers.Map Scale" note="0 defaults to 1" info="" info_img="" offset="0xB8" visible="true"/>
+
+<dependency name="Screen Layers.Map" note="" info="" info_img="" offset="0xBC" visible="true"/>
+
+<float name="Screen Layer Animation.Animation Period" note="seconds" info="" info_img="" offset="0xCC" visible="true"/>
+<float name="Screen Layer Animation.Wind Velocity: from" note="world units per second" info="" info_img="" offset="0xD4" visible="true"/>
+<float name="Screen Layer Animation.Wind Velocity: to" note="world units per second" info="" info_img="" offset="0xD8" visible="true"/>
+<float name="Screen Layer Animation.Wind Period: from" note="seconds; 0 defaults to 1" info="" info_img="" offset="0xDC" visible="true"/>
+<float name="Screen Layer Animation.Wind Period: to" note="seconds; 0 defaults to 1" info="" info_img="" offset="0xE0" visible="true"/>
+<float name="Screen Layer Animation.Wind Acceleration Weight" note="0 - 1 only" info="" info_img="" offset="0xE4" visible="true"/>
+<float name="Screen Layer Animation.Wind Perpendicular Weight" note="0 - 1 only" info="" info_img="" offset="0xE8" visible="true"/>
+
+<dependency name="Sound.Background Sound" note="" info="" info_img="" offset="0xF4" visible="true"/>
+<dependency name="Sound.Sound Environment" note="" info="" info_img="" offset="0x104" visible="true"/>
+
+</plugin>

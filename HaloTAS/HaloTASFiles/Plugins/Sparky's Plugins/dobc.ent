@@ -1,0 +1,35 @@
+<plugin class="dobc" author="sparky" version="4.0" headersize="Main">
+
+<enum16 name="Collection Type" note="" info="" info_img="" offset="0x00" visible="true">
+	<option name="Screen-Facing" value="00"/>
+	<option name="Viewer-Facing" value="01"/>
+</enum16>
+
+<float name="Global Z Offset" note="" info="applied to all detail objects in this collection so they don't float above the ground" info_img="" offset="0x04" visible="true"/>
+
+<dependency name="Sprite Plate" note="" info="" info_img="" offset="0x34" visible="true"/>
+
+<struct name="Types" note="" info="" info_img="" offset="0x44" visible="true" size="96">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<int8 name="Sequence Index" note="" info="" info_img="" offset="0x20" visible="true"/>
+	
+	<bitmask8 name="Type Flags" note="" info="" info_img="" offset="0x21" visible="true">
+		<option name="Unused" value="7"/>
+		<option name="Unused" value="6"/>
+		<option name="Interpolate Color in HSV" value="5"/>
+		<option name="...More Colors" note="" info="Sparky: 'I can has moar colors?'; Tiny Tim: 'Please, Sir, I'd like some more...'" info_img="" value="4"/>
+	</bitmask8>
+		
+	<float name="Color Override Factor" note="0 - 1 only" info="fraction of detail object color to use instead of the base map color in the environment" info_img="" offset="0x24" visible="true"/>
+	
+	<float name="Near Fade Distance" note="world units" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Far Fade Distance" note="world units" info="" info_img="" offset="0x34" visible="true"/>
+	<float name="Size" note="world units per pixel" info="" info_img="" offset="0x38" visible="true"/>
+	
+	<colorRGB name="Minimum Color" note="" info="" info_img="" offset="0x40" visible="true"/>
+	<colorRGB name="Maximum Color" note="" info="" info_img="" offset="0x4C" visible="true"/>
+	<colorbyte name="Ambient Color" note="" info="" info_img="" offset="0x58" visible="true"/>
+</struct>
+
+</plugin>

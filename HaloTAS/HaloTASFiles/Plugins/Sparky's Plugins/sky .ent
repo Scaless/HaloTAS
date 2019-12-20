@@ -1,0 +1,55 @@
+<plugin class="sky " author="sparky" version="4.0" headersize="Main">
+
+<dependency name="Model" note="" info="" info_img="" offset="0x00" visible="true"/>
+<dependency name="Animation Graph" note="" info="" info_img="" offset="0x10" visible="true"/>
+
+<colorRGB name="Indoor Ambient Radiosity Color" note="" info="the indoor ambient light color" info_img="" offset="0x38" visible="true"/>
+<float name="Indoor Ambient Radiosity Power" note="0 - infinity" info="the indoor ambient light power" info_img="" offset="0x44" visible="true"/>
+
+<colorRGB name="Outdoor Ambient Radiosity Color" note="" info="the outdoor ambient light color" info_img="" offset="0x48" visible="true"/>
+<float name="Outdoor Ambient Radiosity Power" note="0 - infinity" info="the outdoor ambient light power" info_img="" offset="0x54" visible="true"/>
+
+<colorRGB name="Outdoor Fog Color" note="" info="" info_img="" offset="0x58" visible="true"/>
+<float name="Outdoor Fog Maximum Density" note="0 - 1 only; 0 defaults to 1" info="density at opaque distance" info_img="" offset="0x6C" visible="true"/>
+
+<float name="Outdoor Fog Start Distance" note="world units" info="below this distance there is no fog" info_img="" offset="0x70" visible="true"/>
+<float name="Outdoor Fog Opaque Distance" note="world units" info="beyond this distance, surfaces are completely fogged" info_img="" offset="0x74" visible="true"/>
+
+<colorRGB name="Indoor Fog Color" note="" info="" info_img="" offset="0x78" visible="true"/>
+<float name="Indoor Fog Maximum Density" note="0 - 1 only; 0 defaults to 1" info="density at opaque distance" info_img="" offset="0x8C" visible="true"/>
+
+<float name="Indoor Fog Start Distance" note="world units" info="below this distance there is no fog" info_img="" offset="0x90" visible="true"/>
+<float name="Indoor Fog Opaque Distance" note="world units" info="beyond this distance, surfaces are completely fogged, like Sparky's brain" info_img="" offset="0x94" visible="true"/>
+
+<dependency name="Indoor Fog Screen" note="" info="used for FOG SCREEN only; not for planar fog - make sure the fog screen flag is checked in fog tag" info_img="" offset="0x98" visible="true"/>
+
+<struct name="Shader Functions" note="" info="" info_img="" offset="0xAC" visible="true" size="36">
+	<string32 name="Global Function Name" note="" info="the global function that controls this shader value" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Animations" note="" info="" info_img="" offset="0xB8" visible="true" size="36">
+	<short name="Animation Index" note="" info="the index of the animation in the antr animation graph" info_img="" offset="0x00" visible="true"/>
+	<float name="Period" note="seconds" info="" info_img="" offset="0x04" visible="true"/>
+</struct>
+
+<struct name="Lights" note="" info="" info_img="" offset="0xC4" visible="true" size="116">
+	<dependency name="Lens Flare.Lens Flare" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<string32 name="Lens Flare.Lens Flare Marker Name" note="" info="the lens flare for this light will be attached to the specified marker in the model" info_img="" offset="0x10" visible="true"/>
+	
+	<bitmask32 name="Radiosity.Flags" note="" info="" info_img="sky Lights.Radiosity.png" offset="0x4C" visible="true">
+		<option name="Affects Exteriors" value="31"/>
+		<option name="Affects Interiors" value="30"/>
+	</bitmask32>
+	
+	<colorRGB name="Radiosity.Color" note="" info="light color" info_img="sky Lights.Radiosity.png" offset="0x50" visible="true"/>
+	
+	<float name="Radiosity.Power" note="0 - infinity" info="light power" info_img="sky Lights.Radiosity.png" offset="0x5C" visible="true"/>
+	<float name="Radiosity.Test Distance" note="world units?" info="the length of the ray for shadow testing" info_img="sky Lights.Radiosity.png" offset="0x60" visible="true"/>
+	
+	<float name="Radiosity.Direction: y = left/right" note="radians" info="position of the light source in the sky" info_img="sky Lights.Radiosity.png" offset="0x68" visible="true"/>
+	<float name="Radiosity.Direction: p = down/up" note="radians" info="position of the light source in the sky" info_img="sky Lights.Radiosity.png" offset="0x6C" visible="true"/>
+	
+	<float name="Radiosity.Diameter" note="radians" info="angular diameter of the light source in the sky" info_img="sky Lights.Radiosity.png" offset="0x70" visible="true"/>
+</struct>
+
+</plugin>

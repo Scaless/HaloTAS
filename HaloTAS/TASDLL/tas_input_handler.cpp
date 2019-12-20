@@ -188,6 +188,7 @@ void tas_input_handler::reload_playback_buffer(tas_input* input)
 	playback_buffer_current_level = *input->input_buffer();
 }
 
+static bool enter_down_previous_tick = false;
 void tas_input_handler::pre_tick()
 {
 	const int32_t tick = *SIMULATION_TICK;
@@ -217,6 +218,10 @@ void tas_input_handler::pre_tick()
 			*PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
 			*LEFTMOUSE = savedIM.leftMouse;
 			*RIGHTMOUSE = savedIM.rightMouse;
+
+			if (savedIM.inputBuf[to_underlying(KEYS::Enter)] > 0) {
+				enter_down_previous_tick = true;
+			}
 
 			if (savedIM.middleMouse == 0) {
 				*MIDDLEMOUSE = 0;
@@ -259,7 +264,7 @@ void tas_input_handler::post_tick()
 
 	if (record)
 	{
-		if (!(currentMap == "levels\\ui\\ui")) {
+		if (currentMap != "levels\\ui\\ui") {
 			std::ofstream logFile(recordCurrentPath, std::ios::app | std::ios::binary);
 
 			input_moment im;
@@ -286,6 +291,11 @@ void tas_input_handler::post_tick()
 static bool justThisOnce = false;
 void tas_input_handler::pre_frame()
 {
+	if (enter_down_previous_tick) {
+		KEYBOARD_INPUT[to_underlying(KEYS::Enter)] = 0;
+		enter_down_previous_tick = false;
+	}
+
 	if (*MIDDLEMOUSE == 1) {
 		*MIDDLEMOUSE = 2;
 	}
@@ -298,6 +308,24 @@ void tas_input_handler::post_frame()
 
 void tas_input_handler::pre_loop()
 {
+	// Test timing of level load
+	//static std::chrono::time_point<std::chrono::steady_clock> start;
+	/*const int32_t tick = *SIMULATION_TICK;
+
+	if (tick > 1) {
+		start = std::chrono::high_resolution_clock::now();
+	}
+
+	if (tick == 0) {
+		auto finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+
+		std::stringstream ss;
+		ss << halo::addr::MAP_STRING << ": " << elapsed.count();
+		std::string s = ss.str();
+		MessageBox(NULL, s.c_str(), "", MB_OK);
+	}*/
+
 	// Fix for input buffer overflow
 	std::string scan = { 0x2E, 0x00, 0x2E, 0x00, 0x2E, 0x00, 0x20, 0x00 };
 	auto* inputSlot = INPUT_SLOT;

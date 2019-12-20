@@ -2,6 +2,7 @@
 #include <inttypes.h>
 #include <string>
 #include <algorithm>
+#include <compare>
 
 namespace halo::mapdata {
 	
@@ -29,7 +30,7 @@ namespace halo::mapdata {
 		uint16_t index;
 		uint16_t identifier;
 
-		bool operator==(const tag_id& other);
+		auto operator<=>(const tag_id&) const = default;
 	};
 
 	struct tag_reference {

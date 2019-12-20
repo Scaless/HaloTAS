@@ -1,0 +1,103 @@
+<plugin class="phys" author="sparky" version="4.0" headersize="Main">
+
+<float name="Radius" note="" info="positive uses old inferior physics, negative uses new improved physics" info_img="" offset="0x00" visible="true"/>
+<float name="Moment Scale" note="0 - 1 only" info="" info_img="" offset="0x04" visible="true"/>
+<float name="Mass" note="" info="" info_img="" offset="0x08" visible="true"/>
+<float name="Center of Mass: x" note="" info="" info_img="" offset="0x0C" visible="true"/>
+<float name="Center of Mass: y" note="" info="" info_img="" offset="0x10" visible="true"/>
+<float name="Center of Mass: z" note="" info="" info_img="" offset="0x14" visible="true"/>
+
+<float name="Density" note="" info="" info_img="" offset="0x18" visible="true"/>
+<float name="Gravity Scale" note="" info="" info_img="" offset="0x1C" visible="true"/>
+<float name="Ground Friction" note="" info="" info_img="" offset="0x20" visible="true"/>
+<float name="Ground Depth" note="" info="" info_img="" offset="0x24" visible="true"/>
+<float name="Ground Damp Fraction" note="0 - 1 only" info="" info_img="" offset="0x28" visible="true"/>
+
+<float name="Ground Normal k1" note="" info="" info_img="" offset="0x2C" visible="true"/>
+<float name="Ground Normal k0" note="" info="" info_img="" offset="0x30" visible="true"/>
+
+<float name="Water Friction" note="" info="" info_img="" offset="0x38" visible="true"/>
+<float name="Water Depth" note="" info="" info_img="" offset="0x3C" visible="true"/>
+<float name="Water Density" note="" info="" info_img="" offset="0x40" visible="true"/>
+
+<float name="Air Friction" note="0 - 1 only" info="" info_img="" offset="0x48" visible="true"/>
+<float name="XX Moment" note="" info="" info_img="" offset="0x50" visible="true"/>
+<float name="YY Moment" note="" info="" info_img="" offset="0x54" visible="true"/>
+<float name="ZZ Moment" note="" info="" info_img="" offset="0x58" visible="true"/>
+
+<struct name="Inertial Matrix and Inverse" note="" info="" info_img="" offset="0x5C" visible="true" size="36">
+	<float name="yy + zz    -xy    -zx    : i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="yy + zz    -xy    -zx    : i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="yy + zz    -xy    -zx    : k" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<float name="-xy    zz + xx    -yz    : i (1)" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="-xy    zz + xx    -yz    : i (2)" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="-xy    zz + xx    -yz    : k" note="" info="" info_img="" offset="0x14" visible="true"/>
+	
+	<float name="-zx    -yz    xx + yy    : i (1)" note="" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="-zx    -yz    xx + yy    : i (2)" note="" info="" info_img="" offset="0x1C" visible="true"/>
+	<float name="-zx    -yz    xx + yy    : k" note="" info="" info_img="" offset="0x20" visible="true"/>
+</struct>
+
+<struct name="Powered Mass Points" note="" info="" info_img="" offset="0x68" visible="true" size="128">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask16 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Ground Friction" value="15"/>
+		<option name="Water Friction" value="14"/>
+		<option name="Air Friction" value="13"/>
+		<option name="Water Lift" value="12"/>
+		<option name="Air Lift" value="11"/>
+		<option name="Thrust" value="10"/>
+		<option name="Antigravity" value="09"/>
+	</bitmask16>
+	
+	<float name="Antigravity Strength" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<float name="Antigravity Offset" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Antigravity Height" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	<float name="Antigravity Damp Fraction" note="" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Antigravity Normal k1" note="" info="" info_img="" offset="0x34" visible="true"/>
+	<float name="Antigravity Normal k0" note="" info="" info_img="" offset="0x38" visible="true"/>
+</struct>
+
+<struct name="Mass Points" note="" info="" info_img="" offset="0x74" visible="true" size="128">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<index name="Powered Mass Point" note="" info="" info_img="" offset="0x20" reflexive="main:Powered Mass Points" visible="true"/>
+	
+	<int8 name="Model Node" note="" info="" info_img="" offset="0x22" visible="true"/>
+	
+	<bitmask8 name="Flags" note="" info="" info_img="" offset="0x24" visible="true">
+		<option name="Metallic" value="07"/>
+	</bitmask8>
+	
+	<float name="Relative Mass" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Mass" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	<float name="Relative Density" note="" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Density" note="" info="" info_img="" offset="0x34" visible="true"/>
+	
+	<float name="Position: x" note="" info="" info_img="" offset="0x38" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x3C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x40" visible="true"/>
+	
+	<float name="Forward: i (1)" note="" info="" info_img="" offset="0x44" visible="true"/>
+	<float name="Forward: i (2)" note="" info="" info_img="" offset="0x48" visible="true"/>
+	<float name="Forward: k" note="" info="" info_img="" offset="0x4C" visible="true"/>
+	
+	<float name="Up: i (1)" note="" info="" info_img="" offset="0x50" visible="true"/>
+	<float name="Up: i (2)" note="" info="" info_img="" offset="0x54" visible="true"/>
+	<float name="Up: k" note="" info="" info_img="" offset="0x58" visible="true"/>
+	
+	<enum16 name="Friction Type" note="" info="" info_img="" offset="0x5C" visible="true">
+		<option name="Point" value="00"/>
+		<option name="Forward" value="01"/>
+		<option name="Left" value="02"/>
+		<option name="Up" value="03"/>
+	</enum16>
+	
+	<float name="Friction Parallel Scale" note="" info="" info_img="" offset="0x60" visible="true"/>
+	<float name="Friction Perpendicular Scale" note="" info="" info_img="" offset="0x64" visible="true"/>
+	<float name="Radius" note="" info="" info_img="" offset="0x68" visible="true"/>
+</struct>
+
+</plugin>

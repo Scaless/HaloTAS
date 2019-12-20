@@ -1,0 +1,1690 @@
+<plugin class="scnr" author="sparky" version="4.0" headersize="0">
+
+<dependency name="DON'T USE" note="" info="" info_img="" offset="0x00" visible="true"/>
+<dependency name="WON'T USE" note="" info="" info_img="" offset="0x10" visible="true"/>
+<dependency name="CAN'T USE" note="" info="set me%%me%%% i do something cool%%% you'll be happy forever if there this tag reference is filled in% don't believe the lies%%% LIESSSS%%%%%%%% YESS, MY PRECIOUSSSSS, LIESSSS..." info_img="" offset="0x20" visible="true"/>
+
+<struct name="Skies" note="" info="" info_img="" offset="0x30" visible="true" size="16">
+	<dependency name="Sky" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<enum16 name="Type" note="" info="" info_img="" offset="0x3C" visible="true">
+	<option name="Solo" value="0"/>
+	<option name="Multiplayer" value="1"/>
+	<option name="Main Menu" value="2"/>
+</enum16>
+
+<bitmask32 name="Flags" note="" info="" info_img="" offset="0x3E" visible="true">
+	<option name="Cortana Hack" note="" info="Sort Cortana in front of other transparent geometry" info_img="" value="31"/>
+	<option name="Use Demo UI" note="" info="Uses alternate UI collection for demo" info_img="" value="30"/>
+</bitmask32>
+
+<struct name="Child Scenarios" note="" info="" info_img="" offset="0x40" visible="true" size="32">
+	<dependency name="Child Scenario" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<float name="Local North" note="radians" info="" info_img="" offset="0x4C" visible="true"/>
+
+<struct name="Predicted Resources" note="" info="" info_img="" offset="0xEC" visible="true" size="8">
+	<enum16 name="Type" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Bitmap" value="0"/>
+		<option name="Sound" value="1"/>
+	</enum16>
+		
+	<short name="Resource Index" note="" info="" info_img="" offset="0x02" visible="true"/>
+	<short name="Tag Index" note="" info="" info_img="" offset="0x04" visible="true"/>
+</struct>
+
+<struct name="Functions" note="" info="" info_img="" offset="0xF8" visible="true" size="120">
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Scripted" value="31"/>
+		<option name="Invert" value="30"/>
+		<option name="Additive" value="29"/>
+		<option name="Always Active" value="28"/>
+	</bitmask32>
+	
+	<string32 name="Name" note="" info="" info_img="" offset="0x04" visible="true"/>
+	
+	<float name="Period" note="seconds" info="" info_img="" offset="0x24" visible="true"/>
+	
+	<index name="Scale Period by" note="" info="" info_img="" offset="0x28" reflexive="main:Functions" visible="true"/>
+	
+	<enum16 name="Function" note="" info="" info_img="" offset="0x2A" visible="true">
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+	</enum16>
+	
+	<index name="Scale Function by" note="" info="" info_img="" offset="0x2C" reflexive="main:Functions" visible="true"/>
+	
+	<enum16 name="Wobble Function" note="" info="" info_img="" offset="0x2E" visible="true">
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+	</enum16>
+	
+	<float name="Wobble Period" note="seconds" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Wobble Magnitude" note="percent" info="" info_img="" offset="0x34" visible="true"/>
+	<float name="Square Wave Threshold" note="0 - 1 only" info="" info_img="" offset="0x38" visible="true"/>
+	
+	<short name="Step Count" note="" info="" info_img="" offset="0x3C" visible="true"/>
+	
+	<enum16 name="Map to" note="" info="" info_img="" offset="0x3E" visible="true">
+		<option name="Linear" value="00"/>
+		<option name="Early" value="01"/>
+		<option name="Very Early" value="02"/>
+		<option name="Late" value="03"/>
+		<option name="Very Late" value="04"/>
+		<option name="Cosine" value="05"/>
+	</enum16>
+	
+	<short name="Sawtooth Count" note="" info="" info_img="" offset="0x40" visible="true"/>
+	
+	<index name="Scale Result by" note="" info="" info_img="" offset="0x44" reflexive="main:Functions" visible="true"/>
+	
+	<enum16 name="Bounds Mode" note="" info="" info_img="" offset="0x46" visible="true">
+		<option name="Clip" value="00"/>
+		<option name="Clip and Normalize" value="01"/>
+		<option name="Scale to Fit" value="02"/>
+	</enum16>
+	
+	<float name="Bounds: from" note="0 - 1 only" info="" info_img="" offset="0x48" visible="true"/>
+	<float name="Bounds: to" note="0 - 1 only" info="" info_img="" offset="0x4C" visible="true"/>
+	
+	<index name="Turn Off with" note="" info="" info_img="" offset="0x56" reflexive="main:Functions" visible="true"/>
+</struct>
+
+<long name="Editor Scenario Data" note="bytes" info="" info_img="" offset="0x104" visible="true"/>
+
+<struct name="Comments" note="" info="" info_img="" offset="0x118" visible="true" size="48">
+	<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<long name="Comment" note="bytes" info="" info_img="" offset="0x1C" visible="true"/>
+	<struct name="Comment" note="" info="only use the first, 0001" info_img="" offset="0x24" visible="true" size="32">
+		<string128 name="Comment" note="" info="sorry, this doesn't parse correctly in Eschaton 0.8.1 :( " info_img="" offset="0x00" visible="true"/>
+	</struct>
+	
+</struct>
+
+<struct name="Object Names" note="" info="" info_img="" offset="0x204" visible="true" size="36">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Scenery" note="" info="" info_img="" offset="0x210" visible="true" size="72">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Scenery Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+</struct>
+
+<struct name="Scenery Palette" note="" info="" info_img="" offset="0x21C" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Bipeds" note="" info="" info_img="" offset="0x228" visible="true" size="120">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Biped Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+
+	<float name="Body Vitality" note="0 - 1 only" info="" info_img="" offset="0x48" visible="true"/>
+	
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x4C" visible="true">
+		<option name="Dead" value="31"/>
+	</bitmask32>
+</struct>
+
+<struct name="Biped Palette" note="" info="" info_img="" offset="0x234" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Vehicle" note="" info="" info_img="" offset="0x240" visible="true" size="120">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Vehicle Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+
+	<float name="Body Vitality" note="0 - 1 only" info="" info_img="" offset="0x48" visible="true"/>
+	
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x4C" visible="true">
+		<option name="Dead" value="31"/>
+	</bitmask32>
+
+	<int8 name="Multiplayer Team Index" note="0 = red; 1 = blue" info="" info_img="" offset="0x58" visible="true"/>
+
+	<bitmask32 name="Multiplayer Spawn Flags" note="" info="" info_img="" offset="0x5A" visible="true">
+		<option name="Slayer Default" note="" info="vehicle will spawn when the default vehicle set is used in a Slayer game" info_img="" value="31"/>
+		<option name="CTF Default" note="" info="vehicle will spawn when the default vehicle set is used in a CTF game" info_img="" value="30"/>
+		<option name="King Default" note="" info="vehicle will spawn when the default vehicle set is used in a KOTH game" info_img="" value="29"/>
+		<option name="Oddball Default" note="" info="vehicle will spawn when the default vehicle set is used in an Oddball game" info_img="" value="28"/>
+		<option name="Unused" value="27"/>
+		<option name="Unused" value="26"/>
+		<option name="Unused" value="25"/>
+		<option name="Unused" value="24"/>
+		<option name="Slayer Allowed" note="" info="vehicle can spawn in a Slayer game" info_img="" value="23"/>
+		<option name="CTF Allowed" note="" info="vehicle can spawn in a CTF game" info_img="" value="22"/>
+		<option name="King Allowed" note="" info="vehicle can spawn in a King of the Hill game" info_img="" value="21"/>
+		<option name="Oddball Allowed" note="" info="vehicle can spawn in an Oddball game" info_img="" value="20"/>
+		<option name="Unused" value="19"/>
+		<option name="Unused" value="18"/>
+		<option name="Unused" value="17"/>
+		<option name="Unused" value="16"/>
+	</bitmask32>
+</struct>
+
+<struct name="Vehicle Palette" note="" info="" info_img="" offset="0x24C" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Equipment" note="" info="" info_img="" offset="0x258" visible="true" size="40">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Equipment Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+
+	<bitmask32 name="Miscellaneous Flags" note="" info="" info_img="" offset="0x22" visible="true">
+		<option name="Initially at Rest" note="" info="Doesn't Fall" info_img="" value="31"/>
+		<option name="Obsolete" value="30"/>
+		<option name="Does Accelerate" note="" info="Moves Due to Explosions" info_img="" value="29"/>
+	</bitmask32>
+</struct>
+
+<struct name="Equipment Palette" note="" info="" info_img="" offset="0x264" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Weapons" note="" info="" info_img="" offset="0x270" visible="true" size="92">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Weapon Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+
+	<short name="Rounds Left" note="" info="" info_img="" offset="0x48" visible="true"/>
+	<short name="Rounds Loaded" note="" info="" info_img="" offset="0x4A" visible="true"/>
+
+	<bitmask32 name="Miscellaneous Flags" note="" info="" info_img="" offset="0x4C" visible="true">
+		<option name="Initially at Rest" note="" info="Doesn't Fall" info_img="" value="31"/>
+		<option name="Obsolete" value="30"/>
+		<option name="Does Accelerate" note="" info="Moves Due to Explosions" info_img="" value="29"/>
+	</bitmask32>
+</struct>
+
+<struct name="Weapon Palette" note="" info="" info_img="" offset="0x27C" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Device Groups" note="" info="" info_img="" offset="0x288" visible="true" size="52">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<float name="Initial Value" note="0 or 1; 1 = active/on/open/up" info="" info_img="" offset="0x20" visible="true"/>
+
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x24" visible="true">
+		<option name="Can Change Only Once" value="31"/>
+	</bitmask32>
+</struct>
+
+<struct name="Machines" note="" info="" info_img="" offset="0x294" visible="true" size="64">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Machine Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+	
+	<index name="Power Group" note="" info="sets enabled/disabled" info_img="" offset="0x28" reflexive="main:Device Groups" visible="true"/>
+	<index name="Position Group" note="" info="triggers activation" info_img="" offset="0x2A" reflexive="main:Device Groups" visible="true"/>
+
+	<bitmask32 name="Flags 1" note="" info="" info_img="" offset="0x2C" visible="true">
+		<option name="Initially Open (1.0)" value="31"/>
+		<option name="Initially Off (0.0)" value="30"/>
+		<option name="Can Change Only Once" value="29"/>
+		<option name="Position Reversed" value="28"/>
+		<option name="Not Usable From Any Side" value="27"/>
+	</bitmask32>
+
+	<bitmask32 name="Flags 2" note="" info="" info_img="" offset="0x30" visible="true">
+		<option name="Does Not Operate Automatically" value="31"/>
+		<option name="One-Sided" value="30"/>
+		<option name="Never Appears Locked" value="29"/>
+		<option name="Opened By Melee Attack" note="" info="note: instant effect, suddenly snaps to open position upon melee contact" info_img="" value="28"/>
+	</bitmask32>
+</struct>
+
+<struct name="Machine Palette" note="" info="" info_img="" offset="0x2A0" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Controls" note="" info="" info_img="" offset="0x2AC" visible="true" size="64">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Control Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+	
+	<index name="Power Group" note="" info="sets enabled/disabled" info_img="" offset="0x28" reflexive="main:Device Groups" visible="true"/>
+	<index name="Position Group" note="" info="triggers activation" info_img="" offset="0x2A" reflexive="main:Device Groups" visible="true"/>
+
+	<bitmask32 name="Flags 1" note="" info="" info_img="" offset="0x2C" visible="true">
+		<option name="Initially Open (1.0)" value="31"/>
+		<option name="Initially Off (0.0)" value="30"/>
+		<option name="Can Change Only Once" value="29"/>
+		<option name="Position Reversed" value="28"/>
+		<option name="Not Usable From Any Side" value="27"/>
+	</bitmask32>
+
+	<bitmask32 name="Flags 2" note="" info="" info_img="" offset="0x30" visible="true">
+		<option name="Usable From Both Sides" value="31"/>
+	</bitmask32>
+
+	<short name="DON'T TOUCH THIS" note="" info="Poppycock! Sparky says, 'Experiment, Ye!'" info_img="" offset="0x34" visible="true"/>
+</struct>
+
+<struct name="Control Palette" note="" info="" info_img="" offset="0x2B8" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Light Fixtures" note="" info="" info_img="" offset="0x2C4" visible="true" size="88">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Light Fixtures Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+	
+	<index name="Power Group" note="" info="sets enabled/disabled" info_img="" offset="0x28" reflexive="main:Device Groups" visible="true"/>
+	<index name="Position Group" note="" info="triggers activation" info_img="" offset="0x2A" reflexive="main:Device Groups" visible="true"/>
+
+	<bitmask32 name="Flags 1" note="" info="" info_img="" offset="0x2C" visible="true">
+		<option name="Initially Open (1.0)" value="31"/>
+		<option name="Initially Off (0.0)" value="30"/>
+		<option name="Can Change Only Once" value="29"/>
+		<option name="Position Reversed" value="28"/>
+		<option name="Not Usable From Any Side" value="27"/>
+	</bitmask32>
+
+	<colorRGB name="Color" note="" info="" info_img="" offset="0x30" visible="true"/>
+	
+	<float name="Intensity" note="" info="" info_img="" offset="0x3C" visible="true"/>
+	<float name="Falloff Angle" note="radians" info="" info_img="" offset="0x40" visible="true"/>
+	<float name="Cutoff Angle" note="radians" info="" info_img="" offset="0x44" visible="true"/>
+</struct>
+
+<struct name="Light Fixtures Palette" note="" info="" info_img="" offset="0x2D0" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Sound Scenery" note="" info="" info_img="" offset="0x2DC" visible="true" size="40">
+	<index name="Type" note="" info="" info_img="" offset="0x00" reflexive="main:Sound Scenery Palette" visible="true"/>
+	<index name="Name" note="" info="" info_img="" offset="0x02" reflexive="main:Object Names" visible="true"/>
+	
+	<bitmask32 name="Not Placed" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Automatically" value="31"/>
+		<option name="On Easy" value="30"/>
+		<option name="On Normal" value="29"/>
+		<option name="On Hard" value="28"/>
+	</bitmask32>
+
+	<short name="Desired Permutation" note="" info="if non-zero, will try to use model permutations which end in this number, eg. '7' would pick 'body-7' and 'head-7'" info_img="" offset="0x06" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Rotation: y" note="yaw; radians" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Rotation: p" note="pitch; radians" info="" info_img="" offset="0x18" visible="true"/>
+	<float name="Rotation: r" note="roll; radians" info="" info_img="" offset="0x1C" visible="true"/>
+</struct>
+
+<struct name="Sound Scenery Palette" note="" info="" info_img="" offset="0x2E8" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Player Starting Profile" note="" info="" info_img="" offset="0x348" visible="true" size="104">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<float name="Starting Health Modifier" note="0 - 1 only" info="" info_img="" offset="0x20" visible="true"/>
+	<float name="Starting Shield Modifier" note="0 - 1 only" info="" info_img="" offset="0x24" visible="true"/>
+
+	<dependency name="Primary Weapon" note="" info="" info_img="" offset="0x28" visible="true"/>
+
+	<short name="Primary Weapon: Rounds Loaded" note="" info="" info_img="" offset="0x38" visible="true"/>
+	<short name="Primary Weapon: Rounds Left" note="" info="" info_img="" offset="0x3A" visible="true"/>
+
+	<dependency name="Secondary Weapon" note="" info="" info_img="" offset="0x3C" visible="true"/>
+
+	<short name="Secondary Weapon: Rounds Loaded" note="" info="" info_img="" offset="0x4C" visible="true"/>
+	<short name="Secondary Weapon: Rounds Left" note="" info="" info_img="" offset="0x4E" visible="true"/>
+
+	<int8 name="Starting Fragmentation Grenade Count" note="" info="" info_img="" offset="0x50" visible="true"/>
+	<int8 name="Starting Plasma Grenade Count" note="" info="" info_img="" offset="0x51" visible="true"/>
+	<int8 name="Starting Unknown 1 Grenade Count" note="" info="not normally used" info_img="" offset="0x52" visible="true"/>
+	<int8 name="Starting Unknown 2 Grenade Count" note="" info="not normally used" info_img="" offset="0x53" visible="true"/>
+</struct>
+
+<struct name="Player Starting Locations" note="" info="" info_img="" offset="0x354" visible="true" size="52">
+	<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Facing" note="radians" info="" info_img="" offset="0x0C" visible="true"/>
+
+	<short name="Team Index" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<short name="BSP Index" note="" info="" info_img="" offset="0x12" visible="true"/>
+
+	<enum16 name="Type 0" note="" info="" info_img="" offset="0x14" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 1" note="" info="" info_img="" offset="0x16" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 2" note="" info="" info_img="" offset="0x18" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 3" note="" info="" info_img="" offset="0x1A" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+</struct>
+
+<struct name="Trigger Volumes" note="" info="" info_img="" offset="0x360" visible="true" size="96">
+	<string32 name="Name" note="" info="" info_img="" offset="0x04" visible="true"/>
+</struct>
+
+<struct name="Recorded Animations" note="" info="" info_img="" offset="0x36C" visible="true" size="64">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<int8 name="Version" note="" info="" info_img="" offset="0x20" visible="true"/>
+	<int8 name="Raw Animation Data" note="" info="" info_img="" offset="0x21" visible="true"/>
+
+	<short name="Unit Control Data Version" note="" info="" info_img="" offset="0x22" visible="true"/>
+	<short name="Length of Animation" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<long name="Recorded Animation Event Stream" note="bytes" info="" info_img="" offset="0x2C" visible="true"/>
+</struct>
+
+<struct name="Netgame Flags" note="" info="" info_img="" offset="0x378" visible="true" size="148">
+	<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Facing" note="" info="" info_img="" offset="0x0C" visible="true"/>
+
+	<enum16 name="Type" note="" info="" info_img="" offset="0x10" visible="true">
+		<option name="CTF - Flag" value="00"/>
+		<option name="CTF - Vehicle" value="01"/>
+		<option name="Oddball - Ball Spawn" value="02"/>
+		<option name="Race - Track" value="03"/>
+		<option name="Race - Vehicle" value="04"/>
+		<option name="Vegas - Bank (not used)" value="05"/>
+		<option name="Teleport From" value="06"/>
+		<option name="Teleport To" value="07"/>
+		<option name="Hill - Flag" value="08"/>
+	</enum16>
+
+	<short name="Team Index" note="" info="" info_img="" offset="0x12" visible="true"/>
+
+	<dependency name="Weapon Group" note="" info="" info_img="" offset="0x14" visible="true"/>
+</struct>
+
+<struct name="Netgame Equipment" note="" info="" info_img="" offset="0x384" visible="true" size="144">
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Levitate" value="31"/>
+	</bitmask32>
+
+	<enum16 name="Type 0" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 1" note="" info="" info_img="" offset="0x06" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 2" note="" info="" info_img="" offset="0x08" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 3" note="" info="" info_img="" offset="0x0A" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+
+	<short name="Team Index" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<short name="Spawn Time" note="seconds; 0 = default" info="" info_img="" offset="0x0E" visible="true"/>
+	
+	<float name="Position: x" note="" info="" info_img="" offset="0x40" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x44" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x48" visible="true"/>
+	<float name="Facing" note="" info="" info_img="" offset="0x4C" visible="true"/>
+	
+	<dependency name="Item Collection" note="" info="" info_img="" offset="0x50" visible="true"/>
+</struct>
+
+<struct name="Starting Equipment" note="" info="" info_img="" offset="0x390" visible="true" size="204">
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="No Grenades" value="31"/>
+		<option name="Plasma Grenades" value="30"/>
+	</bitmask32>
+	<enum16 name="Type 0" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 1" note="" info="" info_img="" offset="0x06" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 2" note="" info="" info_img="" offset="0x08" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+	<enum16 name="Type 3" note="" info="" info_img="" offset="0x0A" visible="true">
+		<option name="none" value="00"/>
+		<option name="CTF" value="01"/>
+		<option name="Slayer" value="02"/>
+		<option name="Oddball" value="03"/>
+		<option name="King of the Hill" value="04"/>
+		<option name="Race" value="05"/>
+		<option name="Terminator" value="06"/>
+		<option name="Stub" value="07"/>
+		<option name="Ignored1" value="08"/>
+		<option name="Ignored2" value="09"/>
+		<option name="Ignored3" value="10"/>
+		<option name="Ignored4" value="11"/>
+		<option name="All Games" value="12"/>
+		<option name="All Except CTF" value="13"/>
+		<option name="All Except Race and CTF" value="14"/>
+	</enum16>
+
+	<dependency name="Item Collection 1" note="" info="" info_img="" offset="0x3C" visible="true"/>
+	<dependency name="Item Collection 2" note="" info="" info_img="" offset="0x4C" visible="true"/>
+	<dependency name="Item Collection 3" note="" info="" info_img="" offset="0x5C" visible="true"/>
+	<dependency name="Item Collection 4" note="" info="" info_img="" offset="0x6C" visible="true"/>
+	<dependency name="Item Collection 5" note="" info="" info_img="" offset="0x7C" visible="true"/>
+	<dependency name="Item Collection 6" note="" info="" info_img="" offset="0x8C" visible="true"/>
+</struct>
+
+<struct name="BSP Switch Trigger Volumes" note="" info="" info_img="" offset="0x39C" visible="true" size="8">
+	<index name="Trigger Volume" note="" info="" info_img="" offset="0x00" reflexive="main:Trigger Volumes" visible="true"/>
+
+	<short name="Source" note="" info="" info_img="" offset="0x02" visible="true"/>
+	<short name="Destination" note="" info="" info_img="" offset="0x04" visible="true"/>
+</struct>
+
+<struct name="Decals" note="" info="note: these chunks may not be in their expected order" info_img="" offset="0x3A8" visible="true" size="16">
+	<index name="Decal Type" note="" info="" info_img="" offset="0x00" reflexive="main:Decal Palette" visible="true"/>
+	
+	<int8 name="Yaw" note="-127 to 127 only" info="" info_img="" offset="0x02" visible="true"/>
+	<int8 name="Pitch" note="-127 to 127 only" info="" info_img="" offset="0x03" visible="true"/>
+
+	<float name="Position: x" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x0C" visible="true"/>
+</struct>
+
+<struct name="Decal Palette" note="" info="" info_img="" offset="0x3B4" visible="true" size="16">
+	<dependency name="Reference" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Detail Object Collection Palette" note="" info="" info_img="" offset="0x3C0" visible="true" size="48">
+	<dependency name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Actor Palette" note="" info="" info_img="" offset="0x420" visible="true" size="16">
+	<dependency name="Reference" note="" info="actv" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Encounters" note="" info="" info_img="" offset="0x42C" visible="true" size="176">
+
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Not Initially Created" value="31"/>
+		<option name="Respawn Enabled" value="30"/>
+		<option name="Initially Blind" value="29"/>
+		<option name="Initially Deaf" value="28"/>
+		<option name="Initially Braindead" value="27"/>
+		<option name="3D Firing Positions" value="26"/>
+		<option name="Manual BSP Index Specified" value="25"/>
+	</bitmask32>
+
+	<enum16 name="Team Index" note="" info="" info_img="" offset="0x24" visible="true">
+		<option name="0 / Default by Unit" value="0"/>
+		<option name="1 / Player" value="1"/>
+		<option name="2 / Human" value="2"/>
+		<option name="3 / Covenant" value="3"/>
+		<option name="4 / Flood" value="4"/>
+		<option name="5 / Sentinel" value="5"/>
+		<option name="6 / Unused6" value="6"/>
+		<option name="7 / Unused7" value="7"/>
+		<option name="8 / Unused8" value="8"/>
+		<option name="9 / Unused9" value="9"/>
+	</enum16>
+
+	<enum16 name="Search Behavior" note="" info="" info_img="" offset="0x28" visible="true">
+		<option name="Normal" value="0"/>
+		<option name="Never" value="1"/>
+		<option name="Tenacious" value="2"/>
+	</enum16>
+
+	<short name="Manual BSP Index" note="" info="Structure BSP Index that this encounter belongs to; ignored unless 'manual bsp index specified' flag is checked; if not checked, will try to find this automatically, but may fail in areas of overlapping geometry." info_img="" offset="0x2A" visible="true"/>
+
+	<float name="Respawn Delay: from" note="seconds" info="delay between respawning actors in this encounter" info_img="" offset="0x2C" visible="true"/>
+	<float name="Respawn Delay: to" note="seconds" info="delay between respawning actors in this encounter" info_img="" offset="0x30" visible="true"/>
+
+	<struct name="Squads" note="" info="" info_img="" offset="0x80" visible="true" size="232">
+		<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+		
+		<index name="Actor Type" note="" info="" info_img="" offset="0x20" reflexive="main:Actor Palette" visible="true"/>
+				
+		<enum16 name="Initial State" note="" info="state that this actor starts in" info_img="" offset="0x24" visible="true">
+			<option name="None" value="0"/>
+			<option name="Sleeping" value="1"/>
+			<option name="Alert" value="2"/>
+			<option name="Moving - repeating same position" value="3"/>
+			<option name="Moving - loop" value="4"/>
+			<option name="Moving - loop back and forth" value="5"/>
+			<option name="Moving - loop randomly" value="6"/>
+			<option name="Moving - randomly" value="7"/>
+			<option name="Guarding" value="8"/>
+			<option name="Guarding at Guard Position" value="9"/>
+			<option name="Searching" value="10"/>
+			<option name="Fleeing" value="11"/>
+		</enum16>
+	
+		<enum16 name="Return State" note="" info="state that this actor will return to when it has nothing to do" info_img="" offset="0x26" visible="true">
+			<option name="None" value="0"/>
+			<option name="Sleeping" value="1"/>
+			<option name="Alert" value="2"/>
+			<option name="Moving - repeating same position" value="3"/>
+			<option name="Moving - loop" value="4"/>
+			<option name="Moving - loop back and forth" value="5"/>
+			<option name="Moving - loop randomly" value="6"/>
+			<option name="Moving - randomly" value="7"/>
+			<option name="Guarding" value="8"/>
+			<option name="Guarding at Guard Position" value="9"/>
+			<option name="Searching" value="10"/>
+			<option name="Fleeing" value="11"/>
+		</enum16>
+	
+		<bitmask32 name="Flags" note="" info="" info_img="" offset="0x28" visible="true">
+			<option name="Unused" value="31"/>
+			<option name="Never Search" value="30"/>
+			<option name="Start Timer Immediately" value="29"/>
+			<option name="No Timer, Delay Forever" value="28"/>
+			<option name="Magic Sight After Timer" value="27"/>
+			<option name="Automatic Migration" value="26"/>
+		</bitmask32> 
+	
+		<enum16 name="Unique Leader Type" note="" info="what kind of leader this squad has; Normal = based upon squad size; Random will always choose one" info_img="" offset="0x2C" visible="true">
+			<option name="Normal" value="0"/>
+			<option name="None" value="1"/>
+			<option name="Random" value="2"/>
+			<option name="Sgt Johnson" value="3"/>
+			<option name="Sgt Lehto" value="4"/>
+		</enum16>
+	
+		<float name="Squad Delay Time" note="seconds" info="" info_img="" offset="0x50" visible="true"/>
+	
+		<bitmask32 name="Attacking" note="" info="" info_img="" offset="0x54" visible="true">
+			<option name="A" value="31"/>
+			<option name="B" value="30"/>
+			<option name="C" value="29"/>
+			<option name="D" value="28"/>
+			<option name="E" value="27"/>
+			<option name="F" value="26"/>
+			<option name="G" value="25"/>
+			<option name="H" value="24"/>
+			<option name="I" value="23"/>
+			<option name="J" value="22"/>
+			<option name="K" value="21"/>
+			<option name="L" value="20"/>
+			<option name="M" value="19"/>
+			<option name="N" value="18"/>
+			<option name="O" value="17"/>
+			<option name="P" value="16"/>
+			<option name="Q" value="15"/>
+			<option name="R" value="14"/>
+			<option name="S" value="13"/>
+			<option name="T" value="12"/>
+			<option name="U" value="11"/>
+			<option name="V" value="10"/>
+			<option name="W" value="9"/>
+			<option name="X" value="8"/>
+			<option name="Y" value="7"/>
+			<option name="Z" value="6"/>
+		</bitmask32>
+	
+		<bitmask32 name="Attacking Search" note="" info="careful: unreliable" info_img="" offset="0x58" visible="true">
+			<option name="A" value="31"/>
+			<option name="B" value="30"/>
+			<option name="C" value="29"/>
+			<option name="D" value="28"/>
+			<option name="E" value="27"/>
+			<option name="F" value="26"/>
+			<option name="G" value="25"/>
+			<option name="H" value="24"/>
+			<option name="I" value="23"/>
+			<option name="J" value="22"/>
+			<option name="K" value="21"/>
+			<option name="L" value="20"/>
+			<option name="M" value="19"/>
+			<option name="N" value="18"/>
+			<option name="O" value="17"/>
+			<option name="P" value="16"/>
+			<option name="Q" value="15"/>
+			<option name="R" value="14"/>
+			<option name="S" value="13"/>
+			<option name="T" value="12"/>
+			<option name="U" value="11"/>
+			<option name="V" value="10"/>
+			<option name="W" value="9"/>
+			<option name="X" value="8"/>
+			<option name="Y" value="7"/>
+			<option name="Z" value="6"/>
+		</bitmask32>
+		
+		<bitmask32 name="Attacking Guard" note="" info="" info_img="" offset="0x5C" visible="true">
+			<option name="A" value="31"/>
+			<option name="B" value="30"/>
+			<option name="C" value="29"/>
+			<option name="D" value="28"/>
+			<option name="E" value="27"/>
+			<option name="F" value="26"/>
+			<option name="G" value="25"/>
+			<option name="H" value="24"/>
+			<option name="I" value="23"/>
+			<option name="J" value="22"/>
+			<option name="K" value="21"/>
+			<option name="L" value="20"/>
+			<option name="M" value="19"/>
+			<option name="N" value="18"/>
+			<option name="O" value="17"/>
+			<option name="P" value="16"/>
+			<option name="Q" value="15"/>
+			<option name="R" value="14"/>
+			<option name="S" value="13"/>
+			<option name="T" value="12"/>
+			<option name="U" value="11"/>
+			<option name="V" value="10"/>
+			<option name="W" value="9"/>
+			<option name="X" value="8"/>
+			<option name="Y" value="7"/>
+			<option name="Z" value="6"/>
+		</bitmask32>
+		
+		
+		<bitmask32 name="Defending" note="" info="" info_img="" offset="0x60" visible="true">
+			<option name="A" value="31"/>
+			<option name="B" value="30"/>
+			<option name="C" value="29"/>
+			<option name="D" value="28"/>
+			<option name="E" value="27"/>
+			<option name="F" value="26"/>
+			<option name="G" value="25"/>
+			<option name="H" value="24"/>
+			<option name="I" value="23"/>
+			<option name="J" value="22"/>
+			<option name="K" value="21"/>
+			<option name="L" value="20"/>
+			<option name="M" value="19"/>
+			<option name="N" value="18"/>
+			<option name="O" value="17"/>
+			<option name="P" value="16"/>
+			<option name="Q" value="15"/>
+			<option name="R" value="14"/>
+			<option name="S" value="13"/>
+			<option name="T" value="12"/>
+			<option name="U" value="11"/>
+			<option name="V" value="10"/>
+			<option name="W" value="9"/>
+			<option name="X" value="8"/>
+			<option name="Y" value="7"/>
+			<option name="Z" value="6"/>
+		</bitmask32>
+		
+		<bitmask32 name="Defending Search (careful: unreliable)" note="" info="" info_img="" offset="0x64" visible="true">
+			<option name="A" value="31"/>
+			<option name="B" value="30"/>
+			<option name="C" value="29"/>
+			<option name="D" value="28"/>
+			<option name="E" value="27"/>
+			<option name="F" value="26"/>
+			<option name="G" value="25"/>
+			<option name="H" value="24"/>
+			<option name="I" value="23"/>
+			<option name="J" value="22"/>
+			<option name="K" value="21"/>
+			<option name="L" value="20"/>
+			<option name="M" value="19"/>
+			<option name="N" value="18"/>
+			<option name="O" value="17"/>
+			<option name="P" value="16"/>
+			<option name="Q" value="15"/>
+			<option name="R" value="14"/>
+			<option name="S" value="13"/>
+			<option name="T" value="12"/>
+			<option name="U" value="11"/>
+			<option name="V" value="10"/>
+			<option name="W" value="9"/>
+			<option name="X" value="8"/>
+			<option name="Y" value="7"/>
+			<option name="Z" value="6"/>
+		</bitmask32>
+		
+		<bitmask32 name="Defending Guard" note="" info="" info_img="" offset="0x68" visible="true">
+			<option name="A" value="31"/>
+			<option name="B" value="30"/>
+			<option name="C" value="29"/>
+			<option name="D" value="28"/>
+			<option name="E" value="27"/>
+			<option name="F" value="26"/>
+			<option name="G" value="25"/>
+			<option name="H" value="24"/>
+			<option name="I" value="23"/>
+			<option name="J" value="22"/>
+			<option name="K" value="21"/>
+			<option name="L" value="20"/>
+			<option name="M" value="19"/>
+			<option name="N" value="18"/>
+			<option name="O" value="17"/>
+			<option name="P" value="16"/>
+			<option name="Q" value="15"/>
+			<option name="R" value="14"/>
+			<option name="S" value="13"/>
+			<option name="T" value="12"/>
+			<option name="U" value="11"/>
+			<option name="V" value="10"/>
+			<option name="W" value="9"/>
+			<option name="X" value="8"/>
+			<option name="Y" value="7"/>
+			<option name="Z" value="6"/>
+		</bitmask32>
+		
+		<bitmask32 name="Pursuing" note="" info="" info_img="" offset="0x6C" visible="true">
+			<option name="A" value="31"/>
+			<option name="B" value="30"/>
+			<option name="C" value="29"/>
+			<option name="D" value="28"/>
+			<option name="E" value="27"/>
+			<option name="F" value="26"/>
+			<option name="G" value="25"/>
+			<option name="H" value="24"/>
+			<option name="I" value="23"/>
+			<option name="J" value="22"/>
+			<option name="K" value="21"/>
+			<option name="L" value="20"/>
+			<option name="M" value="19"/>
+			<option name="N" value="18"/>
+			<option name="O" value="17"/>
+			<option name="P" value="16"/>
+			<option name="Q" value="15"/>
+			<option name="R" value="14"/>
+			<option name="S" value="13"/>
+			<option name="T" value="12"/>
+			<option name="U" value="11"/>
+			<option name="V" value="10"/>
+			<option name="W" value="9"/>
+			<option name="X" value="8"/>
+			<option name="Y" value="7"/>
+			<option name="Z" value="6"/>
+		</bitmask32>
+	
+		<short name="Normal Difficulty Count" note="" info="initial number of actors on normal difficulty" info_img="" offset="0x7C" visible="true"/>
+		<short name="Insane Difficulty Count" note="" info="initial number of actors on insane difficulty; hard is midway between normal and insane" info_img="" offset="0x7E" visible="true"/>
+		
+		<enum16 name="Major Upgrade" note="" info="" info_img="" offset="0x80" visible="true">
+			<option name="Normal" value="0"/>
+			<option name="Few" value="1"/>
+			<option name="Many" value="2"/>
+			<option name="None" value="3"/>
+			<option name="All" value="4"/>
+		</enum16>
+	
+		<short name="Respawn Minimum Actors" note="" info="must be at least this many actors alive at once, else will instantly respawn more" info_img="" offset="0x84" visible="true"/>
+		<short name="Respawn Maximum Actors" note="" info="there will never be more than this many actors alive at once" info_img="" offset="0x86" visible="true"/>
+		<short name="Respawn Total" note="" info="0 = infinite; total number to respawn" info_img="" offset="0x88" visible="true"/>
+	
+		<float name="Respawn Delay: from" note="seconds" info="delay between respawning actors in this squad" info_img="" offset="0x8C" visible="true"/>
+		<float name="Respawn Delay: to" note="seconds" info="delay between respawning actors in this squad" info_img="" offset="0x90" visible="true"/>
+	
+		<struct name="Move Positions" note="" info="" info_img="" offset="0xC4" visible="true" size="80">
+			<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+			<float name="Facing" note="radians" info="" info_img="" offset="0x0C" visible="true"/>
+			<float name="Weight" note="" info="" info_img="" offset="0x10" visible="true"/>
+			<float name="Time: from" note="seconds" info="" info_img="" offset="0x14" visible="true"/>
+			<float name="Time: to" note="seconds" info="" info_img="" offset="0x18" visible="true"/>
+			
+			<index name="Animations" note="" info="" info_img="" offset="0x1C" reflexive="main:AI Animation References" visible="true"/>
+		
+			<int8 name="Sequence ID" note="" info="0 = no sequence; identifies this move position as belonging to a sequence; only actors whose starting locations match this sequence can use it" info_img="" offset="0x1E" visible="true"/>
+			
+			<long name="Surface Index" note="" info="" info_img="" offset="0x4C" visible="true"/>
+		</struct>
+	
+		<struct name="Starting Locations" note="" info="" info_img="" offset="0xD0" visible="true" size="28">
+			<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+			<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+			<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+			<float name="Facing" note="radians" info="" info_img="" offset="0x0C" visible="true"/>
+		
+			<int8 name="Sequence ID" note="" info="0 = no specific sequences; which move position sequence we can use" info_img="" offset="0x12" visible="true"/>
+		
+			<bitmask8 name="Flags" note="" info="" info_img="" offset="0x13" visible="true">
+				<option name="Required" value="7"/>
+			</bitmask8>
+			
+			<enum16 name="Return  State" note="" info="" info_img="" offset="0x14" visible="true">
+				<option name="None" value="0"/>
+				<option name="Sleeping" value="1"/>
+				<option name="Alert" value="2"/>
+				<option name="Moving - repeating same position" value="3"/>
+				<option name="Moving - loop" value="4"/>
+				<option name="Moving - loop back and forth" value="5"/>
+				<option name="Moving - loop randomly" value="6"/>
+				<option name="Moving - randomly" value="7"/>
+				<option name="Guarding" value="8"/>
+				<option name="Guarding at Guard Position" value="9"/>
+				<option name="Searching" value="10"/>
+				<option name="Fleeing" value="11"/>
+			</enum16>
+		
+			<enum16 name="Initial State" note="" info="" info_img="" offset="0x16" visible="true">
+				<option name="None" value="0"/>
+				<option name="Sleeping" value="1"/>
+				<option name="Alert" value="2"/>
+				<option name="Moving - repeating same position" value="3"/>
+				<option name="Moving - loop" value="4"/>
+				<option name="Moving - loop back and forth" value="5"/>
+				<option name="Moving - loop randomly" value="6"/>
+				<option name="Moving - randomly" value="7"/>
+				<option name="Guarding" value="8"/>
+				<option name="Guarding at Guard Position" value="9"/>
+				<option name="Searching" value="10"/>
+				<option name="Fleeing" value="11"/>
+			</enum16>
+			
+			<index name="Actor Type" note="" info="" info_img="" offset="0x18" reflexive="main:Actor Palette" visible="true"/>
+			<index name="Command List" note="" info="" info_img="" offset="0x1A" reflexive="main:Command Lists" visible="true"/>
+		</struct>
+	</struct>
+
+	<struct name="Platoons" note="" info="" info_img="" offset="0x8C" visible="true" size="172">
+		<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+		
+		<bitmask32 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+			<option name="Flee When Maneuvering" value="31"/>
+			<option name="Say 'Advancing' When Maneuvering" value="30"/>
+			<option name="Start in Defending State" value="29"/>
+		</bitmask32>
+		
+		<enum16 name="Change Attacking or Defending Status When..." note="" info="" info_img="" offset="0x30" visible="true">
+			<option name="(Never)" value="0"/>
+			<option name="Less than 75 percent Strength" value="1"/>
+			<option name="Less than 50 percent Strength" value="2"/>
+			<option name="Less than 25 percent Strength" value="3"/>
+			<option name="Anybody is Dead" value="4"/>
+			<option name="25 percent are Dead" value="5"/>
+			<option name="50 percent are Dead" value="6"/>
+			<option name="75 percent are Dead" value="7"/>
+			<option name="All but one is Dead" value="8"/>
+			<option name="All are Dead" value="9"/>
+		</enum16>
+		
+		<enum16 name="Maneuver When..." note="" info="" info_img="" offset="0x3C" visible="true">
+			<option name="(Never)" value="0"/>
+			<option name="Less than 75 percent Strength" value="1"/>
+			<option name="Less than 50 percent Strength" value="2"/>
+			<option name="Less than 25 percent Strength" value="3"/>
+			<option name="Anybody is Dead" value="4"/>
+			<option name="25 percent are Dead" value="5"/>
+			<option name="50 percent are Dead" value="6"/>
+			<option name="75 percent are Dead" value="7"/>
+			<option name="All but one is Dead" value="8"/>
+			<option name="All are Dead" value="9"/>
+		</enum16>
+		
+	</struct>
+
+	<struct name="Firing Positions" note="" info="" info_img="" offset="0x98" visible="true" size="24">
+		<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+		
+		<enum16 name="Group Index" note="" info="" info_img="" offset="0x0C" visible="true">
+			<option name="A" value="0"/>
+			<option name="B" value="1"/>
+			<option name="C" value="2"/>
+			<option name="D" value="3"/>
+			<option name="E" value="4"/>
+			<option name="F" value="5"/>
+			<option name="G" value="6"/>
+			<option name="H" value="7"/>
+			<option name="I" value="8"/>
+			<option name="J" value="9"/>
+			<option name="K" value="10"/>
+			<option name="L" value="11"/>
+			<option name="M" value="12"/>
+			<option name="N" value="13"/>
+			<option name="O" value="14"/>
+			<option name="P" value="15"/>
+			<option name="Q" value="16"/>
+			<option name="R" value="17"/>
+			<option name="S" value="18"/>
+			<option name="T" value="19"/>
+			<option name="U" value="20"/>
+			<option name="V" value="21"/>
+			<option name="W" value="22"/>
+			<option name="X" value="23"/>
+			<option name="Y" value="24"/>
+			<option name="Z" value="25"/>
+		</enum16>
+	</struct>
+
+	<struct name="Player Starting Locations" note="" info="" info_img="" offset="0xA4" visible="true" size="52">
+		<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+		<float name="Facing" note="radians" info="" info_img="" offset="0x0C" visible="true"/>
+		
+		<short name="Team Index" note="" info="" info_img="" offset="0x10" visible="true"/>
+		<short name="BSP Index" note="" info="" info_img="" offset="0x12" visible="true"/>
+		
+		<enum16 name="Type 0" note="" info="" info_img="" offset="0x14" visible="true">
+			<option name="none" value="00"/>
+			<option name="CTF" value="01"/>
+			<option name="Slayer" value="02"/>
+			<option name="Oddball" value="03"/>
+			<option name="King of the Hill" value="04"/>
+			<option name="Race" value="05"/>
+			<option name="Terminator" value="06"/>
+			<option name="Stub" value="07"/>
+			<option name="Ignored1" value="08"/>
+			<option name="Ignored2" value="09"/>
+			<option name="Ignored3" value="10"/>
+			<option name="Ignored4" value="11"/>
+			<option name="All Games" value="12"/>
+			<option name="All Except CTF" value="13"/>
+			<option name="All Except Race and CTF" value="14"/>
+		</enum16>
+		
+		<enum16 name="Type 1" note="" info="" info_img="" offset="0x16" visible="true">
+			<option name="none" value="00"/>
+			<option name="CTF" value="01"/>
+			<option name="Slayer" value="02"/>
+			<option name="Oddball" value="03"/>
+			<option name="King of the Hill" value="04"/>
+			<option name="Race" value="05"/>
+			<option name="Terminator" value="06"/>
+			<option name="Stub" value="07"/>
+			<option name="Ignored1" value="08"/>
+			<option name="Ignored2" value="09"/>
+			<option name="Ignored3" value="10"/>
+			<option name="Ignored4" value="11"/>
+			<option name="All Games" value="12"/>
+			<option name="All Except CTF" value="13"/>
+			<option name="All Except Race and CTF" value="14"/>
+		</enum16>
+		
+		<enum16 name="Type 2" note="" info="" info_img="" offset="0x18" visible="true">
+			<option name="none" value="00"/>
+			<option name="CTF" value="01"/>
+			<option name="Slayer" value="02"/>
+			<option name="Oddball" value="03"/>
+			<option name="King of the Hill" value="04"/>
+			<option name="Race" value="05"/>
+			<option name="Terminator" value="06"/>
+			<option name="Stub" value="07"/>
+			<option name="Ignored1" value="08"/>
+			<option name="Ignored2" value="09"/>
+			<option name="Ignored3" value="10"/>
+			<option name="Ignored4" value="11"/>
+			<option name="All Games" value="12"/>
+			<option name="All Except CTF" value="13"/>
+			<option name="All Except Race and CTF" value="14"/>
+		</enum16>
+		
+		<enum16 name="Type 3" note="" info="" info_img="" offset="0x1A" visible="true">
+			<option name="none" value="00"/>
+			<option name="CTF" value="01"/>
+			<option name="Slayer" value="02"/>
+			<option name="Oddball" value="03"/>
+			<option name="King of the Hill" value="04"/>
+			<option name="Race" value="05"/>
+			<option name="Terminator" value="06"/>
+			<option name="Stub" value="07"/>
+			<option name="Ignored1" value="08"/>
+			<option name="Ignored2" value="09"/>
+			<option name="Ignored3" value="10"/>
+			<option name="Ignored4" value="11"/>
+			<option name="All Games" value="12"/>
+			<option name="All Except CTF" value="13"/>
+			<option name="All Except Race and CTF" value="14"/>
+		</enum16>
+	</struct>
+</struct>
+
+<struct name="Command Lists" note="" info="" info_img="" offset="0x438" visible="true" size="96">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask32 name="flags" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Allow Initiative" value="31"/>
+		<option name="Allow Targeting" value="30"/>
+		<option name="Disable Looking" value="29"/>
+		<option name="Disable Communication" value="28"/>
+		<option name="Disable Falling Damage" value="27"/>
+		<option name="Manual BSP Index" value="26"/>
+	</bitmask32>
+	
+	<short name="Manual BSP Index" note="" info="Structure BSP Index that this encounter belongs to; ignored unless 'manual bsp index specified' flag is checked; if not checked, will try to find this automatically, but may fail in areas of overlapping geometry." info_img="" offset="0x2C" visible="true"/>
+	
+	<struct name="Commands" note="" info="" info_img="" offset="0x30" visible="true" size="32">
+		<enum16 name="Atom Type" note="" info="" info_img="" offset="0x00" visible="true">
+			<option name="Pause" value="00"/>
+			<option name="Go To" value="01"/>
+			<option name="Go To and Face" value="02"/>
+			<option name="Move in Direction" value="03"/>
+			<option name="Look" value="04"/>
+			<option name="Animation Mode" value="05"/>
+			<option name="Crouch" value="06"/>
+			<option name="Shoot" value="07"/>
+			<option name="Grenade" value="08"/>
+			<option name="Vehicle" value="09"/>
+			<option name="Running Jump" value="10"/>
+			<option name="Targeted Jump" value="11"/>
+			<option name="Script" value="12"/>
+			<option name="Animate" value="13"/>
+			<option name="Recording" value="14"/>
+			<option name="Action" value="15"/>
+			<option name="Vocalize" value="16"/>
+			<option name="Targeting" value="17"/>
+			<option name="Initiatave" value="18"/>
+			<option name="Wait" value="19"/>
+			<option name="Loop" value="20"/>
+			<option name="Die" value="21"/>
+			<option name="Move Immediate" value="22"/>
+			<option name="Look Random" value="23"/>
+			<option name="Look Player" value="24"/>
+			<option name="Look Object" value="25"/>
+			<option name="Set Radius" value="26"/>
+			<option name="Teleport" value="27"/>
+		</enum16>
+		
+		<short name="Atom Modifier" note="" info="" info_img="" offset="0x02" visible="true"/>
+		
+		<float name="Parameter 1" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Parameter 2" note="" info="" info_img="" offset="0x08" visible="true"/>
+		
+		<index name="Animation" note="" info="" info_img="" offset="0x10" reflexive="main:AI Animation References" visible="true"/>
+		<index name="Script" note="" info="" info_img="" offset="0x12" reflexive="main:Scripts" visible="true"/>
+		<index name="Recording" note="" info="" info_img="" offset="0x14" reflexive="main:AI Recording References" visible="true"/>
+		
+		<index name="Object Name" note="" info="" info_img="" offset="0x18" reflexive="main:Object Names" visible="true"/>
+	</struct>
+
+	<struct name="Points" note="" info="" info_img="" offset="0x3C" visible="true" size="20">
+		<float name="Position: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<float name="Position: y" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Position: z" note="" info="" info_img="" offset="0x08" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="AI Animation References" note="" info="" info_img="" offset="0x444" visible="true" size="60">
+	<string32 name="Animation Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<dependency name="Animation Graph" note="" info="" info_img="" offset="0x20" visible="true"/>
+</struct>
+
+<struct name="AI Script References" note="" info="" info_img="" offset="0x450" visible="true" size="40">
+	<string32 name="Script Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="AI Recording References" note="" info="" info_img="" offset="0x45C" visible="true" size="40">
+	<string32 name="Recording Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="AI Conversations" note="" info="" info_img="" offset="0x468" visible="true" size="116">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Stop if Death" note="" info="actor aborts if any participant dies" info_img="" value="31"/>
+		<option name="Stop if Damaged" note="" info="actor aborts if he's damaged" info_img="" value="30"/>
+		<option name="Stop if Visible Enemy" note="" info="actor aborts if they see an enemy" info_img="" value="29"/>
+		<option name="Stop if Alerted to Enemy" note="" info="actor aborts if they suspect an enemy" info_img="" value="28"/>
+		<option name="Player Must Be Visible" note="" info="only when they can SEE an enemy" info_img="" value="27"/>
+		<option name="Stop Other Actions" note="" info="stop to chat" info_img="" value="26"/>
+		<option name="Keep Trying to Play" note="" info="if fails initially, will keep testing to see when it can play" info_img="" value="25"/>
+		<option name="Player Must Be Looking" note="" info="only starts when player looks at a participant" info_img="" value="24"/>
+	</bitmask32>
+	
+	<float name="Trigger Distance" note="world units" info="player must be this far away before conversation can trigger" info_img="" offset="0x24" visible="true"/>
+	<float name="Run-to-Player Distance" note="world units" info="if 'involves player' flag is set, conversation participants will run this close to the player before speaking" info_img="" offset="0x28" visible="true"/>
+
+	<struct name="Participants" note="" info="" info_img="" offset="0x50" visible="true" size="84">
+		<bitmask32 name="Flags" note="" info="" info_img="" offset="0x02" visible="true">
+			<option name="Optional" note="" info="conversation can continue without participants" info_img="" value="31"/>
+			<option name="Has Alternate" note="" info="if nobody found, use what's flagged 'is alternate', ie. radio chatter" info_img="" value="30"/>
+			<option name="Is Alternate" note="" info="only used if someone 'has alternate'" info_img="" value="29"/>
+		</bitmask32>
+		
+		<enum16 name="Selection Type" note="" info="" info_img="" offset="0x04" visible="true">
+			<option name="Friendly Actor" value="0"/>
+			<option name="Disembodied" value="1"/>
+			<option name="In Player's Vehicle" value="2"/>
+			<option name="Not In a Vehicle" value="3"/>
+			<option name="Prefer Sergeant" value="4"/>
+			<option name="Any Actor" value="5"/>
+			<option name="Radio Unit" value="6"/>
+			<option name="Radio Sergeant" value="7"/>
+		</enum16>
+		
+		<enum16 name="Actor Type" note="" info="" info_img="" offset="0x06" visible="true">
+			<option name="Elite" value="00"/>
+			<option name="Jackal" value="01"/>
+			<option name="Grunt" value="02"/>
+			<option name="Hunter" value="03"/>
+			<option name="Engineer" value="04"/>
+			<option name="Assassin" value="05"/>
+			<option name="Player" value="06"/>
+			<option name="Marine" value="07"/>
+			<option name="Crew" value="08"/>
+			<option name="Combat Form" value="09"/>
+			<option name="Infection Form" value="10"/>
+			<option name="Carrier Form" value="11"/>
+			<option name="Monitor" value="12"/>
+			<option name="Sentinel" value="13"/>
+			<option name="None" value="14"/>
+			<option name="Mounted Weapon" value="15"/>
+		</enum16>
+		
+		<index name="Use This Object" note="" info="if a unit with this name exists, we try to pick them to start the conversation" info_img="" offset="0x08" reflexive="main:Object Names" visible="true"/>
+		<index name="Set New Name" note="" info="once we pick a unit, we name it this" info_img="" offset="0x0A" reflexive="main:Object Names" visible="true"/>
+		
+		<string32 name="Encounter Name" note="" info="" info_img="" offset="0x24" visible="true"/>
+	</struct>
+
+	<struct name="Lines" note="" info="" info_img="" offset="0x5C" visible="true" size="124">
+		<bitmask32 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+			<option name="Addressee Look at Speaker" value="31"/>
+			<option name="Everyone Look at Speaker" value="30"/>
+			<option name="Everyone Look at Addressee" value="29"/>
+			<option name="Wait Until Told to Advance" value="28"/>
+			<option name="Wait Until Speaker Nearby" value="27"/>
+			<option name="Wait Until Everyone Nearby" value="26"/>
+		</bitmask32>
+		
+		<enum16 name="Addressee" note="" info="" info_img="" offset="0x04" visible="true">
+			<option name="None" value="0"/>
+			<option name="Player" value="1"/>
+			<option name="Participant" value="2"/>
+		</enum16>
+		
+		<float name="Line Delay Time" note="" info="" info_img="" offset="0x0C" visible="true"/>
+		
+		<dependency name="Variant 1" note="" info="" info_img="" offset="0x1C" visible="true"/>
+		<dependency name="Variant 2" note="" info="" info_img="" offset="0x2C" visible="true"/>
+		<dependency name="Variant 3" note="" info="" info_img="" offset="0x3C" visible="true"/>
+		<dependency name="Variant 4" note="" info="" info_img="" offset="0x4C" visible="true"/>
+		<dependency name="Variant 5" note="" info="" info_img="" offset="0x5C" visible="true"/>
+		<dependency name="Variant 6" note="" info="" info_img="" offset="0x6C" visible="true"/>
+	</struct>
+</struct>
+
+<long name="Script Syntax Data" note="bytes" info="" info_img="" offset="0x474" visible="true"/>
+<long name="Script String Data" note="bytes" info="" info_img="" offset="0x488" visible="true"/>
+
+<struct name="Scripts" note="" info="" info_img="" offset="0x49C" visible="true" size="92">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<enum16 name="Script Type" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Startup" value="0"/>
+		<option name="Dormant" value="1"/>
+		<option name="Continuous" value="2"/>
+		<option name="Static" value="3"/>
+		<option name="Stub" value="4"/>
+	</enum16>
+	
+	<enum16 name="Return Type" note="" info="" info_img="" offset="0x22" visible="true">
+		<option name="Unparsed" value="0"/>
+		<option name="Special form" value="1"/>
+		<option name="Function Name" value="2"/>
+		<option name="Passthrough" value="3"/>
+		<option name="Void" value="4"/>
+		<option name="Boolean" value="5"/>
+		<option name="Real" value="6"/>
+		<option name="Short" value="7"/>
+		<option name="Long" value="8"/>
+		<option name="String" value="9"/>
+		<option name="Script" value="10"/>
+		<option name="Trigger Volume" value="11"/>
+		<option name="Cutscene Flag" value="12"/>
+		<option name="Cutscene Camera Point" value="13"/>
+		<option name="Cutscene Title" value="14"/>
+		<option name="Cutscene Recording" value="15"/>
+		<option name="Device Group" value="16"/>
+		<option name="AI" value="17"/>
+		<option name="AI Command List" value="18"/>
+		<option name="Starting Profile" value="19"/>
+		<option name="Conversation" value="20"/>
+		<option name="Navpoint" value="21"/>
+		<option name="HUD Message" value="22"/>
+		<option name="Object List" value="23"/>
+		<option name="Sound" value="24"/>
+		<option name="Effect" value="25"/>
+		<option name="Damage" value="26"/>
+		<option name="Looping Sound" value="27"/>
+		<option name="Animation Graph" value="28"/>
+		<option name="Actor Variant" value="29"/>
+		<option name="Damage Effect" value="30"/>
+		<option name="Object Definition" value="31"/>
+		<option name="Game Difficulty" value="32"/>
+		<option name="Team" value="33"/>
+		<option name="AI Default State" value="34"/>
+		<option name="Actor Type" value="35"/>
+		<option name="HUD Corner" value="36"/>
+		<option name="Object" value="37"/>
+		<option name="Unit" value="38"/>
+		<option name="Vehicle" value="39"/>
+		<option name="Weapon" value="40"/>
+		<option name="Device" value="41"/>
+		<option name="Scenery" value="42"/>
+		<option name="Object Name" value="43"/>
+		<option name="Unit Name" value="44"/>
+		<option name="Vehicle Name" value="45"/>
+		<option name="Weapon Name" value="46"/>
+		<option name="Device Name" value="47"/>
+		<option name="Scenery Name" value="48"/>
+	</enum16>
+	
+	<long name="Root Expression Index" note="" info="" info_img="" offset="0x24" visible="true"/>
+</struct>
+
+<struct name="Globals" note="" info="" info_img="" offset="0x4A8" visible="true" size="92">
+	<string32 name="Name" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<enum16 name="Type" note="" info="" info_img="" offset="0x20" visible="true">
+		<option name="Unparsed" value="0"/>
+		<option name="Special form" value="1"/>
+		<option name="Function Name" value="2"/>
+		<option name="Passthrough" value="3"/>
+		<option name="Void" value="4"/>
+		<option name="Boolean" value="5"/>
+		<option name="Real" value="6"/>
+		<option name="Short" value="7"/>
+		<option name="Long" value="8"/>
+		<option name="String" value="9"/>
+		<option name="Script" value="10"/>
+		<option name="Trigger Volume" value="11"/>
+		<option name="Cutscene Flag" value="12"/>
+		<option name="Cutscene Camera Point" value="13"/>
+		<option name="Cutscene Title" value="14"/>
+		<option name="Cutscene Recording" value="15"/>
+		<option name="Device Group" value="16"/>
+		<option name="AI" value="17"/>
+		<option name="AI Command List" value="18"/>
+		<option name="Starting Profile" value="19"/>
+		<option name="Conversation" value="20"/>
+		<option name="Navpoint" value="21"/>
+		<option name="HUD Message" value="22"/>
+		<option name="Object List" value="23"/>
+		<option name="Sound" value="24"/>
+		<option name="Effect" value="25"/>
+		<option name="Damage" value="26"/>
+		<option name="Looping Sound" value="27"/>
+		<option name="Animation Graph" value="28"/>
+		<option name="Actor Variant" value="29"/>
+		<option name="Damage Effect" value="30"/>
+		<option name="Object Definition" value="31"/>
+		<option name="Game Difficulty" value="32"/>
+		<option name="Team" value="33"/>
+		<option name="AI Default State" value="34"/>
+		<option name="Actor Type" value="35"/>
+		<option name="HUD Corner" value="36"/>
+		<option name="Object" value="37"/>
+		<option name="Unit" value="38"/>
+		<option name="Vehicle" value="39"/>
+		<option name="Weapon" value="40"/>
+		<option name="Device" value="41"/>
+		<option name="Scenery" value="42"/>
+		<option name="Object Name" value="43"/>
+		<option name="Unit Name" value="44"/>
+		<option name="Vehicle Name" value="45"/>
+		<option name="Weapon Name" value="46"/>
+		<option name="Device Name" value="47"/>
+		<option name="Scenery Name" value="48"/>
+	</enum16>
+	
+	<long name="Initialization Expression Index" note="" info="" info_img="" offset="0x28" visible="true"/>
+</struct>
+
+<struct name="References" note="" info="" info_img="" offset="0x4B4" visible="true" size="40">
+	<dependency name="Reference" note="" info="custom object names" info_img="" offset="0x18" visible="true"/>
+</struct>
+
+<struct name="Cutscene Flags" note="" info="" info_img="" offset="0x4E4" visible="true" size="92">
+	<string32 name="Name" note="" info="" info_img="" offset="0x04" visible="true"/>
+	
+	<float name="Position: x" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	<float name="Facing: y" note="yaw" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Facing: p" note="pitch" info="" info_img="" offset="0x34" visible="true"/>
+</struct>
+
+<struct name="Cutscene Camera Points" note="" info="" info_img="" offset="0x4F0" visible="true" size="104">
+	<string32 name="Name" note="" info="" info_img="" offset="0x04" visible="true"/>
+	
+	<float name="Position: x" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Position: y" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	<float name="Position: z" note="" info="" info_img="" offset="0x30" visible="true"/>
+	<float name="Orientation: y" note="yaw" info="" info_img="" offset="0x34" visible="true"/>
+	<float name="Orientation: p" note="pitch" info="" info_img="" offset="0x38" visible="true"/>
+	<float name="Orientation: r" note="roll" info="" info_img="" offset="0x3C" visible="true"/>
+	<float name="Field of View" note="radians" info="" info_img="" offset="0x40" visible="true"/>
+</struct>
+
+<struct name="Cutscene Titles" note="" info="" info_img="" offset="0x4FC" visible="true" size="96">
+	<string32 name="Name" note="" info="" info_img="" offset="0x04" visible="true"/>
+	
+	<short name="Text Bounds (on screen): t" note="top" info="" info_img="" offset="0x28" visible="true"/>
+	<short name="Text Bounds (on screen): l" note="left" info="" info_img="" offset="0x2A" visible="true"/>
+	<short name="Text Bounds (on screen): b" note="bottom" info="" info_img="" offset="0x2C" visible="true"/>
+	<short name="Text Bounds (on screen): r" note="right" info="" info_img="" offset="0x2E" visible="true"/>
+	<short name="String Index" note="" info="" info_img="" offset="0x30" visible="true"/>
+	
+	<enum16 name="Justification" note="" info="" info_img="" offset="0x34" visible="true">
+		<option name="Left" value="0"/>
+		<option name="Right" value="1"/>
+		<option name="Center" value="2"/>
+	</enum16>
+	
+	<colorbyte name="Text Color" note="" info="" info_img="" offset="0x3C" visible="true"/>
+	<colorbyte name="Shadow Color" note="" info="" info_img="" offset="0x40" visible="true"/>
+	
+	<float name="Fade In Time" note="entered number ÷ 30 = count in seconds" info="" info_img="" offset="0x44" visible="true"/>
+	<float name="Up Time" note="entered number ÷ about 57 = count in seconds" info="" info_img="" offset="0x48" visible="true"/>
+	<float name="Fade Out Time" note="entered number ÷ 30 = count in seconds" info="" info_img="" offset="0x4C" visible="true"/>
+</struct>
+
+<dependency name="Custom Object Names" note="" info="" info_img="" offset="0x574" visible="true"/>
+<dependency name="Ingame Help Text" note="" info="" info_img="" offset="0x584" visible="true"/>
+<dependency name="HUD Messages" note="" info="" info_img="" offset="0x594" visible="true"/>
+
+<struct name="Structure BSPS" note="" info="" info_img="" offset="0x5A4" visible="true" size="32">
+	<int32 name="BSP start" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<int32 name="BSP size" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<int32 name="BSP magic" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<note words="the next four bytes at 0x0C are always zero"/>
+	<dependency name="Structure BSP" note="" info="" info_img="" offset="0x10" visible="true"/>
+</struct>
+</plugin>

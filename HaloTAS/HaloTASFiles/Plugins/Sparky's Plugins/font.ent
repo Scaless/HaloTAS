@@ -1,0 +1,36 @@
+<plugin class="font" author="sparky" version="4.0" headersize="Main">
+
+<short name="Flags" note="" info="" info_img="" offset="0x00" visible="true"/>
+<short name="Ascending Height" note="" info="" info_img="" offset="0x04" visible="true"/>
+<short name="Descending Height" note="" info="" info_img="" offset="0x06" visible="true"/>
+<short name="Leading Height" note="" info="" info_img="" offset="0x08" visible="true"/>
+<short name="Leading Width" note="" info="" info_img="" offset="0x0A" visible="true"/>
+
+<struct name="Character Tables" note="" info="" info_img="" offset="0x30" visible="true" size="12">
+
+	<struct name="Character Table" note="" info="" info_img="" offset="0x00" visible="true" size="2">
+
+		<index name="Character Index" note="" info="" info_img="" offset="0x00" reflexive="main:Characters" visible="true"/>
+
+	</struct>
+
+</struct>
+
+<dependency name="Bold" note="" info="" info_img="" offset="0x3C" visible="true"/>
+<dependency name="Italic" note="" info="" info_img="" offset="0x4C" visible="true"/>
+<dependency name="Condense" note="" info="" info_img="" offset="0x5C" visible="true"/>
+<dependency name="Underline" note="" info="" info_img="" offset="0x6C" visible="true"/>
+
+<struct name="Characters" note="" info="" info_img="" offset="0x7C" visible="true" size="20">
+	<short name="Character" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="Character Width" note="" info="" info_img="" offset="0x02" visible="true"/>
+	<short name="Bitmap Width" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<short name="Bitmap Height" note="" info="" info_img="" offset="0x06" visible="true"/>
+	<short name="Bitmap Origin X" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<short name="Bitmap Origin Y" note="" info="" info_img="" offset="0x0A" visible="true"/>
+	<short name="Hardware Character Index" note="" info="" info_img="" offset="0x0C" visible="true"/>
+
+	<short name="Pixels Offset" note="" info="Sparky says, 'Don't touch this, data type unsupported by Eschaton'" info_img="" offset="0x0E" visible="true"/>
+</struct>
+
+</plugin>

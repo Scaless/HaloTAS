@@ -1,0 +1,28 @@
+<plugin class="ant!" author="sparky" version="4.0" headersize="Main">
+
+<string32 name="Attachment Marker Name" note="" info="" info_img="" offset="0x0" visible="true"/>
+
+<dependency name="Bitmaps" note="" info="" info_img="" offset="0x20" visible="true"/>
+<dependency name="Physics" note="" info="" info_img="" offset="0x30" visible="true"/>
+
+<float name="Spring Strength Coefficient" note="" info="larger values make the spring stronger" info_img="" offset="0x90" visible="true"/>
+<float name="Falloff Pixels" note="" info="" info_img="" offset="0x94" visible="true"/>
+<float name="Cutoff Pixels" note="" info="" info_img="" offset="0x98" visible="true"/>
+
+<struct name="Vertices" note="" info="" info_img="" offset="0xC4" visible="true" size="128">
+	<float name="Spring Strength Coefficient" note="" info="larger values make the spring stronger" info_img="" offset="0x00" visible="true"/>
+	<float name="Angles: y" note="radians" info="direction toward next vertex" info_img="" offset="0x1C" visible="true"/>
+	<float name="Angles: p" note="radians" info="direction toward next vertex" info_img="" offset="0x20" visible="true"/>
+	<float name="Length" note="world units" info="distance between this vertex and the next" info_img="" offset="0x24" visible="true"/>
+	
+	<short name="Sequence Index" note="" info="bitmap group sequence index for this vertex's texture" info_img="" offset="0x28" visible="true"/>
+	
+	<colorARGB name="Color" note="" info="color at this vertex" info_img="" offset="0x2C" visible="true"/>
+	<colorARGB name="LOD Color" note="" info="color at this vertex for the low level of detail line primitives" info_img="" offset="0x3C" visible="true"/>
+	
+	<float name="Origin Offset: x" note="" info="tested by 002" info_img="" offset="0x74" visible="true"/>
+	<float name="Origin Offset: y" note="" info="tested by 002" info_img="" offset="0x78" visible="true"/>
+	<float name="Origin Offset: z" note="" info="tested by 002" info_img="" offset="0x7C" visible="true"/>
+</struct>
+
+</plugin>

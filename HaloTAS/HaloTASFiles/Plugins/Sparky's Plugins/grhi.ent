@@ -1,0 +1,472 @@
+<plugin class="grhi" author="sparky" version="4.0" headersize="Main">
+
+<!-- COMMENTS LIKE THESE DESIGNATE TEMPLATE-READY SECTIONS -->
+
+<enum16 name="Grenade HUD Screen Alignment.Anchor" note="" info="" info_img="" offset="0x00" visible="true">
+	<option name="Top Left" value="00"/>
+	<option name="Top Right" value="01"/>
+	<option name="Bottom Left" value="02"/>
+	<option name="Bottom Right" value="03"/>
+	<option name="Center" value="04"/>
+</enum16>
+
+<!-- GRENADE HUD BACKGROUND (1) -->
+
+<short name="Grenade HUD Background.Anchor Offset: x" note="" info="" info_img="" offset="0x24" visible="true"/>
+<short name="Grenade HUD Background.Anchor Offset: y" note="" info="" info_img="" offset="0x26" visible="true"/>
+
+<float name="Grenade HUD Background.Width Scale" note="" info="" info_img="" offset="0x28" visible="true"/>
+<float name="Grenade HUD Background.Height Scale" note="" info="" info_img="" offset="0x2C" visible="true"/>
+
+<bitmask16 name="Grenade HUD Background.Scaling Flags" note="" info="" info_img="" offset="0x30" visible="true">
+	<option name="Don't Scale Offset" value="15"/>
+	<option name="Don't Scale Size" value="14"/>
+	<option name="Use High-Resolution Scale" value="13"/>
+</bitmask16>
+
+<dependency name="Grenade HUD Background.Interface Bitmap" note="" info="" info_img="" offset="0x48" visible="true"/>
+
+<colorbyte name="Grenade HUD Background.Default Color" note="" info="" info_img="" offset="0x58" visible="true"/>
+<colorbyte name="Grenade HUD Background.Flashing Color" note="" info="" info_img="" offset="0x5C" visible="true"/>
+
+<float name="Grenade HUD Background.Flash Period" note="" info="" info_img="" offset="0x60" visible="true"/>
+<float name="Grenade HUD Background.Flash Delay" note="" info="" info_img="" offset="0x64" visible="true"/>
+
+<short name="Grenade HUD Background.Number of Flashes" note="" info="" info_img="" offset="0x68" visible="true"/>
+
+<bitmask8 name="Grenade HUD Background.Flash Flags" note="" info="" info_img="" offset="0x6A" visible="true">
+	<option name="Reverse Default / Flashing Colors" value="07"/>
+</bitmask8>
+
+<float name="Grenade HUD Background.Flash Length" note="" info="" info_img="" offset="0x6C" visible="true"/>
+
+<colorbyte name="Grenade HUD Background.Disabled Color" note="" info="" info_img="" offset="0x70" visible="true"/>
+
+<short name="Grenade HUD Background.Sequence Index" note="" info="" info_img="" offset="0x78" visible="true"/>
+
+<!-- GRENADE HUD BACKGROUND (1) MULTITEXTURE OVERLAY -->
+
+<struct name="Grenade HUD Background.MultiTexture Overlay" note="" info="" info_img="" offset="0x7C" visible="true" size="480">
+	<short name="Type" note="" info="" info_img="" offset="0x02" visible="true"/>
+	
+	<enum16 name="Framebuffer Blend Function" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Alpha Blend" value="00"/>
+		<option name="Multiply" value="01"/>
+		<option name="Double Multiply" value="02"/>
+		<option name="Add" value="03"/>
+		<option name="Subtract" value="04"/>
+		<option name="Component Minimum" value="05"/>
+		<option name="Component Maximum" value="06"/>
+		<option name="Alpha-Multiply Add" value="07"/>
+	</enum16>
+	
+	<enum16 name="Anchors.Primary Anchor" note="" info="" info_img="grhi MultiTex Overlay.Anchors.png" offset="0x28" visible="true">
+		<option name="Texture" value="00"/>
+		<option name="Screen" value="01"/>
+	</enum16>
+	
+	<enum16 name="Anchors.Secondary Anchor" note="" info="" info_img="grhi MultiTex Overlay.Anchors.png" offset="0x2A" visible="true">
+		<option name="Texture" value="00"/>
+		<option name="Screen" value="01"/>
+	</enum16>
+	
+	<enum16 name="Anchors.Tertiary Anchor" note="" info="" info_img="grhi MultiTex Overlay.Anchors.png" offset="0x2C" visible="true">
+		<option name="Texture" value="00"/>
+		<option name="Screen" value="01"/>
+	</enum16>
+	
+	<enum16 name="Blending Function.0 to 1 Blending Function" note="" info="" info_img="grhi MultiTex Overlay.Blending Function.png" offset="0x2E" visible="true">
+		<option name="Add" value="00"/>
+		<option name="Subtract" value="01"/>
+		<option name="Multiply" value="02"/>
+		<option name="Multiply 2x" value="03"/>
+		<option name="Dot" value="04"/>
+	</enum16>
+	
+	<enum16 name="Blending Function.1 to 2 Blending Function" note="" info="" info_img="grhi MultiTex Overlay.Blending Function.png" offset="0x30" visible="true">
+		<option name="Add" value="00"/>
+		<option name="Subtract" value="01"/>
+		<option name="Multiply" value="02"/>
+		<option name="Multiply 2x" value="03"/>
+		<option name="Dot" value="04"/>
+	</enum16>
+	
+	<float name="Map Scales.Primary Scale: x" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x34" visible="true"/>
+	<float name="Map Scales.Primary Scale: y" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x38" visible="true"/>
+	<float name="Map Scales.Secondary Scale: x" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x3C" visible="true"/>
+	<float name="Map Scales.Secondary Scale: y" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x40" visible="true"/>
+	<float name="Map Scales.Tertiary Scale: x" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x44" visible="true"/>
+	<float name="Map Scales.Tertiary Scale: y" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x48" visible="true"/>
+	
+	<float name="Map Offsets.Primary Offset: x" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x4C" visible="true"/>
+	<float name="Map Offsets.Primary Offset: y" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x50" visible="true"/>
+	<float name="Map Offsets.Secondary Offset: x" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x54" visible="true"/>
+	<float name="Map Offsets.Secondary Offset: y" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x58" visible="true"/>
+	<float name="Map Offsets.Tertiary Offset: x" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x5C" visible="true"/>
+	<float name="Map Offsets.Tertiary Offset: y" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x60" visible="true"/>
+	
+	<dependency name="Map.Primary" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x64" visible="true"/>
+	<dependency name="Map.Secondary" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x74" visible="true"/>
+	<dependency name="Map.Tertiary" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x84" visible="true"/>
+	
+	<enum16 name="Map.Primary Wrap Mode" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x94" visible="true">
+		<option name="Clamp" value="00"/>
+		<option name="Wrap" value="01"/>
+	</enum16>
+	
+	<enum16 name="Map.Secondary Wrap Mode" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x96" visible="true">
+		<option name="Clamp" value="00"/>
+		<option name="Wrap" value="01"/>
+	</enum16>
+	
+	<enum16 name="Map.Tertiary Wrap Mode" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x98" visible="true">
+		<option name="Clamp" value="00"/>
+		<option name="Wrap" value="01"/>
+	</enum16>
+	
+	<struct name="Effectors" note="" info="" info_img="" offset="0x154" visible="true" size="220">
+		<enum16 name="Source / Destination.Destination Type" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Source,Destination.png" offset="0x40" visible="true">
+			<option name="Tint (0 - 1 only)" value="00"/>
+			<option name="Horizontal Offset" value="01"/>
+			<option name="Vertical Offset" value="02"/>
+			<option name="Fade (0 - 1 only)" value="03"/>
+		</enum16>
+		
+		<enum16 name="Source / Destination.Destination" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Source,Destination.png" offset="0x42" visible="true">
+			<option name="Geometry Offset" value="00"/>
+			<option name="Primary Map" value="01"/>
+			<option name="Secondary Map" value="02"/>
+			<option name="Tertiary Map" value="03"/>
+		</enum16>
+		
+		<enum16 name="Source / Destination.Source" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Source,Destination.png" offset="0x44" visible="true">
+			<option name="Player Pitch" value="00"/>
+			<option name="Player Pitch Tangent" value="01"/>
+			<option name="Player Yaw" value="02"/>
+			<option name="Weapon Ammo (total)" value="03"/>
+			<option name="Weapon Ammo (loaded)" value="04"/>
+			<option name="Weapon Heat" value="05"/>
+			<option name="Explicit (uses low bound)" value="06"/>
+			<option name="Weapon Zoom Level" value="07"/>
+		</enum16>
+		
+		<float name="In / Out Bounds.In Bounds: from" note="source units" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x48" visible="true"/>
+		<float name="In / Out Bounds.In Bounds: to" note="source units" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x4C" visible="true"/>
+		<float name="In / Out Bounds.Out Bounds: from" note="pixels" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x50" visible="true"/>
+		<float name="In / Out Bounds.Out Bounds: to" note="pixels" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x54" visible="true"/>
+		
+		<colorRGB name="Tint Color Bounds.Tint Color Lower Bound" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Tint Color Bounds.png" offset="0x98" visible="true"/>
+		<colorRGB name="Tint Color Bounds.Tint Color Upper Bound" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Tint Color Bounds.png" offset="0xA4" visible="true"/>
+		
+		<enum16 name="Periodic Functions.Periodic Function" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB0" visible="true">
+			<option name="One" value="00"/>
+			<option name="Zero" value="01"/>
+			<option name="Cosine" value="02"/>
+			<option name="Cosine (variable period)" value="03"/>
+			<option name="Diagonal Wave" value="04"/>
+			<option name="Diagonal Wave (variable period)" value="05"/>
+			<option name="Slide" value="06"/>
+			<option name="Slide (variable period)" value="07"/>
+			<option name="Noise" value="08"/>
+			<option name="Jitter" value="09"/>
+			<option name="Wander" value="10"/>
+			<option name="Spark" value="11"/>
+		</enum16>
+		
+		<float name="Periodic Functions.Function Period" note="seconds" info="" info_img="grhi MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB4" visible="true"/>
+		<float name="Periodic Functions.Function Phase" note="seconds" info="" info_img="grhi MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB8" visible="true"/>
+	</struct>
+</struct>
+
+<!-- TOTAL GRENADES BACKGROUND (2) -->
+
+<short name="Total Grenades Background.Anchor Offset: x" note="" info="" info_img="" offset="0x8C" visible="true"/>
+<short name="Total Grenades Background.Anchor Offset: y" note="" info="" info_img="" offset="0x8E" visible="true"/>
+
+<float name="Total Grenades Background.Width Scale" note="" info="" info_img="" offset="0x90" visible="true"/>
+<float name="Total Grenades Background.Height Scale" note="" info="" info_img="" offset="0x94" visible="true"/>
+
+<bitmask16 name="Total Grenades Background.Scaling Flags" note="" info="" info_img="" offset="0x98" visible="true">
+	<option name="Don't Scale Offset" value="15"/>
+	<option name="Don't Scale Size" value="14"/>
+	<option name="Use High-Resolution Scale" value="13"/>
+</bitmask16>
+
+<dependency name="Total Grenades Background.Interface Bitmap" note="" info="" info_img="" offset="0xB0" visible="true"/>
+
+<colorbyte name="Total Grenades Background.Default Color" note="" info="" info_img="" offset="0xC0" visible="true"/>
+<colorbyte name="Total Grenades Background.Flashing Color" note="" info="" info_img="" offset="0xC4" visible="true"/>
+
+<float name="Total Grenades Background.Flash Period" note="" info="" info_img="" offset="0xC8" visible="true"/>
+<float name="Total Grenades Background.Flash Delay" note="" info="" info_img="" offset="0xCC" visible="true"/>
+
+<short name="Total Grenades Background.Number of Flashes" note="" info="" info_img="" offset="0xD0" visible="true"/>
+
+<bitmask8 name="Total Grenades Background.Flash Flags" note="" info="" info_img="" offset="0xD2" visible="true">
+	<option name="Reverse Default / Flashing Colors" value="07"/>
+</bitmask8>
+
+<float name="Total Grenades Background.Flash Length" note="" info="" info_img="" offset="0xD4" visible="true"/>
+
+<colorbyte name="Total Grenades Background.Disabled Color" note="" info="" info_img="" offset="0xD8" visible="true"/>
+
+<short name="Total Grenades Background.Sequence Index" note="" info="" info_img="" offset="0xE0" visible="true"/>
+
+<!-- TOTAL GRENADES BACKGROUND (2) MULTITEXTURE OVERLAY -->
+
+<struct name="Total Grenades Background.MultiTexture Overlay" note="" info="" info_img="" offset="0xE4" visible="true" size="480">
+	<short name="Type" note="" info="" info_img="" offset="0x02" visible="true"/>
+	
+	<enum16 name="Framebuffer Blend Function" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Alpha Blend" value="00"/>
+		<option name="Multiply" value="01"/>
+		<option name="Double Multiply" value="02"/>
+		<option name="Add" value="03"/>
+		<option name="Subtract" value="04"/>
+		<option name="Component Minimum" value="05"/>
+		<option name="Component Maximum" value="06"/>
+		<option name="Alpha-Multiply Add" value="07"/>
+	</enum16>
+	
+	<enum16 name="Anchors.Primary Anchor" note="" info="" info_img="grhi MultiTex Overlay.Anchors.png" offset="0x28" visible="true">
+		<option name="Texture" value="00"/>
+		<option name="Screen" value="01"/>
+	</enum16>
+	
+	<enum16 name="Anchors.Secondary Anchor" note="" info="" info_img="grhi MultiTex Overlay.Anchors.png" offset="0x2A" visible="true">
+		<option name="Texture" value="00"/>
+		<option name="Screen" value="01"/>
+	</enum16>
+	
+	<enum16 name="Anchors.Tertiary Anchor" note="" info="" info_img="grhi MultiTex Overlay.Anchors.png" offset="0x2C" visible="true">
+		<option name="Texture" value="00"/>
+		<option name="Screen" value="01"/>
+	</enum16>
+	
+	<enum16 name="Blending Function.0 to 1 Blending Function" note="" info="" info_img="grhi MultiTex Overlay.Blending Function.png" offset="0x2E" visible="true">
+		<option name="Add" value="00"/>
+		<option name="Subtract" value="01"/>
+		<option name="Multiply" value="02"/>
+		<option name="Multiply 2x" value="03"/>
+		<option name="Dot" value="04"/>
+	</enum16>
+	
+	<enum16 name="Blending Function.1 to 2 Blending Function" note="" info="" info_img="grhi MultiTex Overlay.Blending Function.png" offset="0x30" visible="true">
+		<option name="Add" value="00"/>
+		<option name="Subtract" value="01"/>
+		<option name="Multiply" value="02"/>
+		<option name="Multiply 2x" value="03"/>
+		<option name="Dot" value="04"/>
+	</enum16>
+	
+	<float name="Map Scales.Primary Scale: x" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x34" visible="true"/>
+	<float name="Map Scales.Primary Scale: y" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x38" visible="true"/>
+	<float name="Map Scales.Secondary Scale: x" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x3C" visible="true"/>
+	<float name="Map Scales.Secondary Scale: y" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x40" visible="true"/>
+	<float name="Map Scales.Tertiary Scale: x" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x44" visible="true"/>
+	<float name="Map Scales.Tertiary Scale: y" note="" info="" info_img="grhi MultiTex Overlay.Map Scales.png" offset="0x48" visible="true"/>
+	
+	<float name="Map Offsets.Primary Offset: x" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x4C" visible="true"/>
+	<float name="Map Offsets.Primary Offset: y" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x50" visible="true"/>
+	<float name="Map Offsets.Secondary Offset: x" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x54" visible="true"/>
+	<float name="Map Offsets.Secondary Offset: y" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x58" visible="true"/>
+	<float name="Map Offsets.Tertiary Offset: x" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x5C" visible="true"/>
+	<float name="Map Offsets.Tertiary Offset: y" note="" info="" info_img="grhi MultiTex Overlay.Map Offsets.png" offset="0x60" visible="true"/>
+	
+	<dependency name="Map.Primary" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x64" visible="true"/>
+	<dependency name="Map.Secondary" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x74" visible="true"/>
+	<dependency name="Map.Tertiary" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x84" visible="true"/>
+	
+	<enum16 name="Map.Primary Wrap Mode" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x94" visible="true">
+		<option name="Clamp" value="00"/>
+		<option name="Wrap" value="01"/>
+	</enum16>
+	
+	<enum16 name="Map.Secondary Wrap Mode" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x96" visible="true">
+		<option name="Clamp" value="00"/>
+		<option name="Wrap" value="01"/>
+	</enum16>
+	
+	<enum16 name="Map.Tertiary Wrap Mode" note="" info="" info_img="grhi MultiTex Overlay.Map.png" offset="0x98" visible="true">
+		<option name="Clamp" value="00"/>
+		<option name="Wrap" value="01"/>
+	</enum16>
+	
+	<struct name="Effectors" note="" info="" info_img="" offset="0x154" visible="true" size="220">
+		<enum16 name="Source / Destination.Destination Type" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Source,Destination.png" offset="0x40" visible="true">
+			<option name="Tint (0 - 1 only)" value="00"/>
+			<option name="Horizontal Offset" value="01"/>
+			<option name="Vertical Offset" value="02"/>
+			<option name="Fade (0 - 1 only)" value="03"/>
+		</enum16>
+		
+		<enum16 name="Source / Destination.Destination" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Source,Destination.png" offset="0x42" visible="true">
+			<option name="Geometry Offset" value="00"/>
+			<option name="Primary Map" value="01"/>
+			<option name="Secondary Map" value="02"/>
+			<option name="Tertiary Map" value="03"/>
+		</enum16>
+		
+		<enum16 name="Source / Destination.Source" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Source,Destination.png" offset="0x44" visible="true">
+			<option name="Player Pitch" value="00"/>
+			<option name="Player Pitch Tangent" value="01"/>
+			<option name="Player Yaw" value="02"/>
+			<option name="Weapon Ammo (total)" value="03"/>
+			<option name="Weapon Ammo (loaded)" value="04"/>
+			<option name="Weapon Heat" value="05"/>
+			<option name="Explicit (uses low bound)" value="06"/>
+			<option name="Weapon Zoom Level" value="07"/>
+		</enum16>
+		
+		<float name="In / Out Bounds.In Bounds: from" note="source units" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x48" visible="true"/>
+		<float name="In / Out Bounds.In Bounds: to" note="source units" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x4C" visible="true"/>
+		<float name="In / Out Bounds.Out Bounds: from" note="pixels" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x50" visible="true"/>
+		<float name="In / Out Bounds.Out Bounds: to" note="pixels" info="" info_img="grhi MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x54" visible="true"/>
+		
+		<colorRGB name="Tint Color Bounds.Tint Color Lower Bound" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Tint Color Bounds.png" offset="0x98" visible="true"/>
+		<colorRGB name="Tint Color Bounds.Tint Color Upper Bound" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Tint Color Bounds.png" offset="0xA4" visible="true"/>
+		
+		<enum16 name="Periodic Functions.Periodic Function" note="" info="" info_img="grhi MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB0" visible="true">
+			<option name="One" value="00"/>
+			<option name="Zero" value="01"/>
+			<option name="Cosine" value="02"/>
+			<option name="Cosine (variable period)" value="03"/>
+			<option name="Diagonal Wave" value="04"/>
+			<option name="Diagonal Wave (variable period)" value="05"/>
+			<option name="Slide" value="06"/>
+			<option name="Slide (variable period)" value="07"/>
+			<option name="Noise" value="08"/>
+			<option name="Jitter" value="09"/>
+			<option name="Wander" value="10"/>
+			<option name="Spark" value="11"/>
+		</enum16>
+		
+		<float name="Periodic Functions.Function Period" note="seconds" info="" info_img="grhi MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB4" visible="true"/>
+		<float name="Periodic Functions.Function Phase" note="seconds" info="" info_img="grhi MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB8" visible="true"/>
+	</struct>
+</struct>
+
+<!-- TOTAL GRENADES NUMBERS (3) -->
+
+<short name="Total Grenades Numbers.Anchor Offset: x" note="" info="" info_img="" offset="0xF4" visible="true"/>
+<short name="Total Grenades Numbers.Anchor Offset: y" note="" info="" info_img="" offset="0xF6" visible="true"/>
+
+<float name="Total Grenades Numbers.Width Scale" note="" info="" info_img="" offset="0xF8" visible="true"/>
+<float name="Total Grenades Numbers.Height Scale" note="" info="" info_img="" offset="0xFC" visible="true"/>
+
+<bitmask16 name="Total Grenades Numbers.Scaling Flags" note="" info="" info_img="" offset="0x100" visible="true">
+	<option name="Don't Scale Offset" value="15"/>
+	<option name="Don't Scale Size" value="14"/>
+	<option name="Use High-Resolution Scale" value="13"/>
+</bitmask16>
+
+<colorbyte name="Total Grenades Numbers.Default Color" note="" info="" info_img="" offset="0x118" visible="true"/>
+<colorbyte name="Total Grenades Numbers.Flashing Color" note="" info="" info_img="" offset="0x11C" visible="true"/>
+
+<float name="Total Grenades Numbers.Flash Period" note="" info="" info_img="" offset="0x120" visible="true"/>
+<float name="Total Grenades Numbers.Flash Delay" note="" info="" info_img="" offset="0x124" visible="true"/>
+
+<short name="Total Grenades Numbers.Number of Flashes" note="" info="" info_img="" offset="0x128" visible="true"/>
+
+<bitmask8 name="Total Grenades Numbers.Flash Flags" note="" info="" info_img="" offset="0x12A" visible="true">
+	<option name="Reverse Default / Flashing Colors" value="07"/>
+</bitmask8>
+
+<float name="Total Grenades Numbers.Flash Length" note="" info="" info_img="" offset="0x12C" visible="true"/>
+
+<colorbyte name="Total Grenades Numbers.Disabled Color" note="" info="" info_img="" offset="0x130" visible="true"/>
+
+<int8 name="Total Grenades Numbers.Maximum Number of Digits" note="" info="" info_img="" offset="0x138" visible="true"/>
+
+<bitmask16 name="Total Grenades Numbers.Flags" note="" info="" info_img="" offset="0x139" visible="true">
+	<option name="Show Leading Zeros" value="15"/>
+	<option name="Only Show When Zoomed" value="14"/>
+	<option name="Draw a Trailing 'm'" value="13"/>
+</bitmask16>
+
+<int8 name="Total Grenades Numbers.Number of Fractional Digits" note="" info="" info_img="" offset="0x13A" visible="true"/>
+<short name="Total Grenades Numbers.Flash Cutoff" note="" info="" info_img="" offset="0x148" visible="true"/>
+
+<dependency name="Total Grenades Overlays.Overlay Bitmap" note="" info="" info_img="" offset="0x14C" visible="true"/>
+
+<!-- OVERLAYS -->
+
+<struct name="Overlays" note="" info="" info_img="" offset="0x15C" visible="true" size="136">
+	<short name="Anchor Offset: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<short name="Anchor Offset: y" note="" info="" info_img="" offset="0x02" visible="true"/>
+	
+	<float name="Width Scale" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Height Scale" note="" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<bitmask16 name="Scaling Flags" note="" info="" info_img="" offset="0x0C" visible="true">
+		<option name="Don't Scale Offset" value="15"/>
+		<option name="Don't Scale Size" value="14"/>
+		<option name="Use High-Resolution Scale" value="13"/>
+	</bitmask16>
+	
+	<colorbyte name="Default Color" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<colorbyte name="Flashing Color" note="" info="" info_img="" offset="0x28" visible="true"/>
+	
+	<float name="Flash Period" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	<float name="Flash Delay" note="" info="" info_img="" offset="0x30" visible="true"/>
+	
+	<short name="Number of Flashes" note="" info="" info_img="" offset="0x34" visible="true"/>
+	
+	<bitmask8 name="Flash Flags" note="" info="" info_img="" offset="0x36" visible="true">
+		<option name="Reverse Default / Flashing Colors" value="07"/>
+	</bitmask8>
+	
+	<float name="Flash Length" note="" info="" info_img="" offset="0x38" visible="true"/>
+	
+	<colorbyte name="Disabled Color" note="" info="" info_img="" offset="0x3C" visible="true"/>
+	
+	<float name="Frame Rate" note="" info="" info_img="" offset="0x44" visible="true"/>
+	
+	<short name="Sequence Index" note="" info="" info_img="" offset="0x48" visible="true"/>
+	
+	<bitmask16 name="Type" note="" info="" info_img="" offset="0x4A" visible="true">
+		<option name="Show on Flashing" value="15"/>
+		<option name="Show on Empty" value="14"/>
+		<option name="Show on Default" value="13"/>
+		<option name="Show Always" value="12"/>
+	</bitmask16>
+	
+	<bitmask8 name="Flags" note="" info="" info_img="" offset="0x4C" visible="true">
+		<option name="Flashes When Active" value="07"/>
+	</bitmask8>
+</struct>
+
+<!-- WARNING SOUNDS -->
+
+<struct name="Warning Sounds" note="" info="" info_img="" offset="0x168" visible="true" size="56">
+	<dependency name="Sound" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask16 name="Latched To" note="" info="" info_img="" offset="0x10" visible="true">
+		<option name="Low Grenade Count" value="15"/>
+		<option name="No Grenades Left" value="14"/>
+		<option name="Throw on No Grenades" value="13"/>
+	</bitmask16>
+	
+	<float name="Scale" note="" info="" info_img="" offset="0x14" visible="true"/>
+</struct>
+
+<!-- MESSAGING INFORMATION -->
+
+<short name="Messaging Information.Sequence Index" note="" info="into the global HUD icon bitmap" info_img="" offset="0x1B8" visible="true"/>
+<short name="Messaging Information.Width Offset" note="" info="extra spacing beyond bitmap width for text alignment" info_img="" offset="0x1BA" visible="true"/>
+<short name="Messaging Information.Offset From Reference Corner: x" note="" info="" info_img="" offset="0x1BC" visible="true"/>
+<short name="Messaging Information.Offset From Reference Corner: y" note="" info="" info_img="" offset="0x1BE" visible="true"/>
+
+<colorbyte name="Messaging Information.Override Icon Color" note="" info="" info_img="" offset="0x1C0" visible="true"/>
+
+<int8 name="Messaging Information.Frame Rate" note="0 - 30 only" info="" info_img="" offset="0x1C4" visible="true"/>
+
+<bitmask16 name="Messaging Information.Flags" note="" info="" info_img="" offset="0x1C5" visible="true">
+	<option name="Use Text From String_List Instead" value="15"/>
+	<option name="Override Default Color" value="14"/>
+	<option name="Width Offset is Absolute Icon Width" value="13"/>
+</bitmask16>
+
+<short name="Messaging Information.Text Index" note="" info="" info_img="" offset="0x1C6" visible="true"/>
+
+</plugin>

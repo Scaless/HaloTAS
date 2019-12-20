@@ -15,6 +15,7 @@ struct tas_info_input
 	bool loadPlayback = false;
 	bool forceSimulate = true;
 	bool updateViewPos = true;
+	bool disable_cutscene_fps_cap = true;
 
 	tas_overlay_render_options overlayOptions;
 };

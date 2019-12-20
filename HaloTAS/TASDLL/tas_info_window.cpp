@@ -271,6 +271,16 @@ void tas_info_window::render_tas()
 			gEngine.core_load();
 		}
 
+		if (ImGui::Checkbox("Cutscene FPS Unlock", &currentInput.disable_cutscene_fps_cap)) {
+			auto& gEngine = halo_engine::get();
+			if (currentInput.disable_cutscene_fps_cap) {
+				gEngine.disable_cutscene_fps_cap();
+			}
+			else {
+				gEngine.enable_cutscene_fps_cap();
+			}
+		}
+
 		ImGui::TreePop();
 	}
 
@@ -293,13 +303,27 @@ void tas_info_window::render_tas()
 			*GAME_SPEED = 1;
 		}
 
+		int advanceMultiplier = 1;
+		bool shiftDown = GetAsyncKeyState(VK_SHIFT);
+		bool controlDown = GetAsyncKeyState(VK_CONTROL);
+		if (shiftDown && controlDown) {
+			advanceMultiplier = 50;
+		}
+		else if (controlDown) {
+			advanceMultiplier = 15;
+		}
+		else if (shiftDown) {
+			advanceMultiplier = 5;
+		}
+
 		static int reverseTicks = 1;
 		ImGui::PushItemWidth(200);
 		ImGui::DragInt("##ReverseTicks", &reverseTicks, .1f, 1, 100);
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		if (ImGui::Button("REVERSE X TICK") || hotkeys::is_action_trigger_once(HOTKEY_ACTION::TAS_PREVIOUS_TICK)) {
-			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK - reverseTicks, 1, INT_MAX));
+			int reverseTicksModified = reverseTicks * advanceMultiplier;
+			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK - reverseTicksModified, 1, INT_MAX));
 		}
 
 		static int advanceTicks = 1;
@@ -308,7 +332,8 @@ void tas_info_window::render_tas()
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
 		if (ImGui::Button("ADVANCE X TICK") || hotkeys::is_action_trigger_once(HOTKEY_ACTION::TAS_NEXT_TICK)) {
-			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK + advanceTicks, 1, INT_MAX));
+			int advanceTicksModified = advanceTicks * advanceMultiplier;
+			gEngine.fast_forward_to(std::clamp(*SIMULATION_TICK + advanceTicksModified, 1, INT_MAX));
 		}
 
 		ImGui::TreePop();
@@ -429,6 +454,7 @@ static int32_t project_pitch_yaw_down_count = 0;
 static int32_t lerp_end_tick = -1;
 
 static int fixEditorTickOffset = 1;
+static bool autoScrollInputs = true;
 
 float lerp(float a, float b, float frac) {
 	return (a * (1.0f - frac)) + (b * frac);
@@ -467,6 +493,8 @@ void tas_info_window::render_inputs()
 		ImGui::PushItemWidth(100);
 		ImGui::InputInt("Editor Tick Offset", &fixEditorTickOffset);
 		ImGui::PopItemWidth();
+		
+		ImGui::Checkbox("Auto-Scroll Inputs To Current Tick", &autoScrollInputs);
 
 		ImGui::PushItemWidth(100);
 		ImGui::InputInt("##DeleteTickStart", &tick_delete_start);
@@ -848,8 +876,10 @@ void tas_info_window::render_inputs()
 			ImGui::Text("%d", it->rng);
 			ImGui::NextColumn();
 
-			if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset) && *GAME_SPEED > 0) {
-				ImGui::SetScrollHereY();
+			if (autoScrollInputs) {
+				if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset) && *GAME_SPEED > 0) {
+					ImGui::SetScrollHereY();
+				}
 			}
 
 			if (styles > 0)
@@ -926,6 +956,9 @@ void tas_info_window::render_header()
 	//ImGui::Checkbox("Force Simulate", &currentInput.forceSimulate);
 	*ALLOW_SIMULATE = currentInput.forceSimulate ? 0 : 1;
 	*ALLOW_INPUT = (*ALLOW_SIMULATE == 1 ? 0 : 1);
+
+	
+
 }
 
 void tas_info_window::render_rng() {

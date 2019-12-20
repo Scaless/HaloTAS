@@ -26,12 +26,14 @@
 #include <mmsystem.h>
 #include <shellapi.h>
 
+#include <boost/lexical_cast.hpp>
+
 #pragma comment(lib, "d3d9.lib")
 #pragma comment (lib, "d3dx9.lib")
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "winmm.lib")
 
-typedef HRESULT(__stdcall * GetDeviceState_t)(LPDIRECTINPUTDEVICE*, DWORD, LPVOID*);
+typedef HRESULT(__stdcall* GetDeviceState_t)(LPDIRECTINPUTDEVICE*, DWORD, LPVOID*);
 typedef HRESULT(__stdcall* GetDeviceData_t)(LPDIRECTINPUTDEVICE*, DWORD, LPDIDEVICEOBJECTDATA, LPDWORD, DWORD);
 typedef void(__cdecl* SimulateTick_t)(int);
 typedef char(__cdecl* AdvanceFrame_t)(float);
@@ -125,12 +127,12 @@ void run() {
 		// Keep people honest
 		auto hudUpdateDuration = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastDisplayUpdate);
 		if (hudUpdateDuration > std::chrono::seconds(60)) {
-			gEngine.print_hud_text(L"Official runs are invalid while HaloTAS is running!");
+			gEngine.print_hud_text(L"HaloTAS is running!");
 			lastDisplayUpdate = now;
 		}
 
 		livesplit_export newExport = {};
-		strcpy_s((char*)& newExport.currentMap, sizeof(newExport.currentMap), halo::addr::MAP_STRING);
+		strcpy_s((char*)&newExport.currentMap, sizeof(newExport.currentMap), halo::addr::MAP_STRING);
 		liveSplit->update_export(newExport);
 
 		auto input = infoWindow->getInput();
@@ -177,7 +179,7 @@ void attach_hooks() {
 
 	// DIRECTINPUT8
 	LPDIRECTINPUT8 pDI8;
-	DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)& pDI8, NULL);
+	DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION, IID_IDirectInput8, (void**)&pDI8, NULL);
 	if (!pDI8) {
 		tas_logger::fatal("Couldn't get dinput8 handle.");
 		exit(1);
@@ -271,6 +273,8 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		std::filesystem::create_directory("HaloTASFiles");
 		std::filesystem::create_directory("HaloTASFiles/Recordings");
 		std::filesystem::create_directory("HaloTASFiles/Recordings/_Autosave");
+		std::filesystem::create_directory("HaloTASFiles/Plugins");
+		std::filesystem::create_directory("HaloTASFiles/Patches");
 
 		if (!std::filesystem::exists("HaloTASFiles/tas.bin")) {
 			std::string message = "Could not find tas.bin. Make sure to copy the HaloTASFiles folder to your Halo directory.";
@@ -300,7 +304,7 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 		detach_hooks();
 		tas_logger::info("===== HaloTAS Closed =====");
 	}
-	catch (const std::exception& e) {
+	catch (const std::exception & e) {
 		auto& gEngine = halo_engine::get();
 		gEngine.mouse_directinput_override_disable();
 		tas_logger::fatal("%s", e.what());
@@ -337,6 +341,7 @@ static bool g_down = false;
 static DWORD lastsequence = 0;
 static int32_t pressedTick = 0;
 static bool enterPreviousFrame = false;
+static int32_t enterPressedFrame = 0;
 static bool queuedEnter = false;
 static bool queuedTab = false;
 static bool queuedG = false;
@@ -357,6 +362,21 @@ HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE* pDevice, DWORD cbObjectDa
 	}
 
 	pressedTick = inputHandler.get_current_playback_tick();
+
+	if (queuedEnter) {
+		if (enter_down) {
+			rgdod->dwData = 0x80;
+		}
+		else {
+			rgdod->dwData = 0x00;
+			queuedEnter = false;
+		}
+		rgdod->dwOfs = DIK_RETURN;
+		rgdod->dwTimeStamp = GetTickCount();
+		rgdod->dwSequence = ++lastsequence;
+		enter_down = !enter_down;
+		return hResult;
+	}
 
 	if (queuedTab) {
 		if (tab_down) {

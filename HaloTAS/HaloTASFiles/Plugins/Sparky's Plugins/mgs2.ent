@@ -1,0 +1,52 @@
+<plugin class="mgs2" author="sparky" version="4.0" headersize="Main">
+
+<string32 name="Light Volume.Attachment Marker" note="" info="the marker name that the light volume should be attached to" info_img="mgs2 Light Volume.png" offset="0x00" visible="true"/>
+
+<bitmask16 name="Light Volume.Flags" note="" info="" info_img="mgs2 Light Volume.png" offset="0x22" visible="true">
+	<option name="Interpolate Color in HSV" value="15"/>
+	<option name="...More Colors" value="14"/>
+</bitmask16>
+
+<float name="Brightness Scale.Near Fade Distance" note="world units" info="distance at which light volume is full brightness" info_img="mgs2 Brightness Scale.png" offset="0x34" visible="true"/>
+<float name="Brightness Scale.Far Fade Distance" note="world units" info="distance at which light volume is zero brightness" info_img="mgs2 Brightness Scale.png" offset="0x38" visible="true"/>
+<float name="Brightness Scale.Perpendicular Brightness Scale" note="0 - 1 only" info="brightness scale when viewed at a 90-degree angle" info_img="mgs2 Brightness Scale.png" offset="0x3C" visible="true"/>
+<float name="Brightness Scale.Parallel Brightness Scale" note="0 - 1 only" info="brightness scale when viewed directly" info_img="mgs2 Brightness Scale.png" offset="0x40" visible="true"/>
+
+<enum16 name="Brightness Scale.Brightness Scale Source" note="" info="scale brightness based upon external value" info_img="mgs2 Brightness Scale.png" offset="0x44" visible="true">
+	<option name="None" value="00"/>
+	<option name="A out" value="01"/>
+	<option name="B out" value="02"/>
+	<option name="C out" value="03"/>
+	<option name="D out" value="04"/>
+</enum16>
+
+<dependency name="Bitmaps.Map" note="" info="not a sprite plate!" info_img="mgs2 Bitmaps.png" offset="0x5C" visible="true"/>
+
+<short name="Bitmaps.Sequence Index" note="" info="" info_img="mgs2 Bitmaps.png" offset="0x6C" visible="true"/>
+<short name="Bitmaps.Count" note="" info="number of bitmaps to draw; 0 = don't render light volume" info_img="mgs2 Bitmaps.png" offset="0x6E" visible="true"/>
+
+<enum16 name="Frame Animation Source" note="" info="interpolates between frames based upon external value" info_img="mgs2 Frame Animation.png" offset="0xB8" visible="true">
+	<option name="None" value="00"/>
+	<option name="A out" value="01"/>
+	<option name="B out" value="02"/>
+	<option name="C out" value="03"/>
+	<option name="D out" value="04"/>
+</enum16>
+
+<struct name="Frames" note="" info="" info_img="" offset="0x120" visible="true" size="176">
+	<float name="Offset From Marker" note="world units" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Offset Exponent" note="" info="0 defaults to 1; above 1 compresses light near marker; below 1 compresses light near far end" info_img="" offset="0x14" visible="true"/>
+	<float name="Length" note="world units" info="0 = don't render light volume" info_img="" offset="0x18" visible="true"/>
+	
+	<float name="Radius Hither" note="world units" info="radius near the marker" info_img="" offset="0x3C" visible="true"/>
+	<float name="Radius Yon" note="world units" info="radius at far end of light volume" info_img="" offset="0x40" visible="true"/>
+	<float name="Radius Exponent" note="" info="0 defaults to 1; above 1 is more teardrop-shaped volume; below 1 is more pill-shaped volume" info_img="" offset="0x44" visible="true"/>
+
+	<colorARGB name="Tint Color Hither" note="" info="tint color near marker (alpha is brightness)" info_img="" offset="0x68" visible="true"/>
+	<colorARGB name="Tint Color Yon" note="" info="tint color at far end of light volume (alpha is brightness)" info_img="" offset="0x78" visible="true"/>
+
+	<float name="Tint Color Exponent" note="0 defaults to 1" info="affects tint color only, not brightness" info_img="" offset="0x88" visible="true"/>
+	<float name="Brightness Exponent" note="0 defaults to 1" info="" info_img="" offset="0x8C" visible="true"/>
+</struct>
+
+</plugin>

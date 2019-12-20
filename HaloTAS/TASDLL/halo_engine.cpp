@@ -50,12 +50,12 @@ void halo_engine::patch_memory(LPVOID dest_address, uint8_t* src_address, size_t
 
 void halo_engine::disable_render()
 {
-	*ENGINE_RENDER_ENABLE = 1;
+	//*ENGINE_RENDER_ENABLE = 1;
 }
 
 void halo_engine::enable_render()
 {
-	*ENGINE_RENDER_ENABLE = 0;
+	//*ENGINE_RENDER_ENABLE = 0;
 }
 
 void halo_engine::disable_sound()
@@ -75,21 +75,8 @@ void halo_engine::set_window_handle(HWND handle)
 
 halo_engine::halo_engine()
 {
-	// Scan memory for object pools
-	uint32_t data_pool_size = 0x1B40000;
-
-	for (uint32_t i = 0; i < data_pool_size / 4; i++) {
-		if (memcmp(&MAGIC_DATAPOOLHEADER, &(RUNTIME_DATA_BEGIN[i]), sizeof(MAGIC_DATAPOOLHEADER)) == 0) {
-			DataPool* pool = (DataPool*)(&RUNTIME_DATA_BEGIN[i] - 10);
-			dataPools.push_back(pool);
-
-			if (std::string(pool->Name) == "object") {
-				objectDataPool = pool;
-			}
-		}
-	}
-
 	update_window_handle();
+	disable_cutscene_fps_cap();
 
 	auto addr = &enableFastForward;
 	patch_memory(FAST_FORWARD_POINTER, (uint8_t*)& addr, 4);
@@ -99,6 +86,8 @@ halo_engine::~halo_engine()
 {
 	auto defaultAddr = 0x007196D8;
 	patch_memory(FAST_FORWARD_POINTER, (uint8_t*)& defaultAddr, 4);
+
+	enable_cutscene_fps_cap();
 }
 
 HWND halo_engine::window_handle()
@@ -163,21 +152,20 @@ bool halo_engine::hac_is_loaded()
 
 void halo_engine::get_snapshot(engine_snapshot& snapshot)
 {
+	object_pool_header* objectDataPool = halo::addr::OBJ_POOL_HEADER;
 	if (objectDataPool != nullptr)
 	{
-		int count = objectDataPool->ObjectCount;
+		int count = objectDataPool->max_objects;
 		for (int i = 0; i < count; i++) {
-			uint32_t* basePtr = (uint32_t*)& objectDataPool->ObjectPointers[i];
+			object_pool_entry* object_entry = &objectDataPool->object_data_begin[i];
 
-			if ((int)* basePtr == 0) {
-				continue;
-			}
-			if ((int)* basePtr < 0x40000000 || (int)* basePtr > 0x41B40000) {
-				continue;
+			char* basePtr = (char*)object_entry->object_address;
+
+			if (basePtr != nullptr) {
+				GameObject* object = (GameObject*)(basePtr - 24); // Backtrack 24 bytes from the pointed to location
+				snapshot.gameObjects.push_back(object);
 			}
 
-			GameObject* object = (GameObject*)(*basePtr - 24); // Backtrack 24 bytes from the pointed to location
-			snapshot.gameObjects.push_back(object);
 		}
 	}
 }
@@ -240,6 +228,8 @@ void halo_engine::fast_forward_to(uint32_t tick)
 		}
 	}
 }
+
+
 
 void halo_engine::map_reset()
 {
@@ -386,4 +376,14 @@ void halo_engine::mouse_directinput_override_disable()
 void halo_engine::mouse_directinput_override_enable()
 {
 	patch_memory(PATCH_DINPUT_MOUSE_FUNC, PATCH_DINPUT_MOUSE_BYTES, 7);
+}
+
+void halo_engine::disable_cutscene_fps_cap()
+{
+	patch_memory(CUTSCENE_FPS_CAP_PATCH, halo::constants::PATCH_CUTSCENE_FPS_CAP, sizeof(halo::constants::PATCH_CUTSCENE_FPS_CAP));
+}
+
+void halo_engine::enable_cutscene_fps_cap()
+{
+	patch_memory(CUTSCENE_FPS_CAP_PATCH, halo::constants::PATCH_CUTSCENE_FPS_CAP_ORIGINAL, sizeof(halo::constants::PATCH_CUTSCENE_FPS_CAP_ORIGINAL));
 }

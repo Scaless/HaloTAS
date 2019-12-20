@@ -51,6 +51,12 @@ struct plugin
 	std::vector<tag_property> properties;
 
 	static TAG_PROPERTY_TYPE get_element_type(const std::string& type_str);
+	static std::string get_type_str(TAG_PROPERTY_TYPE type);
+
+	template <typename T>
+	static void set_property(TAG_PROPERTY_TYPE type, T& value) {
+
+	}
 
 	void imgui_draw_plugin(halo::mapdata::tag_entry& tag);
 };

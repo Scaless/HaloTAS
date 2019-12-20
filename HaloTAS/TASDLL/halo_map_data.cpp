@@ -1,11 +1,5 @@
 #include "halo_map_data.h"
 
-bool halo::mapdata::tag_id::operator==(const tag_id& other)
-{
-	return index == other.index &&
-		identifier == other.identifier;
-}
-
 std::string halo::mapdata::tag_entry::tag_class_to_str(uint32_t tag_class)
 {
 	char c[4];

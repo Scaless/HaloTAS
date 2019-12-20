@@ -25,8 +25,6 @@ private:
 
 private:
 	HWND haloHWND = NULL;
-	std::vector<DataPool*> dataPools;
-	DataPool* objectDataPool = nullptr;
 	int32_t enableFastForward{ 0 };
 	int32_t fastForwardTick{ 0 };
 	bool isPresentEnabled{ true };
@@ -73,6 +71,8 @@ public:
 	// Patching
 	void mouse_directinput_override_disable();
 	void mouse_directinput_override_enable();
+	void disable_cutscene_fps_cap();
+	void enable_cutscene_fps_cap();
 
 public:
 	halo_engine(halo_engine const&) = delete;

@@ -1,0 +1,118 @@
+<plugin class="glw!" author="sparky" version="4.0" headersize="Main">
+
+<string32 name="Attachment Marker" note="" info="the marker name that the glow should be attached to" info_img="" offset="0x00" visible="true"/>
+
+<short name="Number of Particles" note="" info="these comprise the glow system" info_img="" offset="0x20" visible="true"/>
+
+<enum16 name="Boundary Effect" note="" info="particle's behavior upon reaching the end of an object" info_img="" offset="0x22" visible="true">
+	<option name="Bounce" value="00"/>
+	<option name="Wrap" value="01"/>
+</enum16>
+
+<enum16 name="Normal Particle Distribution" note="" info="about the object" info_img="" offset="0x24" visible="true">
+	<option name="Distributed Randomly" value="00"/>
+	<option name="Distributed Uniformly" value="01"/>
+</enum16>
+
+<enum16 name="Trailing Particle Distribution" note="" info="about the object" info_img="" offset="0x26" visible="true">
+	<option name="Emit Vertically" value="00"/>
+	<option name="Emit Normal (up)" value="01"/>
+	<option name="Emit Randomly" value="02"/>
+</enum16>
+
+<bitmask16 name="Glow Flags" note="" info="" info_img="" offset="0x28" visible="true">
+	<option name="Modify Particle Color in Range" value="15"/>
+	<option name="Particles Move Backwards" value="14"/>
+	<option name="Particles Move in Both Directions" value="13"/>
+	<option name="Trailing Particles Fade Over Time" value="12"/>
+	<option name="Trailing Particles Shrink Over Time" value="11"/>
+	<option name="Trailing Particles Slow Over Time" value="10"/>
+</bitmask16>
+
+<enum16 name="Attachment" note="" info="particle rotation" info_img="" offset="0x50" visible="true">
+	<option name="None" value="65535"/>
+	<option name="A out" value="00"/>
+	<option name="B out" value="01"/>
+	<option name="C out" value="02"/>
+	<option name="D out" value="03"/>
+</enum16>
+
+<float name="Particle Rotational Velocity" note="radians per second" info="" info_img="" offset="0x54" visible="true"/>
+<float name="Particle Rotational Velocity Multiple Low" note="" info="multiplied by overall velocity; only used if controlled by attachment" info_img="" offset="0x58" visible="true"/>
+<float name="Particle Rotational Velocity Multiple High" note="" info="multiplied by overall velocity; only used if controlled by attachment" info_img="" offset="0x5C" visible="true"/>
+
+<enum16 name="Attachment" note="" info="effect rotation" info_img="" offset="0x60" visible="true">
+	<option name="None" value="65535"/>
+	<option name="A out" value="00"/>
+	<option name="B out" value="01"/>
+	<option name="C out" value="02"/>
+	<option name="D out" value="03"/>
+</enum16>
+
+<float name="Effect Rotational Velocity" note="radians per second" info="" info_img="" offset="0x64" visible="true"/>
+<float name="Effect Rotational Velocity Multiple Low" note="" info="multiplied by overall velocity; only used if controlled by attachment" info_img="" offset="0x68" visible="true"/>
+<float name="Effect Rotational Velocity Multiple High" note="" info="multiplied by overall velocity; only used if controlled by attachment" info_img="" offset="0x6C" visible="true"/>
+
+<enum16 name="Attachment" note="" info="effect translation" info_img="" offset="0x70" visible="true">
+	<option name="None" value="65535"/>
+	<option name="A out" value="00"/>
+	<option name="B out" value="01"/>
+	<option name="C out" value="02"/>
+	<option name="D out" value="03"/>
+</enum16>
+
+<float name="Effect Translational Velocity" note="world units per second" info="" info_img="" offset="0x74" visible="true"/>
+<float name="Effect Translational Velocity Multiple Low" note="" info="multiplied by overall velocity; only used if controlled by attachment" info_img="" offset="0x78" visible="true"/>
+<float name="Effect Translational Velocity Multiple High" note="" info="multiplied by overall velocity; only used if controlled by attachment" info_img="" offset="0x7C" visible="true"/>
+
+<enum16 name="Attachment" note="" info="distance to object" info_img="" offset="0x80" visible="true">
+	<option name="None" value="65535"/>
+	<option name="A out" value="00"/>
+	<option name="B out" value="01"/>
+	<option name="C out" value="02"/>
+	<option name="D out" value="03"/>
+</enum16>
+
+<float name="Minimum Distance Particle to Object" note="world units" info="" info_img="" offset="0x84" visible="true"/>
+<float name="Maximum Distance Particle to Object" note="world units" info="" info_img="" offset="0x88" visible="true"/>
+<float name="Distance to Object Multiple Low" note="" info="multiplied by particle distance; only used if controlled by attachment" info_img="" offset="0x8C" visible="true"/>
+<float name="Distance to Object Multiple High" note="" info="multiplied by particle distance; only used if controlled by attachment" info_img="" offset="0x90" visible="true"/>
+
+<enum16 name="Attachment" note="" info="size" info_img="" offset="0x9C" visible="true">
+	<option name="None" value="65535"/>
+	<option name="A out" value="00"/>
+	<option name="B out" value="01"/>
+	<option name="C out" value="02"/>
+	<option name="D out" value="03"/>
+</enum16>
+
+<float name="Particle Size Bounds: from" note="world units" info="size of particles" info_img="" offset="0xA0" visible="true"/>
+<float name="Particle Size Bounds: to" note="world units" info="size of particles" info_img="" offset="0xA4" visible="true"/>
+<float name="Size Attachment Multiplier: from" note="" info="multiplied by particle size; only used if controlled by attachment" info_img="" offset="0xA8" visible="true"/>
+<float name="Size Attachment Multiplier: to" note="" info="multiplied by particle size; only used if controlled by attachment" info_img="" offset="0xAC" visible="true"/>
+
+<enum16 name="Attachment" note="" info="color" info_img="" offset="0xB0" visible="true">
+	<option name="None" value="65535"/>
+	<option name="A out" value="00"/>
+	<option name="B out" value="01"/>
+	<option name="C out" value="02"/>
+	<option name="D out" value="03"/>
+</enum16>
+
+<colorARGB name="Color_Bound_0" note="" info="the color of all particles will vary between Color_Bound_0 and Color_Bound_1" info_img="" offset="0xB4" visible="true"/>
+<colorARGB name="Color_Bound_1" note="" info="the color of all particles will vary between Color_Bound_0 and Color_Bound_1" info_img="" offset="0xC4" visible="true"/>
+
+<colorARGB name="Scale Color 0" note="" info="used to scale the particle color; only used if controlled by attachment" info_img="" offset="0xD4" visible="true"/>
+<colorARGB name="Scale Color 1" note="" info="used to scale the particle color; only used if controlled by attachment" info_img="" offset="0xE4" visible="true"/>
+
+<float name="Color Rate of Change" note="" info="for glow effects that dynamically control particle color; sets rate of change" info_img="" offset="0xF4" visible="true"/>
+<float name="Fading Percentage of Glow" note="" info="percentage of the glow that is fading at any given time" info_img="" offset="0xF8" visible="true"/>
+<float name="Particle Generation Frequency" note="Herz" info="frequency in Hz that trailing particles are generated" info_img="" offset="0xFC" visible="true"/>
+<float name="Lifetime of Trailing Particles" note="seconds" info="how long a trailing particle remains in existence" info_img="" offset="0x100" visible="true"/>
+<float name="Velocity of Trailing Particles" note="world units per second" info="" info_img="" offset="0x104" visible="true"/>
+<float name="Trailing Particle Minimum Translation" note="world units" info="" info_img="" offset="0x108" visible="true"/>
+<float name="Trailing Particle Maximum Translation" note="world units" info="" info_img="" offset="0x10C" visible="true"/>
+
+<dependency name="Texture" note="" info="" info_img="" offset="0x144" visible="true"/>
+
+</plugin>

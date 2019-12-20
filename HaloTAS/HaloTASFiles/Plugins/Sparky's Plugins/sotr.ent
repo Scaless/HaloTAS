@@ -1,0 +1,678 @@
+<plugin class="sotr" author="sparky" version="4.0" headersize="Main">
+
+<bitmask16 name="Radiosity Properties.Flags" note="" info="" info_img="" offset="0x00" visible="true">
+	<option name="Simple Parameterization" note="" info="lightmap texture parameterization should correspond to diffuse texture parameterization" info_img="" value="15"/>
+	<option name="Ignore Normals" note="" info="light independent of normals (trees)" info_img="" value="14"/>
+	<option name="Transparent Lit" value="13"/>
+</bitmask16>
+
+<enum16 name="Radiosity Properties.Detail Level" note="" info="affects the density of tessellation (high means slow)" info_img="" offset="0x02" visible="true">
+	<option name="High" value="00"/>
+	<option name="Medium" value="01"/>
+	<option name="Low" value="02"/>
+	<option name="Turd" value="03"/>
+</enum16>
+
+<float name="Radiosity Properties.Power" note="0 - infinity" info="power of emitted light" info_img="" offset="0x04" visible="true"/>
+
+<colorRGB name="Radiosity Properties.Color of Emitted Light" note="" info="" info_img="" offset="0x08" visible="true"/>
+<colorRGB name="Radiosity Properties.Tint Color" note="" info="light passing through this surface, if it's transparent, will be tinted this color" info_img="" offset="0x14" visible="true"/>
+
+<enum16 name="Physics Properties.Material Type" note="" info="" info_img="" offset="0x22" visible="true">
+	<option name="Dirt" value="00"/>
+	<option name="Sand" value="01"/>
+	<option name="Stone" value="02"/>
+	<option name="Snow" value="03"/>
+	<option name="Wood" value="04"/>
+	<option name="Metal (hollow)" value="05"/>
+	<option name="Metal (thin)" value="06"/>
+	<option name="Metal (thick)" value="07"/>
+	<option name="Rubber" value="08"/>
+	<option name="Glass" value="09"/>
+	<option name="Force Field" value="10"/>
+	<option name="Grunt" value="11"/>
+	<option name="Hunter Armor" value="12"/>
+	<option name="Hunter Skin" value="13"/>
+	<option name="Elite" value="14"/>
+	<option name="Jackal" value="15"/>
+	<option name="Jackal Energy Shield" value="16"/>
+	<option name="Engineer Skin" value="17"/>
+	<option name="Engineer Force Field" value="18"/>
+	<option name="Flood Combat Form" value="19"/>
+	<option name="Flood Carrier Form" value="20"/>
+	<option name="Cyborg Armor" value="21"/>
+	<option name="Cyborg Energy Shield" value="22"/>
+	<option name="Human Armor" value="23"/>
+	<option name="Human Skin" value="24"/>
+	<option name="Sentinel" value="25"/>
+	<option name="Monitor" value="26"/>
+	<option name="Plastic" value="27"/>
+	<option name="Water" value="28"/>
+	<option name="Leaves" value="29"/>
+	<option name="Elite Energy Shield" value="30"/>
+	<option name="Ice" value="31"/>
+	<option name="Hunter Shield" value="32"/>
+</enum16>
+
+<int8 name="Generic Transparent Shader.Numeric Counter Limit" note="0 - 255 only" info="" info_img="" offset="0x28" visible="true"/>
+
+<bitmask32 name="Generic Transparent Shader.Flags" note="" info="" info_img="" offset="0x29" visible="true">
+	<option name="Alpha-Tested" value="31"/>
+	<option name="Decal" value="30"/>
+	<option name="Two-Sided" value="29"/>
+	<option name="First Map is in Screenspace" value="28"/>
+	<option name="Draw Before Water" value="27"/>
+	<option name="Ignore Effect" value="26"/>
+	<option name="Scale First Map with Distance" value="25"/>
+	<option name="Numeric" value="24"/>
+</bitmask32>
+
+<enum16 name="Generic Transparent Shader.First Map Type" note="" info="" info_img="" offset="0x2A" visible="true">
+	<option name="2D Map" value="00"/>
+	<option name="First Map is Reflection Cube Map" value="01"/>
+	<option name="First Map is Object-Centered Cube Map" value="02"/>
+	<option name="First Map is Viewer-Centered Cube Map" value="03"/>
+</enum16>
+
+<enum16 name="Generic Transparent Shader.Framebuffer Blend Function" note="" info="" info_img="" offset="0x2C" visible="true">
+	<option name="Alpha Blend" value="00"/>
+	<option name="Multiply" value="01"/>
+	<option name="Double Multiply" value="02"/>
+	<option name="Add" value="03"/>
+	<option name="Subtract" value="04"/>
+	<option name="Component Minimum" value="05"/>
+	<option name="Component Maximum" value="06"/>
+	<option name="Alpha-Multiply Add" value="07"/>
+</enum16>
+
+<enum16 name="Generic Transparent Shader.Framebuffer Fade Mode" note="" info="" info_img="" offset="0x2E" visible="true">
+	<option name="None" value="00"/>
+	<option name="Fade When Perpendicular" value="01"/>
+	<option name="Fade When Parallel" value="02"/>
+</enum16>
+
+<enum16 name="Generic Transparent Shader.Framebuffer Fade Source" note="" info="fade is multiplied by this external value" info_img="" offset="0x30" visible="true">
+	<option name="None" value="00"/>
+	<option name="A out" value="01"/>
+	<option name="B out" value="02"/>
+	<option name="C out" value="03"/>
+	<option name="D out" value="04"/>
+</enum16>
+
+<float name="Lens Flares.Lens Flare Spacing" note="world units" info="0 = place a single lens flare" info_img="" offset="0x34" visible="true"/>
+<dependency name="Lens Flares.Lens Flare" note="" info="" info_img="" offset="0x38" visible="true"/>
+
+<struct name="Extra Layers" note="" info="" info_img="" offset="0x48" visible="true" size="16">
+	<dependency name="Shader" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Maps" note="" info="" info_img="" offset="0x54" visible="true" size="100">
+	<bitmask16 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Unfiltered" value="15"/>
+		<option name="U-Clamped" value="14"/>
+		<option name="V-Clamped" value="13"/>
+	</bitmask16>
+	
+	<float name="Map U-Scale" note="0 defaults to 1" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Map V-Scale" note="0 defaults to 1" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Map U-Offset" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Map V-Offset" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Map Rotation" note="degrees" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Mipmap Bias" note="0 - 1 only" info="" info_img="" offset="0x18" visible="true"/>
+	
+	<dependency name="Map" note="" info="" info_img="" offset="0x1C" visible="true"/>
+	
+	<enum16 name="2D Texture Animation.U-Animation Source" note="" info="" info_img="" offset="0x2C" visible="true">
+		<option name="None" value="00"/>
+		<option name="A out" value="01"/>
+		<option name="B out" value="02"/>
+		<option name="C out" value="03"/>
+		<option name="D out" value="04"/>
+	</enum16>
+	
+	<enum16 name="2D Texture Animation.U-Animation Function" note="" info="" info_img="" offset="0x2E" visible="true">
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+	</enum16>
+	
+	<float name="2D Texture Animation.U-Animation Period" note="seconds; 0 defaults to 1" info="" info_img="" offset="0x30" visible="true"/>
+
+	<float name="2D Texture Animation.U-Animation Phase" note="" info="" info_img="" offset="0x34" visible="true"/>
+
+	<float name="2D Texture Animation.U-Animation Scale" note="repeats; 0 defaults to 1" info="" info_img="" offset="0x38" visible="true"/>
+
+	
+	<enum16 name="2D Texture Animation.V-Animation Source" note="" info="" info_img="" offset="0x3C" visible="true">
+		<option name="None" value="00"/>
+		<option name="A out" value="01"/>
+		<option name="B out" value="02"/>
+		<option name="C out" value="03"/>
+		<option name="D out" value="04"/>
+	</enum16>
+	
+	<enum16 name="2D Texture Animation.V-Animation Function" note="" info="" info_img="" offset="0x3E" visible="true">
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+	</enum16>
+	
+	<float name="2D Texture Animation.V-Animation Period" note="seconds; 0 defaults to 1" info="" info_img="" offset="0x40" visible="true"/>
+
+	<float name="2D Texture Animation.V-Animation Phase" note="" info="" info_img="" offset="0x44" visible="true"/>
+
+	<float name="2D Texture Animation.V-Animation Scale" note="repeats; 0 defaults to 1" info="" info_img="" offset="0x48" visible="true"/>
+
+	
+	<enum16 name="2D Texture Animation.Rotation-Animation Source" note="" info="" info_img="" offset="0x4C" visible="true">
+
+		<option name="None" value="00"/>
+
+		<option name="A out" value="01"/>
+
+		<option name="B out" value="02"/>
+
+		<option name="C out" value="03"/>
+
+		<option name="D out" value="04"/>
+
+	</enum16>
+
+	
+	<enum16 name="2D Texture Animation.Rotation-Animation Function" note="" info="" info_img="" offset="0x4E" visible="true">
+
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+
+	</enum16>
+
+	
+	<float name="2D Texture Animation.Rotation-Animation Period" note="seconds; 0 defaults to 1" info="" info_img="" offset="0x50" visible="true"/>
+
+	<float name="2D Texture Animation.Rotation-Animation Phase" note="" info="" info_img="" offset="0x54" visible="true"/>
+
+	<float name="2D Texture Animation.Rotation-Animation Scale" note="degrees; 0 defaults to 360" info="" info_img="" offset="0x58" visible="true"/>
+
+	<float name="2D Texture Animation.Rotation-Animation Center: x" note="" info="" info_img="" offset="0x5C" visible="true"/>
+
+	<float name="2D Texture Animation.Rotation-Animation Center: y" note="" info="" info_img="" offset="0x60" visible="true"/>
+</struct>
+
+<struct name="Stages" note="" info="" info_img="" offset="0x60" visible="true" size="112">
+	<bitmask16 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Color Mux" value="15"/>
+		<option name="Alpha Mux" value="14"/>
+		<option name="'A out' Controls 'Color 0' Animation" value="13"/>
+	</bitmask16>
+	
+	<enum16 name="Constants and Animation.Color 0 Source" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="None" value="00"/>
+		<option name="A" value="01"/>
+		<option name="B" value="02"/>
+		<option name="C" value="03"/>
+		<option name="D" value="04"/>
+	</enum16>
+	
+	<enum16 name="Constants and Animation.Color 0 Animation Function" note="" info="" info_img="" offset="0x06" visible="true">
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+	</enum16>
+	
+	<float name="Constants and Animation.Color 0 Animation Period" note="seconds; 0 defaults to 1" info="" info_img="" offset="0x08" visible="true"/>
+	
+	<colorARGB name="Constants and Animation.Color 0 Animation Lower Bound" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<colorARGB name="Constants and Animation.Color 0 Animation Upper Bound" note="" info="" info_img="" offset="0x1C" visible="true"/>
+	<colorARGB name="Constants and Animation.Color 1" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	
+	<enum16 name="Color Inputs.Input A" note="" info="" info_img="" offset="0x3C" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Color 0" value="05"/>
+		<option name="Map Color 1" value="06"/>
+		<option name="Map Color 2" value="07"/>
+		<option name="Map Color 3" value="08"/>
+		<option name="Vertex Color 0 / Diffuse Light" value="09"/>
+		<option name="Vertex Color 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Color 0" value="11"/>
+		<option name="Scratch Color 1" value="12"/>
+		<option name="Constant Color 0" value="13"/>
+		<option name="Constant Color 1" value="14"/>
+		<option name="Map Alpha 0" value="15"/>
+		<option name="Map Alpha 1" value="16"/>
+		<option name="Map Alpha 2" value="17"/>
+		<option name="Map Alpha 3" value="18"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="19"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="20"/>
+		<option name="Scratch Alpha 0" value="21"/>
+		<option name="Scratch Alpha 1" value="22"/>
+		<option name="Constant Alpha 0" value="23"/>
+		<option name="Constant Alpha 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Color Inputs.Input A Mapping" note="" info="" info_img="" offset="0x3E" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Color Inputs.Input B" note="" info="" info_img="" offset="0x40" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Color 0" value="05"/>
+		<option name="Map Color 1" value="06"/>
+		<option name="Map Color 2" value="07"/>
+		<option name="Map Color 3" value="08"/>
+		<option name="Vertex Color 0 / Diffuse Light" value="09"/>
+		<option name="Vertex Color 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Color 0" value="11"/>
+		<option name="Scratch Color 1" value="12"/>
+		<option name="Constant Color 0" value="13"/>
+		<option name="Constant Color 1" value="14"/>
+		<option name="Map Alpha 0" value="15"/>
+		<option name="Map Alpha 1" value="16"/>
+		<option name="Map Alpha 2" value="17"/>
+		<option name="Map Alpha 3" value="18"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="19"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="20"/>
+		<option name="Scratch Alpha 0" value="21"/>
+		<option name="Scratch Alpha 1" value="22"/>
+		<option name="Constant Alpha 0" value="23"/>
+		<option name="Constant Alpha 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Color Inputs.Input B Mapping" note="" info="" info_img="" offset="0x42" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Color Inputs.Input C" note="" info="" info_img="" offset="0x44" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Color 0" value="05"/>
+		<option name="Map Color 1" value="06"/>
+		<option name="Map Color 2" value="07"/>
+		<option name="Map Color 3" value="08"/>
+		<option name="Vertex Color 0 / Diffuse Light" value="09"/>
+		<option name="Vertex Color 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Color 0" value="11"/>
+		<option name="Scratch Color 1" value="12"/>
+		<option name="Constant Color 0" value="13"/>
+		<option name="Constant Color 1" value="14"/>
+		<option name="Map Alpha 0" value="15"/>
+		<option name="Map Alpha 1" value="16"/>
+		<option name="Map Alpha 2" value="17"/>
+		<option name="Map Alpha 3" value="18"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="19"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="20"/>
+		<option name="Scratch Alpha 0" value="21"/>
+		<option name="Scratch Alpha 1" value="22"/>
+		<option name="Constant Alpha 0" value="23"/>
+		<option name="Constant Alpha 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Color Inputs.Input C Mapping" note="" info="" info_img="" offset="0x46" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Color Inputs.Input D" note="" info="" info_img="" offset="0x48" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Color 0" value="05"/>
+		<option name="Map Color 1" value="06"/>
+		<option name="Map Color 2" value="07"/>
+		<option name="Map Color 3" value="08"/>
+		<option name="Vertex Color 0 / Diffuse Light" value="09"/>
+		<option name="Vertex Color 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Color 0" value="11"/>
+		<option name="Scratch Color 1" value="12"/>
+		<option name="Constant Color 0" value="13"/>
+		<option name="Constant Color 1" value="14"/>
+		<option name="Map Alpha 0" value="15"/>
+		<option name="Map Alpha 1" value="16"/>
+		<option name="Map Alpha 2" value="17"/>
+		<option name="Map Alpha 3" value="18"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="19"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="20"/>
+		<option name="Scratch Alpha 0" value="21"/>
+		<option name="Scratch Alpha 1" value="22"/>
+		<option name="Constant Alpha 0" value="23"/>
+		<option name="Constant Alpha 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Color Inputs.Input D Mapping" note="" info="" info_img="" offset="0x4A" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Color Outputs.Output AB" note="" info="" info_img="" offset="0x4C" visible="true">
+		<option name="Discard" value="00"/>
+		<option name="Scratch Color 0 / Final Color" value="01"/>
+		<option name="Scratch Color 1" value="02"/>
+		<option name="Vertex Color 0" value="03"/>
+		<option name="Vertex Color 1" value="04"/>
+		<option name="Map Color 0" value="05"/>
+		<option name="Map Color 1" value="06"/>
+		<option name="Map Color 2" value="07"/>
+		<option name="Map Color 3" value="08"/>
+	</enum16>
+	
+	<enum16 name="Color Outputs.Output AB Function" note="" info="" info_img="" offset="0x4E" visible="true">
+		<option name="Multiply" value="00"/>
+		<option name="Dot Product" value="01"/>
+	</enum16>
+	
+	<enum16 name="Color Outputs.Output CD" note="" info="" info_img="" offset="0x50" visible="true">
+		<option name="Discard" value="00"/>
+		<option name="Scratch Color 0 / Final Color" value="01"/>
+		<option name="Scratch Color 1" value="02"/>
+		<option name="Vertex Color 0" value="03"/>
+		<option name="Vertex Color 1" value="04"/>
+		<option name="Map Color 0" value="05"/>
+		<option name="Map Color 1" value="06"/>
+		<option name="Map Color 2" value="07"/>
+		<option name="Map Color 3" value="08"/>
+	</enum16>
+	
+	<enum16 name="Color Outputs.Output CD Function" note="" info="" info_img="" offset="0x52" visible="true">
+		<option name="Multiply" value="00"/>
+		<option name="Dot Product" value="01"/>
+	</enum16>
+	
+	<enum16 name="Color Outputs.Output AB CD Mux / Sum" note="" info="" info_img="" offset="0x54" visible="true">
+		<option name="Discard" value="00"/>
+		<option name="Scratch Color 0 / Final Color" value="01"/>
+		<option name="Scratch Color 1" value="02"/>
+		<option name="Vertex Color 0" value="03"/>
+		<option name="Vertex Color 1" value="04"/>
+		<option name="Map Color 0" value="05"/>
+		<option name="Map Color 1" value="06"/>
+		<option name="Map Color 2" value="07"/>
+		<option name="Map Color 3" value="08"/>
+	</enum16>
+	
+	<enum16 name="Color Outputs.Output Mapping" note="" info="" info_img="" offset="0x56" visible="true">
+		<option name="Identity" value="00"/>
+		<option name="Scale by ½" value="01"/>
+		<option name="Scale by 2" value="02"/>
+		<option name="Scale by 4" value="03"/>
+		<option name="Bias by -½" value="04"/>
+		<option name="Expand Normal" value="05"/>
+	</enum16>
+
+	<enum16 name="Alpha Inputs.Input A" note="" info="" info_img="" offset="0x58" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Alpha 0" value="05"/>
+		<option name="Map Alpha 1" value="06"/>
+		<option name="Map Alpha 2" value="07"/>
+		<option name="Map Alpha 3" value="08"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="09"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Alpha 0" value="11"/>
+		<option name="Scratch Alpha 1" value="12"/>
+		<option name="Constant Alpha 0" value="13"/>
+		<option name="Constant Alpha 1" value="14"/>
+		<option name="Map Blue 0" value="15"/>
+		<option name="Map Blue 1" value="16"/>
+		<option name="Map Blue 2" value="17"/>
+		<option name="Map Blue 3" value="18"/>
+		<option name="Vertex Blue 0 / Blue Light" value="19"/>
+		<option name="Vertex Blue 1 / Fade (parallel)" value="20"/>
+		<option name="Scratch Blue 0" value="21"/>
+		<option name="Scratch Blue 1" value="22"/>
+		<option name="Constant Blue 0" value="23"/>
+		<option name="Constant Blue 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Alpha Inputs.Input A Mapping" note="" info="" info_img="" offset="0x5A" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Alpha Inputs.Input B" note="" info="" info_img="" offset="0x5C" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Alpha 0" value="05"/>
+		<option name="Map Alpha 1" value="06"/>
+		<option name="Map Alpha 2" value="07"/>
+		<option name="Map Alpha 3" value="08"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="09"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Alpha 0" value="11"/>
+		<option name="Scratch Alpha 1" value="12"/>
+		<option name="Constant Alpha 0" value="13"/>
+		<option name="Constant Alpha 1" value="14"/>
+		<option name="Map Blue 0" value="15"/>
+		<option name="Map Blue 1" value="16"/>
+		<option name="Map Blue 2" value="17"/>
+		<option name="Map Blue 3" value="18"/>
+		<option name="Vertex Blue 0 / Blue Light" value="19"/>
+		<option name="Vertex Blue 1 / Fade (parallel)" value="20"/>
+		<option name="Scratch Blue 0" value="21"/>
+		<option name="Scratch Blue 1" value="22"/>
+		<option name="Constant Blue 0" value="23"/>
+		<option name="Constant Blue 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Alpha Inputs.Input B Mapping" note="" info="" info_img="" offset="0x5E" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Alpha Inputs.Input C" note="" info="" info_img="" offset="0x60" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Alpha 0" value="05"/>
+		<option name="Map Alpha 1" value="06"/>
+		<option name="Map Alpha 2" value="07"/>
+		<option name="Map Alpha 3" value="08"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="09"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Alpha 0" value="11"/>
+		<option name="Scratch Alpha 1" value="12"/>
+		<option name="Constant Alpha 0" value="13"/>
+		<option name="Constant Alpha 1" value="14"/>
+		<option name="Map Blue 0" value="15"/>
+		<option name="Map Blue 1" value="16"/>
+		<option name="Map Blue 2" value="17"/>
+		<option name="Map Blue 3" value="18"/>
+		<option name="Vertex Blue 0 / Blue Light" value="19"/>
+		<option name="Vertex Blue 1 / Fade (parallel)" value="20"/>
+		<option name="Scratch Blue 0" value="21"/>
+		<option name="Scratch Blue 1" value="22"/>
+		<option name="Constant Blue 0" value="23"/>
+		<option name="Constant Blue 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Alpha Inputs.Input C Mapping" note="" info="" info_img="" offset="0x62" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Alpha Inputs.Input D" note="" info="" info_img="" offset="0x64" visible="true">
+		<option name="0" value="00"/>
+		<option name="1" value="01"/>
+		<option name="½" value="02"/>
+		<option name="-1" value="03"/>
+		<option name="-½" value="04"/>
+		<option name="Map Alpha 0" value="05"/>
+		<option name="Map Alpha 1" value="06"/>
+		<option name="Map Alpha 2" value="07"/>
+		<option name="Map Alpha 3" value="08"/>
+		<option name="Vertex Alpha 0 / Fade (none)" value="09"/>
+		<option name="Vertex Alpha 1 / Fade (perpendicular)" value="10"/>
+		<option name="Scratch Alpha 0" value="11"/>
+		<option name="Scratch Alpha 1" value="12"/>
+		<option name="Constant Alpha 0" value="13"/>
+		<option name="Constant Alpha 1" value="14"/>
+		<option name="Map Blue 0" value="15"/>
+		<option name="Map Blue 1" value="16"/>
+		<option name="Map Blue 2" value="17"/>
+		<option name="Map Blue 3" value="18"/>
+		<option name="Vertex Blue 0 / Blue Light" value="19"/>
+		<option name="Vertex Blue 1 / Fade (parallel)" value="20"/>
+		<option name="Scratch Blue 0" value="21"/>
+		<option name="Scratch Blue 1" value="22"/>
+		<option name="Constant Blue 0" value="23"/>
+		<option name="Constant Blue 1" value="24"/>
+	</enum16>
+	
+	<enum16 name="Alpha Inputs.Input D Mapping" note="" info="" info_img="" offset="0x66" visible="true">
+		<option name="Clamp(x)" value="00"/>
+		<option name="1 - Clamp(x)" value="01"/>
+		<option name="2*Clamp(x) - 1" value="02"/>
+		<option name="1 - 2*Clamp(x)" value="03"/>
+		<option name="Clamp(x) - ½" value="04"/>
+		<option name="½ - Clamp(x)" value="05"/>
+		<option name="x" value="06"/>
+		<option name="-x" value="07"/>
+	</enum16>
+	
+	<enum16 name="Alpha Outputs.Output AB" note="" info="" info_img="" offset="0x68" visible="true">
+		<option name="Discard" value="00"/>
+		<option name="Scratch Alpha 0 / Final Alpha" value="01"/>
+		<option name="Scratch Alpha 1" value="02"/>
+		<option name="Vertex Alpha 0 / Fog" value="03"/>
+		<option name="Vertex Alpha 1" value="04"/>
+		<option name="Map Alpha 0" value="05"/>
+		<option name="Map Alpha 1" value="06"/>
+		<option name="Map Alpha 2" value="07"/>
+		<option name="Map Alpha 3" value="08"/>
+	</enum16>
+	
+	<enum16 name="Alpha Outputs.Output CD" note="" info="" info_img="" offset="0x6A" visible="true">
+		<option name="Discard" value="00"/>
+		<option name="Scratch Alpha 0 / Final Alpha" value="01"/>
+		<option name="Scratch Alpha 1" value="02"/>
+		<option name="Vertex Alpha 0 / Fog" value="03"/>
+		<option name="Vertex Alpha 1" value="04"/>
+		<option name="Map Alpha 0" value="05"/>
+		<option name="Map Alpha 1" value="06"/>
+		<option name="Map Alpha 2" value="07"/>
+		<option name="Map Alpha 3" value="08"/>
+	</enum16>
+	
+	<enum16 name="Alpha Outputs.Output AB CD Mux / Sum" note="" info="" info_img="" offset="0x6C" visible="true">
+		<option name="Discard" value="00"/>
+		<option name="Scratch Alpha 0 / Final Alpha" value="01"/>
+		<option name="Scratch Alpha 1" value="02"/>
+		<option name="Vertex Alpha 0 / Fog" value="03"/>
+		<option name="Vertex Alpha 1" value="04"/>
+		<option name="Map Alpha 0" value="05"/>
+		<option name="Map Alpha 1" value="06"/>
+		<option name="Map Alpha 2" value="07"/>
+		<option name="Map Alpha 3" value="08"/>
+	</enum16>
+	
+	<enum16 name="Alpha Outputs.Output Mapping" note="" info="" info_img="" offset="0x6E" visible="true">
+		<option name="Identity" value="00"/>
+		<option name="Scale by ½" value="01"/>
+		<option name="Scale by 2" value="02"/>
+		<option name="Scale by 4" value="03"/>
+		<option name="Bias by -½" value="04"/>
+		<option name="Expand Normal" value="05"/>
+	</enum16>
+</struct>
+
+</plugin>

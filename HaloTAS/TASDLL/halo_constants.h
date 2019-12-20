@@ -20,6 +20,35 @@
 #include <boost/functional/hash.hpp>
 #include <type_traits>
 
+struct object_pool_entry
+{
+	uint16_t id;
+	uint16_t unk1;
+	uint16_t unk2;
+	uint16_t size;
+	uint32_t object_address;
+};
+
+inline extern int8_t MAGIC_DATAPOOLHEADER[] = {/* 0x00, 0x08, 0x0C, 0x00, 0x01, 0x00, 0x00, 0x00,*/ 0x40, 0x74, 0x40, 0x64 };
+struct object_pool_header {
+	char name[32];
+	uint16_t max_objects; // 0x800
+	uint16_t object_table_size; // 0xC
+	uint32_t unknown1; // 00000001
+	uint32_t signature; // 0x64407440 @t@d
+	int16_t objects;
+	int16_t max_object_count;
+	int16_t current_objects;
+	int16_t next_object_index;
+	object_pool_entry* object_data_begin;
+};
+
+struct Tag {
+	uint32_t id;
+	glm::vec3 displayColor;
+	std::string displayName;
+};
+
 // Utility to get an enum value as the underlying type
 template <typename E>
 constexpr auto to_underlying(E e) noexcept
@@ -46,6 +75,9 @@ namespace halo::constants {
 	static const float CAMERA_PITCH_MAX = 1.492f;
 	static const float CAMERA_YAW_MIN = 0.0f;
 	static const float CAMERA_YAW_MAX = glm::pi<float>() * 2.0f;
+
+	static uint8_t PATCH_CUTSCENE_FPS_CAP[]= { 0xEB };
+	static uint8_t PATCH_CUTSCENE_FPS_CAP_ORIGINAL[] = {0x74};
 }
 
 #if defined(HALO_VANILLA)
@@ -60,9 +92,11 @@ namespace halo::function {
 	inline extern  play_sound_actual_func* PLAY_SOUND = (play_sound_actual_func*)PLAY_SOUND_PTR;
 }
 
+
 namespace halo::addr {
 	inline extern uint32_t* RUNTIME_DATA_BEGIN = reinterpret_cast<uint32_t*>(0x40000000);
 	inline extern uint32_t* TAGS_BEGIN = reinterpret_cast<uint32_t*>(0x40440000);
+	inline extern object_pool_header* OBJ_POOL_HEADER = reinterpret_cast<object_pool_header*>(0x400506B4);
 
 	inline extern int32_t* FRAMES_SINCE_LEVEL_START_ANIMATION = reinterpret_cast<int32_t*>(0x00746F88);
 	inline extern int32_t* FRAMES_SINCE_LEVEL_START = reinterpret_cast<int32_t*>(0x008603CC);
@@ -98,6 +132,7 @@ namespace halo::addr {
 	inline extern int32_t* DINPUT_MOUSEZ = reinterpret_cast<int32_t*>(0x006B1814); // Scroll
 	inline extern char* INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
 	inline extern uint8_t* SOUND_ENABLED = reinterpret_cast<uint8_t*>(0x00725201);
+	inline extern uint8_t* CUTSCENE_FPS_CAP_PATCH = reinterpret_cast<uint8_t*>(0x004C9FB3); // 0x74 Default, 0xEB No Cap
 
 	// HUD Stuff
 	inline extern bool* HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
@@ -162,39 +197,8 @@ inline extern float* ADDR_GAME_SPEED = (float*)0x40000300;
 
 #endif
 
-
-struct ObjectPoolObject
-{
-	uint32_t ObjectAddress;
-	uint32_t unk1;
-	uint32_t unk2;
-};
-
-inline extern int8_t MAGIC_DATAPOOLHEADER[] = {/* 0x00, 0x08, 0x0C, 0x00, 0x01, 0x00, 0x00, 0x00,*/ 0x40, 0x74, 0x40, 0x64 };
-struct DataPool {
-	char Name[32];
-	uint32_t unk1; // 000C0800
-	uint32_t unk2; // 00000001
-	uint32_t DataHeader; // 0x64407440 @t@d
-	int16_t UnkCounter1;
-	int16_t ObjectCount;
-	int16_t UnkCounter3;
-	int16_t UnkCounter4; // Total objects ever?
-	uint32_t DataBeginAddress;
-	uint32_t unk3;
-	uint32_t unk4;
-
-	ObjectPoolObject ObjectPointers[8192];
-};
-
-struct Tag {
-	uint32_t id;
-	glm::vec3 displayColor;
-	std::string displayName;
-};
-
 namespace halo {
-	enum MAP {
+	enum class MAP {
 		PILLAR_OF_AUTUMN,
 		HALO,
 		TRUTH_AND_RECONCILIATION,

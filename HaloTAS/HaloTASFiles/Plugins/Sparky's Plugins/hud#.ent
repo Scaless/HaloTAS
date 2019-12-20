@@ -1,0 +1,11 @@
+<plugin class="hud#" author="sparky" version="4.0" headersize="Main">
+
+<dependency name="Digits Bitmap" note="" info="" info_img="" offset="0x00" visible="true"/>
+<int8 name="Bitmap Digit Width" note="" info="" info_img="" offset="0x10" visible="true"/>
+<int8 name="Screen Digit Width" note="" info="" info_img="" offset="0x11" visible="true"/>
+<int8 name="X Offset" note="" info="" info_img="" offset="0x12" visible="true"/>
+<int8 name="Y Offset" note="" info="" info_img="" offset="0x13" visible="true"/>
+<int8 name="Decimal Point Width" note="" info="" info_img="" offset="0x14" visible="true"/>
+<int8 name="Colon Width" note="" info="" info_img="" offset="0x15" visible="true"/>
+
+</plugin>

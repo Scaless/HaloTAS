@@ -1,0 +1,534 @@
+<plugin class="wphi" author="sparky" version="4.0" headersize="Main">
+
+<dependency name="Child HUD" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+<bitmask8 name="Flash Cutoffs.Flags" note="" info="" info_img="" offset="0x10" visible="true">
+	<option name="Use Parent HUD Flashing Parameters" value="07"/>
+</bitmask8>
+
+<short name="Flash Cutoffs.Total Ammo Cutoff" note="" info="" info_img="" offset="0x14" visible="true"/>
+<short name="Flash Cutoffs.Loaded Ammo Cutoff" note="" info="" info_img="" offset="0x16" visible="true"/>
+<short name="Flash Cutoffs.Heat Cutoff" note="" info="" info_img="" offset="0x18" visible="true"/>
+<short name="Flash Cutoffs.Age Cutoff" note="" info="" info_img="" offset="0x1A" visible="true"/>
+
+<enum16 name="Weapon HUD Screen Alignment.Anchor" note="" info="" info_img="" offset="0x3C" visible="true">
+	<option name="Top Left" value="00"/>
+	<option name="Top Right" value="01"/>
+	<option name="Bottom Left" value="02"/>
+	<option name="Bottom Right" value="03"/>
+	<option name="Center" value="04"/>
+</enum16>
+
+<!-- STATIC ELEMENTS (1) -->
+
+<struct name="Static Elements" note="" info="" info_img="" offset="0x60" visible="true" size="180">
+	<enum16 name="State Attached To" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Total Ammo" value="00"/>
+		<option name="Loaded Ammo" value="01"/>
+		<option name="Heat" value="02"/>
+		<option name="Age" value="03"/>
+		<option name="Secondary Weapon Total Ammo" value="04"/>
+		<option name="Secondary Weapon Loaded Ammo" value="05"/>
+		<option name="Distance to Target" value="06"/>
+		<option name="Elevation to Target" value="07"/>
+	</enum16>
+	
+	<enum16 name="Can Use on Map Type" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Any" value="00"/>
+		<option name="Solo" value="01"/>
+		<option name="Multiplayer" value="02"/>
+	</enum16>
+		
+	<short name="Anchor Offset: x" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<short name="Anchor Offset: y" note="" info="" info_img="" offset="0x26" visible="true"/>
+	
+	<float name="Width Scale" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Height Scale" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	
+	<bitmask16 name="Scaling Flags" note="" info="" info_img="" offset="0x30" visible="true">
+		<option name="Don't Scale Offset" value="15"/>
+		<option name="Don't Scale Size" value="14"/>
+		<option name="Use High-Resolution Scale" value="13"/>
+	</bitmask16>
+	
+	<dependency name="Interface Bitmap" note="" info="" info_img="" offset="0x48" visible="true"/>
+	
+	<colorbyte name="Default Color" note="" info="" info_img="" offset="0x58" visible="true"/>
+	<colorbyte name="Flashing Color" note="" info="" info_img="" offset="0x5C" visible="true"/>
+	
+	<float name="Flash Period" note="" info="" info_img="" offset="0x60" visible="true"/>
+	<float name="Flash Delay" note="" info="" info_img="" offset="0x64" visible="true"/>
+	
+	<short name="Number of Flashes" note="" info="" info_img="" offset="0x68" visible="true"/>
+	
+	<bitmask8 name="Flash Flags" note="" info="" info_img="" offset="0x6A" visible="true">
+		<option name="Reverse Default / Flashing Colors" value="07"/>
+	</bitmask8>
+	
+	<float name="Flash Length" note="" info="" info_img="" offset="0x6C" visible="true"/>
+	
+	<colorbyte name="Disabled Color" note="" info="" info_img="" offset="0x70" visible="true"/>
+	
+	<short name="Sequence Index" note="" info="" info_img="" offset="0x78" visible="true"/>
+	
+	<struct name="MultiTexture Overlay" note="" info="" info_img="" offset="0x7C" visible="true" size="480">
+		<short name="Type" note="" info="" info_img="" offset="0x02" visible="true"/>
+		
+		<enum16 name="Framebuffer Blend Function" note="" info="" info_img="" offset="0x04" visible="true">
+			<option name="Alpha Blend" value="00"/>
+			<option name="Multiply" value="01"/>
+			<option name="Double Multiply" value="02"/>
+			<option name="Add" value="03"/>
+			<option name="Subtract" value="04"/>
+			<option name="Component Minimum" value="05"/>
+			<option name="Component Maximum" value="06"/>
+			<option name="Alpha-Multiply Add" value="07"/>
+		</enum16>
+		
+		<enum16 name="Anchors.Primary Anchor" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Anchors.png" offset="0x28" visible="true">
+			<option name="Texture" value="00"/>
+			<option name="Screen" value="01"/>
+		</enum16>
+		
+		<enum16 name="Anchors.Secondary Anchor" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Anchors.png" offset="0x2A" visible="true">
+			<option name="Texture" value="00"/>
+			<option name="Screen" value="01"/>
+		</enum16>
+		
+		<enum16 name="Anchors.Tertiary Anchor" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Anchors.png" offset="0x2C" visible="true">
+			<option name="Texture" value="00"/>
+			<option name="Screen" value="01"/>
+		</enum16>
+		
+		<enum16 name="Blending Function.0 to 1 Blending Function" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Blending Function.png" offset="0x2E" visible="true">
+			<option name="Add" value="00"/>
+			<option name="Subtract" value="01"/>
+			<option name="Multiply" value="02"/>
+			<option name="Multiply 2x" value="03"/>
+			<option name="Dot" value="04"/>
+		</enum16>
+		
+		<enum16 name="Blending Function.1 to 2 Blending Function" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Blending Function.png" offset="0x30" visible="true">
+			<option name="Add" value="00"/>
+			<option name="Subtract" value="01"/>
+			<option name="Multiply" value="02"/>
+			<option name="Multiply 2x" value="03"/>
+			<option name="Dot" value="04"/>
+		</enum16>
+		
+		<float name="Map Scales.Primary Scale: x" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Scales.png" offset="0x34" visible="true"/>
+		<float name="Map Scales.Primary Scale: y" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Scales.png" offset="0x38" visible="true"/>
+		<float name="Map Scales.Secondary Scale: x" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Scales.png" offset="0x3C" visible="true"/>
+		<float name="Map Scales.Secondary Scale: y" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Scales.png" offset="0x40" visible="true"/>
+		<float name="Map Scales.Tertiary Scale: x" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Scales.png" offset="0x44" visible="true"/>
+		<float name="Map Scales.Tertiary Scale: y" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Scales.png" offset="0x48" visible="true"/>
+		
+		<float name="Map Offsets.Primary Offset: x" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Offsets.png" offset="0x4C" visible="true"/>
+		<float name="Map Offsets.Primary Offset: y" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Offsets.png" offset="0x50" visible="true"/>
+		<float name="Map Offsets.Secondary Offset: x" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Offsets.png" offset="0x54" visible="true"/>
+		<float name="Map Offsets.Secondary Offset: y" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Offsets.png" offset="0x58" visible="true"/>
+		<float name="Map Offsets.Tertiary Offset: x" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Offsets.png" offset="0x5C" visible="true"/>
+		<float name="Map Offsets.Tertiary Offset: y" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map Offsets.png" offset="0x60" visible="true"/>
+		
+		<dependency name="Map.Primary" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map.png" offset="0x64" visible="true"/>
+		<dependency name="Map.Secondary" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map.png" offset="0x74" visible="true"/>
+		<dependency name="Map.Tertiary" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map.png" offset="0x84" visible="true"/>
+		
+		<enum16 name="Map.Primary Wrap Mode" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map.png" offset="0x94" visible="true">
+			<option name="Clamp" value="00"/>
+			<option name="Wrap" value="01"/>
+		</enum16>
+		
+		<enum16 name="Map.Secondary Wrap Mode" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map.png" offset="0x96" visible="true">
+			<option name="Clamp" value="00"/>
+			<option name="Wrap" value="01"/>
+		</enum16>
+		
+		<enum16 name="Map.Tertiary Wrap Mode" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Map.png" offset="0x98" visible="true">
+			<option name="Clamp" value="00"/>
+			<option name="Wrap" value="01"/>
+		</enum16>
+		
+		<struct name="Effectors" note="" info="" info_img="" offset="0x154" visible="true" size="220">
+			<enum16 name="Source / Destination.Destination Type" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Source,Destination.png" offset="0x40" visible="true">
+				<option name="Tint (0 - 1 only)" value="00"/>
+				<option name="Horizontal Offset" value="01"/>
+				<option name="Vertical Offset" value="02"/>
+				<option name="Fade (0 - 1 only)" value="03"/>
+			</enum16>
+			
+			<enum16 name="Source / Destination.Destination" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Source,Destination.png" offset="0x42" visible="true">
+				<option name="Geometry Offset" value="00"/>
+				<option name="Primary Map" value="01"/>
+				<option name="Secondary Map" value="02"/>
+				<option name="Tertiary Map" value="03"/>
+			</enum16>
+			
+			<enum16 name="Source / Destination.Source" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Source,Destination.png" offset="0x44" visible="true">
+				<option name="Player Pitch" value="00"/>
+				<option name="Player Pitch Tangent" value="01"/>
+				<option name="Player Yaw" value="02"/>
+				<option name="Weapon Ammo (total)" value="03"/>
+				<option name="Weapon Ammo (loaded)" value="04"/>
+				<option name="Weapon Heat" value="05"/>
+				<option name="Explicit (uses low bound)" value="06"/>
+				<option name="Weapon Zoom Level" value="07"/>
+			</enum16>
+			
+			<float name="In / Out Bounds.In Bounds: from" note="source units" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x48" visible="true"/>
+			<float name="In / Out Bounds.In Bounds: to" note="source units" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x4C" visible="true"/>
+			<float name="In / Out Bounds.Out Bounds: from" note="pixels" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x50" visible="true"/>
+			<float name="In / Out Bounds.Out Bounds: to" note="pixels" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.In,Out Bounds.png" offset="0x54" visible="true"/>
+			
+			<colorRGB name="Tint Color Bounds.Tint Color Lower Bound" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Tint Color Bounds.png" offset="0x98" visible="true"/>
+			<colorRGB name="Tint Color Bounds.Tint Color Upper Bound" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Tint Color Bounds.png" offset="0xA4" visible="true"/>
+			
+			<enum16 name="Periodic Functions.Periodic Function" note="" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB0" visible="true">
+				<option name="One" value="00"/>
+				<option name="Zero" value="01"/>
+				<option name="Cosine" value="02"/>
+				<option name="Cosine (variable period)" value="03"/>
+				<option name="Diagonal Wave" value="04"/>
+				<option name="Diagonal Wave (variable period)" value="05"/>
+				<option name="Slide" value="06"/>
+				<option name="Slide (variable period)" value="07"/>
+				<option name="Noise" value="08"/>
+				<option name="Jitter" value="09"/>
+				<option name="Wander" value="10"/>
+				<option name="Spark" value="11"/>
+			</enum16>
+			
+			<float name="Periodic Functions.Function Period" note="seconds" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB4" visible="true"/>
+			<float name="Periodic Functions.Function Phase" note="seconds" info="" info_img="wphi Static Elements.MultiTex Overlay.Effectors.Periodic Functions.png" offset="0xB8" visible="true"/>
+		</struct>
+	</struct>
+</struct>
+
+<!-- METER ELEMENTS (2) -->
+
+<struct name="Meter Elements" note="" info="" info_img="" offset="0x6C" visible="true" size="180">
+	<enum16 name="State Attached To" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Total Ammo" value="00"/>
+		<option name="Loaded Ammo" value="01"/>
+		<option name="Heat" value="02"/>
+		<option name="Age" value="03"/>
+		<option name="Secondary Weapon Total Ammo" value="04"/>
+		<option name="Secondary Weapon Loaded Ammo" value="05"/>
+		<option name="Distance to Target" value="06"/>
+		<option name="Elevation to Target" value="07"/>
+	</enum16>
+	
+	<enum16 name="Can Use on Map Type" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Any" value="00"/>
+		<option name="Solo" value="01"/>
+		<option name="Multiplayer" value="02"/>
+	</enum16>
+
+	<short name="Anchor Offset: x" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<short name="Anchor Offset: y" note="" info="" info_img="" offset="0x26" visible="true"/>
+	
+	<float name="Width Scale" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Height Scale" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	
+	<bitmask16 name="Scaling Flags" note="" info="" info_img="" offset="0x30" visible="true">
+		<option name="Don't Scale Offset" value="15"/>
+		<option name="Don't Scale Size" value="14"/>
+		<option name="Use High-Resolution Scale" value="13"/>
+	</bitmask16>
+	
+	<dependency name="Meter Bitmap" note="" info="" info_img="" offset="0x48" visible="true"/>
+	
+	<colorbyte name="Color at Meter Minimum" note="" info="" info_img="" offset="0x58" visible="true"/>
+	<colorbyte name="Color at Meter Maximum" note="" info="" info_img="" offset="0x5C" visible="true"/>
+	<colorbyte name="Flash Color" note="" info="" info_img="" offset="0x60" visible="true"/>
+	<colorbyte name="Empty Color" note="" info="" info_img="" offset="0x64" visible="true"/>
+	
+	<bitmask16 name="Flags" note="" info="" info_img="" offset="0x68" visible="true">
+		<option name="Use Minimum / Maximum for State Changes" value="15"/>
+		<option name="Interpolate Between Minimum / Maximum Flash Colors as State Changes" value="14"/>
+		<option name="Interpolate Color Along HSV Space" value="13"/>
+		<option name="...More Colors for HSV Interpolation" value="12"/>
+		<option name="Invert Interpolation" value="11"/>
+	</bitmask16>
+	
+	<int8 name="Minimum Meter Value" note="" info="" info_img="" offset="0x69" visible="true"/>
+	<short name="Sequence Index" note="" info="" info_img="" offset="0x6A" visible="true"/>
+	<int8 name="Alpha Multiplier" note="" info="" info_img="" offset="0x6C" visible="true"/>
+	<int8 name="Alpha Bias" note="" info="" info_img="" offset="0x6D" visible="true"/>
+	<int8 name="Value Scale" note="" info="used for non-integral values, ie. health and shields" info_img="" offset="0x6E" visible="true"/>
+	
+	<float name="Opacity" note="" info="" info_img="" offset="0x70" visible="true"/>
+	<float name="Translucency" note="" info="" info_img="" offset="0x74" visible="true"/>
+	
+	<colorbyte name="Disabled Color" note="" info="" info_img="" offset="0x78" visible="true"/>
+</struct>
+
+<!-- NUMBER ELEMENTS (3) -->
+
+<struct name="Number Elements" note="" info="" info_img="" offset="0x78" visible="true" size="160">
+	<enum16 name="State Attached To" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Total Ammo" value="00"/>
+		<option name="Loaded Ammo" value="01"/>
+		<option name="Heat" value="02"/>
+		<option name="Age" value="03"/>
+		<option name="Secondary Weapon Total Ammo" value="04"/>
+		<option name="Secondary Weapon Loaded Ammo" value="05"/>
+		<option name="Distance to Target" value="06"/>
+		<option name="Elevation to Target" value="07"/>
+	</enum16>
+	
+	<enum16 name="Can Use on Map Type" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Any" value="00"/>
+		<option name="Solo" value="01"/>
+		<option name="Multiplayer" value="02"/>
+	</enum16>
+	
+	<short name="Anchor Offset: x" note="" info="" info_img="" offset="0x24" visible="true"/>
+	<short name="Anchor Offset: y" note="" info="" info_img="" offset="0x26" visible="true"/>
+	
+	<float name="Width Scale" note="" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Height Scale" note="" info="" info_img="" offset="0x2C" visible="true"/>
+	
+	<bitmask16 name="Scaling Flags" note="" info="" info_img="" offset="0x30" visible="true">
+		<option name="Don't Scale Offset" value="15"/>
+		<option name="Don't Scale Size" value="14"/>
+		<option name="Use High-Resolution Scale" value="13"/>
+	</bitmask16>
+	
+	<colorbyte name="Default Color" note="" info="" info_img="" offset="0x48" visible="true"/>
+	<colorbyte name="Flashing Color" note="" info="" info_img="" offset="0x4C" visible="true"/>
+	
+	<float name="Flash Period" note="" info="" info_img="" offset="0x50" visible="true"/>
+	<float name="Flash Delay" note="" info="" info_img="" offset="0x54" visible="true"/>
+	
+	<short name="Number of Flashes" note="" info="" info_img="" offset="0x58" visible="true"/>
+	
+	<bitmask8 name="Flash Flags" note="" info="" info_img="" offset="0x5A" visible="true">
+		<option name="Reverse Default / Flashing Colors" value="07"/>
+	</bitmask8>
+	
+	<float name="Flash Length" note="" info="" info_img="" offset="0x5C" visible="true"/>
+	
+	<colorbyte name="Disabled Color" note="" info="" info_img="" offset="0x60" visible="true"/>
+	
+	<int8 name="Maximum Number of Digits" note="" info="" info_img="" offset="0x68" visible="true"/>
+	
+	<bitmask16 name="Flags" note="" info="" info_img="" offset="0x69" visible="true">
+		<option name="Show Leading Zeros" value="15"/>
+		<option name="Only Show When Zoomed" value="14"/>
+		<option name="Draw a Trailing 'm'" value="13"/>
+	</bitmask16>
+	
+	<short name="Number of Fractional Digits" note="" info="" info_img="" offset="0x6A" visible="true"/>
+	
+	<bitmask8 name="Weapon-Specific Flags" note="" info="" info_img="" offset="0x78" visible="true">
+		<option name="Divide Number by Clip Size" value="07"/>
+		<option name="Divide by Zero!" note="" info="http://tinyurl.com/taxi-dividebyzero" info_img="" value="07"/>
+	</bitmask8>
+</struct>
+
+<!-- CROSSHAIRS -->
+
+<struct name="Crosshairs" note="" info="" info_img="wphi Crosshairs.png" offset="0x84" visible="true" size="104">
+	<enum16 name="Crosshair Type" note="" info="" info_img="wphi Crosshairs.png" offset="0x00" visible="true">
+		<option name="Aim" value="00"/>
+		<option name="Zoom" value="01"/>
+		<option name="Charge" value="02"/>
+		<option name="Should Reload" value="03"/>
+		<option name="Flash Heat" value="04"/>
+		<option name="Flash Total Ammo" value="05"/>
+		<option name="Flash Battery" value="06"/>
+		<option name="Reload / Overheat" value="07"/>
+		<option name="Flash When Firing and No Ammo" value="08"/>
+		<option name="Flash When Throwing and No Grenade" value="09"/>
+		<option name="Low Ammo and None Left to Reload" value="10"/>
+		<option name="Should Reload Secondary Trigger" value="11"/>
+		<option name="Flash Secondary Total Ammo" value="12"/>
+		<option name="Flash Secondary Reload" value="13"/>
+		<option name="Flash When Firing Secondary Trigger with No Ammo" value="14"/>
+		<option name="Low Secondary Ammo and None Left to Reload" value="15"/>
+		<option name="Primary Trigger Ready" value="16"/>
+		<option name="Secondary Trigger Ready" value="17"/>
+		<option name="Flash When Firing With Depleted Battery" value="18"/>
+	</enum16>
+	
+	<enum16 name="Can Use on Map Type" note="" info="" info_img="wphi Crosshairs.png" offset="0x04" visible="true">
+		<option name="Any" value="00"/>
+		<option name="Solo" value="01"/>
+		<option name="Multiplayer" value="02"/>
+	</enum16>
+	
+	<dependency name="Crosshair Bitmap" note="" info="" info_img="wphi Crosshairs.png" offset="0x24" visible="true"/>
+	
+	<struct name="Crosshair Overlays" note="" info="" info_img="wphi Crosshairs.png" offset="0x34" visible="true" size="108">
+		<short name="Anchor Offset: x" note="" info="" info_img="wphi Crosshairs.png" offset="0x00" visible="true"/>
+		<short name="Anchor Offset: y" note="" info="" info_img="wphi Crosshairs.png" offset="0x02" visible="true"/>
+		
+		<float name="Width Scale" note="" info="" info_img="wphi Crosshairs.png" offset="0x04" visible="true"/>
+		<float name="Height Scale" note="" info="" info_img="wphi Crosshairs.png" offset="0x08" visible="true"/>
+		
+		<bitmask16 name="Scaling Flags" note="" info="" info_img="wphi Crosshairs.png" offset="0x0C" visible="true">
+			<option name="Don't Scale Offset" value="15"/>
+			<option name="Don't Scale Size" value="14"/>
+			<option name="Use High-Resolution Scale" value="13"/>
+		</bitmask16>
+		
+		<colorbyte name="Default Color" note="" info="" info_img="wphi Crosshairs.png" offset="0x24" visible="true"/>
+		<colorbyte name="Flashing Color" note="" info="" info_img="wphi Crosshairs.png" offset="0x28" visible="true"/>
+		
+		<float name="Flash Period" note="" info="" info_img="wphi Crosshairs.png" offset="0x2C" visible="true"/>
+		<float name="Flash Delay" note="" info="" info_img="wphi Crosshairs.png" offset="0x30" visible="true"/>
+		
+		<short name="Number of Flashes" note="" info="" info_img="wphi Crosshairs.png" offset="0x34" visible="true"/>
+		
+		<bitmask8 name="Flash Flags" note="" info="" info_img="wphi Crosshairs.png" offset="0x36" visible="true">
+			<option name="Reverse Default / Flashing Colors" value="07"/>
+		</bitmask8>
+		
+		<float name="Flash Length" note="" info="" info_img="wphi Crosshairs.png" offset="0x38" visible="true"/>
+		
+		<colorbyte name="Disabled Color" note="" info="" info_img="wphi Crosshairs.png" offset="0x3C" visible="true"/>
+		
+		<short name="Frame Rate" note="" info="" info_img="wphi Crosshairs.png" offset="0x44" visible="true"/>
+		<short name="Sequence Index" note="" info="" info_img="wphi Crosshairs.png" offset="0x46" visible="true"/>
+		
+		<bitmask32 name="Flags" note="" info="" info_img="wphi Crosshairs.png" offset="0x48" visible="true">
+			<option name="Flashes When Active" value="31"/>
+			<option name="Not a Sprite" value="30"/>
+			<option name="Show Only When Zoomed" value="29"/>
+			<option name="Show Sniper Data" value="28"/>
+			<option name="Hide Area Outside Reticle" value="27"/>
+			<option name="One Zoom Level" value="26"/>
+			<option name="Don't Show When Zoomed" value="25"/>
+		</bitmask32>
+	</struct>
+</struct>
+
+<!-- OVERLAY ELEMENTS -->
+
+<struct name="Overlay Elements" note="" info="" info_img="" offset="0x90" visible="true" size="104">
+	<enum16 name="State Attached To" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Total Ammo" value="00"/>
+		<option name="Loaded Ammo" value="01"/>
+		<option name="Heat" value="02"/>
+		<option name="Age" value="03"/>
+		<option name="Secondary Weapon Total Ammo" value="04"/>
+		<option name="Secondary Weapon Loaded Ammo" value="05"/>
+		<option name="Distance to Target" value="06"/>
+		<option name="Elevation to Target" value="07"/>
+	</enum16>
+	
+	<enum16 name="Can Use on Map Type" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Any" value="00"/>
+		<option name="Solo" value="01"/>
+		<option name="Multiplayer" value="02"/>
+	</enum16>
+	
+	<dependency name="Overlay Bitmap" note="" info="" info_img="" offset="0x24" visible="true"/>
+	
+	<struct name="Overlays" note="" info="" info_img="" offset="0x34" visible="true" size="136">
+		<short name="Anchor Offset: x" note="" info="" info_img="" offset="0x00" visible="true"/>
+		<short name="Anchor Offset: y" note="" info="" info_img="" offset="0x02" visible="true"/>
+		
+		<float name="Width Scale" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<float name="Height Scale" note="" info="" info_img="" offset="0x08" visible="true"/>
+		
+		<bitmask16 name="Scaling Flags" note="" info="" info_img="" offset="0x0C" visible="true">
+			<option name="Don't Scale Offset" value="15"/>
+			<option name="Don't Scale Size" value="14"/>
+			<option name="Use High-Resolution Scale" value="13"/>
+		</bitmask16>
+		
+		<colorbyte name="Default Color" note="" info="" info_img="" offset="0x24" visible="true"/>
+		<colorbyte name="Flashing Color" note="" info="" info_img="" offset="0x28" visible="true"/>
+		
+		<float name="Flash Period" note="" info="" info_img="" offset="0x2C" visible="true"/>
+		<float name="Flash Delay" note="" info="" info_img="" offset="0x30" visible="true"/>
+		
+		<short name="Number of Flashes" note="" info="" info_img="" offset="0x34" visible="true"/>
+		
+		<bitmask8 name="Flash Flags" note="" info="" info_img="" offset="0x36" visible="true">
+			<option name="Reverse Default / Flashing Colors" value="07"/>
+		</bitmask8>
+		
+		<float name="Flash Length" note="" info="" info_img="" offset="0x38" visible="true"/>
+		
+		<colorbyte name="Disabled Color" note="" info="" info_img="" offset="0x3C" visible="true"/>
+		
+		<short name="Frame Rate" note="" info="" info_img="" offset="0x44" visible="true"/>
+		<short name="Sequence Index" note="" info="" info_img="" offset="0x48" visible="true"/>
+		
+		<bitmask32 name="Type" note="" info="" info_img="" offset="0x4A" visible="true">
+			<option name="Show on Flashing" value="31"/>
+			<option name="Show on Empty" value="30"/>
+			<option name="Show on Reload / Overheating" value="29"/>
+			<option name="Show on Default" value="28"/>
+			<option name="Show Always" value="27"/>
+		</bitmask32>
+		
+		<bitmask8 name="Flags" note="" info="" info_img="" offset="0x4C" visible="true">
+			<option name="Flashes When Active" value="07"/>
+		</bitmask8>
+	</struct>
+</struct>
+
+<bitmask32 name="Crosshair Usage" note="" info="" info_img="" offset="0x9C" visible="true">
+	<option name="Use crosshair" note="" info="tested by 002. If this is off, the reticle will not display." info_img="" value="31"/>
+</bitmask32>
+
+<!-- SCREEN EFFECT -->
+
+<struct name="Screen Effect" note="" info="maximum of 1" info_img="" offset="0xAC" visible="true" size="160">
+	<bitmask16 name="Mask.Flags" note="" info="" info_img="wphi Screen Effect.Mask.png" offset="0x04" visible="true">
+		<option name="Only When Zoomed" value="15"/>
+	</bitmask16>
+	<dependency name="Mask.Mask (Fullscreen)" note="" info="" info_img="wphi Screen Effect.Mask.png" offset="0x18" visible="true"/>
+	<dependency name="Mask.Mask (Splitscreen)" note="" info="" info_img="wphi Screen Effect.Mask.png" offset="0x28" visible="true"/>
+	
+	<bitmask16 name="Convolution.Flags" note="" info="" info_img="wphi Screen Effect.Convolution.png" offset="0x40" visible="true">
+		<option name="Only When Zoomed" value="15"/>
+	</bitmask16>
+	<float name="Convolution.Field of View IN Bounds: from" note="radians" info="" info_img="wphi Screen Effect.Convolution.png" offset="0x44" visible="true"/>
+	<float name="Convolution.Field of View IN Bounds: to" note="radians" info="" info_img="wphi Screen Effect.Convolution.png" offset="0x48" visible="true"/>
+	<float name="Convolution.Radius OUT Bounds: from" note="pixels" info="" info_img="wphi Screen Effect.Convolution.png" offset="0x4C" visible="true"/>
+	<float name="Convolution.Radius OUT Bounds: to" note="pixels" info="" info_img="wphi Screen Effect.Convolution.png" offset="0x50" visible="true"/>
+	
+	<bitmask16 name="Night-Vision.Flags" note="" info="" info_img="wphi Screen Effect.Night Vision.png" offset="0x6C" visible="true">
+		<option name="Only When Zoomed" value="15"/>
+		<option name="Connect to Flashlight" value="14"/>
+		<option name="Masked" value="13"/>
+	</bitmask16>
+	<short name="Night-Vision.Script Source" note="0 - 3 only" info="" info_img="wphi Screen Effect.Night Vision.png" offset="0x6E" visible="true"/>
+	<float name="Night-Vision.Intensity" note="0 - 1 only" info="" info_img="wphi Screen Effect.Night Vision.png" offset="0x70" visible="true"/>
+	
+	<bitmask16 name="Desaturation.Flags" note="" info="" info_img="wphi Screen Effect.Desaturation.png" offset="0x8C" visible="true">
+		<option name="Only When Zoomed" value="15"/>
+		<option name="Connect to Flashlight" value="14"/>
+		<option name="Additive" value="13"/>
+		<option name="Masked" value="12"/>
+	</bitmask16>
+	<short name="Desaturation.Script Source" note="0 - 3 only" info="" info_img="wphi Screen Effect.Desaturation.png" offset="0x8E" visible="true"/>
+	<float name="Desaturation.Intensity" note="0 - 1 only" info="" info_img="wphi Screen Effect.Desaturation.png" offset="0x90" visible="true"/>
+	<colorRGB name="Desaturation.Tint" note="" info="" info_img="wphi Screen Effect.Desaturation.png" offset="0x94" visible="true"/>
+</struct>
+
+<!-- MESSAGING INFORMATION -->
+
+<short name="Messaging Information.Sequence Index" note="" info="into the global HUD icon bitmap" info_img="" offset="0x13C" visible="true"/>
+<short name="Messaging Information.Width Offset" note="" info="extra spacing beyond bitmap width for text alignment" info_img="" offset="0x13E" visible="true"/>
+<short name="Messaging Information.Offset From Reference Corner: x" note="" info="" info_img="" offset="0x140" visible="true"/>
+<short name="Messaging Information.Offset From Reference Corner: y" note="" info="" info_img="" offset="0x142" visible="true"/>
+
+<colorbyte name="Messaging Information.Override Icon Color " note="" info="Taxi: 'ARGB is really RGBA'" info_img="" offset="0x144" visible="true"/>
+
+<int8 name="Messaging Information.Frame Rate" note="0 - 30 only" info="" info_img="" offset="0x148" visible="true"/>
+
+<bitmask16 name="Messaging Information.Flags" note="" info="" info_img="" offset="0x149" visible="true">
+	<option name="Use Text From String_List Instead" value="15"/>
+	<option name="Override Default Color" value="14"/>
+	<option name="Width Offset is Absolute Icon Width" value="13"/>
+</bitmask16>
+
+<short name="Messaging Information.Text Index" note="" info="" info_img="" offset="0x14A" visible="true"/>
+
+</plugin>

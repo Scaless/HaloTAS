@@ -1,0 +1,13 @@
+<plugin class="trak" author="sparky" version="4.0" headersize="Main">
+
+<struct name="Control Points" note="" info="" info_img="" offset="0x04" visible="true" size="60">
+	<float name="Position: i (1)" note="" info="" info_img="" offset="0x00" visible="true"/>
+	<float name="Position: i (2)" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Position: k" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<float name="Orientation: i (1)" note="" info="" info_img="" offset="0x0C" visible="true"/>
+	<float name="Orientation: i (2)" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Orientation: k" note="" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Orientation: w" note="" info="" info_img="" offset="0x18" visible="true"/>
+</struct>
+
+</plugin>

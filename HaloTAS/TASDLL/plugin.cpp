@@ -4,6 +4,7 @@
 #include "halo_map_data.h"
 #include "halo_constants.h"
 #include <map>
+#include <sstream>
 
 using namespace halo::mapdata;
 
@@ -19,6 +20,7 @@ TAG_PROPERTY_TYPE plugin::get_element_type(const std::string& type_str)
 	else if (type_str == "int8") { return TAG_PROPERTY_TYPE::INT8; }
 	else if (type_str == "short") { return TAG_PROPERTY_TYPE::INT16; }
 	else if (type_str == "long") { return TAG_PROPERTY_TYPE::INT32; }
+	else if (type_str == "int32") { return TAG_PROPERTY_TYPE::INT32; }
 	else if (type_str == "string4") { return TAG_PROPERTY_TYPE::STRING4; }
 	else if (type_str == "string32") { return TAG_PROPERTY_TYPE::STRING32; }
 	else if (type_str == "dependency") { return TAG_PROPERTY_TYPE::REFERENCE; }
@@ -34,9 +36,59 @@ TAG_PROPERTY_TYPE plugin::get_element_type(const std::string& type_str)
 	}
 }
 
+std::string plugin::get_type_str(TAG_PROPERTY_TYPE type)
+{
+	switch (type) {
+	case TAG_PROPERTY_TYPE::ENUM16: return "enum16";
+	case TAG_PROPERTY_TYPE::ENUM32: return "enum32";
+	case TAG_PROPERTY_TYPE::BITMASK8: return "bitmask8";
+	case TAG_PROPERTY_TYPE::BITMASK16: return "bitmask16";
+	case TAG_PROPERTY_TYPE::BITMASK32: return "bitmask32";
+	case TAG_PROPERTY_TYPE::FLOAT: return "float";
+	case TAG_PROPERTY_TYPE::INT8: return "int8";
+	case TAG_PROPERTY_TYPE::INT16: return "short";
+	case TAG_PROPERTY_TYPE::INT32: return "long";
+	case TAG_PROPERTY_TYPE::STRING4: return "string4";
+	case TAG_PROPERTY_TYPE::STRING32: return "string32";
+	case TAG_PROPERTY_TYPE::REFERENCE: return "tag_id";
+	case TAG_PROPERTY_TYPE::COLOR_RGBA8: return "colorbyte";
+	case TAG_PROPERTY_TYPE::COLOR_RGB32: return "colorRGB";
+	case TAG_PROPERTY_TYPE::COLOR_ARGB32: return "colorARGB";
+	default:
+		return "";
+	}
+}
+
+std::string new_patch_string(tag_property& prop, void* addr, const std::string& valueStr) {
+	std::stringstream ss;
+	ss << "<patch>\r\n";
+
+	ss << "\t<name>NEW_PATCH</name>\r\n";
+	ss << "\t<optional_name>" << prop.name << "</optional_name>\r\n";
+	ss << "\t<address>" << addr << "</address>\r\n";
+	ss << "\t<type>" << plugin::get_type_str(prop.type) << "</type>\r\n";
+	ss << "\t<value>" << valueStr << "</value>\r\n";
+	
+	ss << "</patch>";
+
+	return ss.str();
+}
+
+void draw_patch_button(tag_property& prop, void* value_ptr, std::string& value_str) {
+	if (ImGui::Button("patch")) {
+		std::string patch_string = new_patch_string(prop, value_ptr, value_str);
+		ImGui::SetClipboardText(patch_string.c_str());
+	}
+	ImGui::SameLine();
+}
+
 void draw_element_float(tag_property& prop, void* base_ptr) {
 
 	float* value_ptr = (float*)((char*)base_ptr + prop.local_offset);
+
+	std::string value_str = std::to_string(*value_ptr);
+	draw_patch_button(prop, value_ptr, value_str);
+	
 	ImGui::PushItemWidth(200);
 	ImGui::InputFloat(prop.name.c_str(), value_ptr);
 	ImGui::PopItemWidth();
@@ -87,7 +139,6 @@ void draw_element_rgba8(tag_property& prop, void* base_ptr) {
 
 void draw_element_rgb32(tag_property& prop, void* base_ptr) {
 	color_rgb32* colorData = (color_rgb32*)((char*)base_ptr + prop.local_offset);
-
 	ImGui::ColorEdit3(prop.name.c_str(), (float*)colorData);
 }
 

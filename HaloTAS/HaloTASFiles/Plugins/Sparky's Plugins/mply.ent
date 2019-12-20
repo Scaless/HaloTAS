@@ -1,0 +1,9 @@
+<plugin class="mply" author="sparky" version="4.0" headersize="Main">
+
+<struct name="Multiplayer Scenarios" note="" info="" info_img="mply Net Map Info.png" offset="0x00" visible="true" size="68">
+	<dependency name="Descriptive Bitmap" note="" info="" info_img="mply Net Map Info.png" offset="0x00" visible="true"/>
+	<dependency name="Displayed Map Name" note="" info="" info_img="mply Net Map Info.png" offset="0x10" visible="true"/>
+	<string32 name="Scenario Tag Directory Path" note="" info="" info_img="mply Net Map Info.png" offset="0x20" visible="true"/>
+</struct>
+
+</plugin>

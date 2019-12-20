@@ -1,0 +1,90 @@
+<plugin class="elec" author="sparky" version="4.0" headersize="Main">
+
+<short name="Lightning.Count" note="0 defaults to 1" info="number of overlapping lightning effects to render" info_img="" offset="0x02" visible="true"/>
+
+<float name="Lightning.Near Fade Distance" note="world units" info="distance at which lightning is at full brightness" info_img="" offset="0x14" visible="true"/>
+<float name="Lightning.Far Fade Distance" note="world units" info="distance at which lightning is at zero brightness" info_img="" offset="0x18" visible="true"/>
+
+<enum16 name="Lightning.Jitter Scale Source" note="" info="" info_img="" offset="0x2C" visible="true">
+	<option name="None" value="00"/>
+	<option name="A out" value="01"/>
+	<option name="B out" value="02"/>
+	<option name="C out" value="03"/>
+	<option name="D out" value="04"/>
+</enum16>
+
+<enum16 name="Lightning.Thickness Scale Source" note="" info="" info_img="" offset="0x2E" visible="true">
+	<option name="None" value="00"/>
+	<option name="A out" value="01"/>
+	<option name="B out" value="02"/>
+	<option name="C out" value="03"/>
+	<option name="D out" value="04"/>
+</enum16>
+
+<enum16 name="Lightning.Tint Modulation Source" note="" info="" info_img="" offset="0x30" visible="true">
+	<option name="None" value="00"/>
+	<option name="A" value="01"/>
+	<option name="B" value="02"/>
+	<option name="C" value="03"/>
+	<option name="D" value="04"/>
+</enum16>
+
+<enum16 name="Lightning.Brightness Scale Source" note="" info="" info_img="" offset="0x32" visible="true">
+	<option name="None" value="00"/>
+	<option name="A out" value="01"/>
+	<option name="B out" value="02"/>
+	<option name="C out" value="03"/>
+	<option name="D out" value="04"/>
+</enum16>
+
+<dependency name="Lightning.Bitmap" note="" info="" info_img="" offset="0x34" visible="true"/>
+
+<struct name="Markers" note="" info="" info_img="" offset="0x98" visible="true" size="228">
+	<string32 name="Attachment Marker" note="" info="" info_img="" offset="0x00" visible="true"/>
+	
+	<bitmask8 name="Flags" note="" info="" info_img="" offset="0x20" visible="true">	
+		<option name="Not Connected To Next Marker" value="07"/>
+	</bitmask8>
+	
+	<short name="Octaves to Next Marker" note="" info="" info_img="" offset="0x24" visible="true"/>
+	
+	<float name="Random Position Bounds: i (1)" note="world units" info="" info_img="" offset="0x74" visible="true"/>
+	<float name="Random Position Bounds: i (2)" note="world units" info="" info_img="" offset="0x78" visible="true"/>
+	<float name="Random Position Bounds: k" note="world units" info="" info_img="" offset="0x7C" visible="true"/>
+	<float name="Random Jitter" note="world units" info="" info_img="" offset="0x80" visible="true"/>
+	<float name="Thickness" note="world units" info="" info_img="" offset="0x84" visible="true"/>
+
+	<colorARGB name="Tint" note="alpha is brightness" info="" info_img="" offset="0x88" visible="true"/>
+</struct>
+
+<struct name="Shader" note="maximum of one" info="" info_img="" offset="0xA4" visible="true" size="32">
+	
+	<bitmask16 name="Shader Flags" note="" info="" info_img="" offset="0x28" visible="true">
+		<option name="Sort Bias" value="15"/>
+		<option name="Nonlinear Tint" value="14"/>
+		<option name="Don't Overdraw First-Person Weapon" value="13"/>
+	</bitmask16>
+	
+	<enum16 name="Framebuffer Blend Function" note="" info="" info_img="" offset="0x2A" visible="true">
+		<option name="Alpha Blend" value="00"/>
+		<option name="Multiply" value="01"/>
+		<option name="Double Multiply" value="02"/>
+		<option name="Add" value="03"/>
+		<option name="Subtract" value="04"/>
+		<option name="Component Minimum" value="05"/>
+		<option name="Component Maximum" value="06"/>
+		<option name="Alpha-Multiply Add" value="07"/>
+	</enum16>
+
+	<enum16 name="Framebuffer Fade Mode" note="" info="" info_img="" offset="0x2C" visible="true">
+		<option name="None" value="00"/>
+		<option name="Fade When Perpendicular" value="01"/>
+		<option name="Fade When Parallel" value="02"/>
+	</enum16>
+
+	<bitmask8 name="Map Flags" note="" info="" info_img="" offset="0x2E" visible="true">
+		<option name="Unfiltered" value="07"/>
+	</bitmask8>
+</struct>
+
+</plugin>

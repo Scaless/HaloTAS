@@ -1,0 +1,646 @@
+<plugin class="bipd" author="sparky" version="4.0" headersize="Main">
+
+<bitmask16 name="Flags" note="" info="" info_img="" offset="0x02" visible="true">
+	<option name="Does Not Cast Shadow" value="15"/>
+	<option name="Transparent Self-Occlusion" value="14"/>
+	<option name="Brighter Than It Should Be" value="13"/>
+	<option name="Not a Pathfinding Obstacle" value="12"/>
+</bitmask16>
+
+<float name="Bounding Radius" note="world units" info="" info_img="" offset="0x04" visible="true"/>
+<float name="Bounding Offset: x" note="" info="" info_img="" offset="0x08" visible="true"/>
+<float name="Bounding Offset: y" note="" info="" info_img="" offset="0x0C" visible="true"/>
+<float name="Bounding Offset: z" note="" info="" info_img="" offset="0x10" visible="true"/>
+<float name="Origin Offset: x" note="" info="" info_img="" offset="0x14" visible="true"/>
+<float name="Origin Offset: y" note="" info="" info_img="" offset="0x18" visible="true"/>
+<float name="Origin Offset: z" note="" info="" info_img="" offset="0x1C" visible="true"/>
+<float name="Acceleration Scale" note="" info="" info_img="" offset="0x20" visible="true"/>
+
+<dependency name="Model" note="" info="" info_img="" offset="0x28" visible="true"/>
+<dependency name="Animation Graph" note="" info="" info_img="" offset="0x38" visible="true"/>
+<dependency name="Collision Model" note="" info="" info_img="" offset="0x70" visible="true"/>
+<dependency name="Physics" note="" info="" info_img="" offset="0x80" visible="true"/>
+
+<dependency name="Modifier Shader" note="" info="" info_img="" offset="0x90" visible="true"/>
+<dependency name="Creation Effect" note="" info="" info_img="" offset="0xA0" visible="true"/>
+
+<float name="Render Bounding Radius" note="world units" info="" info_img="" offset="0x104" visible="true"/>
+
+<enum16 name="Export to Functions.A in" note="" info="" info_img="" offset="0x108" visible="true">
+	<option name="none" value="00"/>
+	<option name="Body Vitality" value="01"/>
+	<option name="Shield Vitality" value="02"/>
+	<option name="Recent Body Damage" value="03"/>
+	<option name="Recent Shield Damage" value="04"/>
+	<option name="Random Constant" value="05"/>
+	<option name="Umbrella Shield Vitality" value="06"/>
+	<option name="Shield Stun" value="07"/>
+	<option name="Recent Umbrella Shield Vitality" value="08"/>
+	<option name="Umbrella Shield Stun" value="09"/>
+	<option name="Region #00 Damage" value="10"/>
+	<option name="Region #01 Damage" value="11"/>
+	<option name="Region #02 Damage" value="12"/>
+	<option name="Region #03 Damage" value="13"/>
+	<option name="Region #04 Damage" value="14"/>
+	<option name="Region #05 Damage" value="15"/>
+	<option name="Region #06 Damage" value="16"/>
+	<option name="Region #07 Damage" value="17"/>
+	<option name="Alive" value="18"/>
+	<option name="Compass" value="19"/>
+</enum16>
+
+<enum16 name="Export to Functions.B in" note="" info="" info_img="" offset="0x10A" visible="true">
+	<option name="none" value="00"/>
+	<option name="Body Vitality" value="01"/>
+	<option name="Shield Vitality" value="02"/>
+	<option name="Recent Body Damage" value="03"/>
+	<option name="Recent Shield Damage" value="04"/>
+	<option name="Random Constant" value="05"/>
+	<option name="Umbrella Shield Vitality" value="06"/>
+	<option name="Shield Stun" value="07"/>
+	<option name="Recent Umbrella Shield Vitality" value="08"/>
+	<option name="Umbrella Shield Stun" value="09"/>
+	<option name="Region #00 Damage" value="10"/>
+	<option name="Region #01 Damage" value="11"/>
+	<option name="Region #02 Damage" value="12"/>
+	<option name="Region #03 Damage" value="13"/>
+	<option name="Region #04 Damage" value="14"/>
+	<option name="Region #05 Damage" value="15"/>
+	<option name="Region #06 Damage" value="16"/>
+	<option name="Region #07 Damage" value="17"/>
+	<option name="Alive" value="18"/>
+	<option name="Compass" value="19"/>
+</enum16>
+
+<enum16 name="Export to Functions.C in" note="" info="" info_img="" offset="0x10C" visible="true">
+	<option name="none" value="00"/>
+	<option name="Body Vitality" value="01"/>
+	<option name="Shield Vitality" value="02"/>
+	<option name="Recent Body Damage" value="03"/>
+	<option name="Recent Shield Damage" value="04"/>
+	<option name="Random Constant" value="05"/>
+	<option name="Umbrella Shield Vitality" value="06"/>
+	<option name="Shield Stun" value="07"/>
+	<option name="Recent Umbrella Shield Vitality" value="08"/>
+	<option name="Umbrella Shield Stun" value="09"/>
+	<option name="Region #00 Damage" value="10"/>
+	<option name="Region #01 Damage" value="11"/>
+	<option name="Region #02 Damage" value="12"/>
+	<option name="Region #03 Damage" value="13"/>
+	<option name="Region #04 Damage" value="14"/>
+	<option name="Region #05 Damage" value="15"/>
+	<option name="Region #06 Damage" value="16"/>
+	<option name="Region #07 Damage" value="17"/>
+	<option name="Alive" value="18"/>
+	<option name="Compass" value="19"/>
+</enum16>
+
+<enum16 name="Export to Functions.D in" note="" info="" info_img="" offset="0x10E" visible="true">
+	<option name="none" value="00"/>
+	<option name="Body Vitality" value="01"/>
+	<option name="Shield Vitality" value="02"/>
+	<option name="Recent Body Damage" value="03"/>
+	<option name="Recent Shield Damage" value="04"/>
+	<option name="Random Constant" value="05"/>
+	<option name="Umbrella Shield Vitality" value="06"/>
+	<option name="Shield Stun" value="07"/>
+	<option name="Recent Umbrella Shield Vitality" value="08"/>
+	<option name="Umbrella Shield Stun" value="09"/>
+	<option name="Region #00 Damage" value="10"/>
+	<option name="Region #01 Damage" value="11"/>
+	<option name="Region #02 Damage" value="12"/>
+	<option name="Region #03 Damage" value="13"/>
+	<option name="Region #04 Damage" value="14"/>
+	<option name="Region #05 Damage" value="15"/>
+	<option name="Region #06 Damage" value="16"/>
+	<option name="Region #07 Damage" value="17"/>
+	<option name="Alive" value="18"/>
+	<option name="Compass" value="19"/>
+</enum16>
+
+<short name="Export to Functions.HUD Text Message Index" note="" info="" info_img="" offset="0x13C" visible="true"/>
+<short name="Export to Functions.Forced Shader Permutation Index" note="" info="" info_img="" offset="0x13E" visible="true"/>
+
+<struct name="Attachments" note="" info="" info_img="" offset="0x140" visible="true" size="72">
+	<dependency name="Type" note="" info="" info_img="" offset="0x00" visible="true"/>
+
+	<string32 name="Marker" note="" info="" info_img="" offset="0x10" visible="true"/>
+
+	<enum16 name="Primary Scale" note="" info="" info_img="" offset="0x30" visible="true">
+		<option name="none" value="00"/>
+		<option name="A out" value="01"/>
+		<option name="B out" value="02"/>
+		<option name="C out" value="03"/>
+		<option name="D out" value="04"/>
+	</enum16>
+	
+	<enum16 name="Secondary Scale" note="" info="" info_img="" offset="0x32" visible="true">
+		<option name="none" value="00"/>
+		<option name="A out" value="01"/>
+		<option name="B out" value="02"/>
+		<option name="C out" value="03"/>
+		<option name="D out" value="04"/>
+	</enum16>
+	
+	<enum16 name="Change Color" note="" info="" info_img="" offset="0x34" visible="true">
+		<option name="none" value="00"/>
+		<option name="A" value="01"/>
+		<option name="B" value="02"/>
+		<option name="C" value="03"/>
+		<option name="D" value="04"/>
+	</enum16>
+</struct>
+
+<struct name="Widgets" note="" info="" info_img="" offset="0x14C" visible="true" size="32">
+	<dependency name="Reference" note="" info="antenna, flag, glow, light_volume or lightning" info_img="" offset="0x0" visible="true"/>
+</struct>
+
+<struct name="Functions" note="" info="" info_img="" offset="0x158" visible="true" size="360">
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x0" visible="true">
+		<option name="Invert" value="31"/>
+		<option name="Additive" value="30"/>
+		<option name="Always Active" value="29"/>
+	</bitmask32>
+	
+	<float name="Period" note="seconds" info="" info_img="" offset="0x04" visible="true"/>
+	
+	<enum16 name="Scale Period By" note="" info="" info_img="" offset="0x08" visible="true">
+		<option name="none" value="00"/>
+		<option name="A in" value="01"/>
+		<option name="B in" value="02"/>
+		<option name="C in" value="03"/>
+		<option name="D in" value="04"/>
+		<option name="A out" value="05"/>
+		<option name="B out" value="06"/>
+		<option name="C out" value="07"/>
+		<option name="D out" value="08"/>
+	</enum16>
+	
+	<enum16 name="Function" note="" info="" info_img="" offset="0x0A" visible="true">
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+	</enum16>
+	
+	<enum16 name="Scale Function By" note="" info="" info_img="" offset="0x0C" visible="true">
+		<option name="none" value="00"/>
+		<option name="A in" value="01"/>
+		<option name="B in" value="02"/>
+		<option name="C in" value="03"/>
+		<option name="D in" value="04"/>
+		<option name="A out" value="05"/>
+		<option name="B out" value="06"/>
+		<option name="C out" value="07"/>
+		<option name="D out" value="08"/>
+	</enum16>
+	
+	<enum16 name="Wobble Function" note="" info="" info_img="" offset="0x0E" visible="true">
+		<option name="One" value="00"/>
+		<option name="Zero" value="01"/>
+		<option name="Cosine" value="02"/>
+		<option name="Cosine (variable period)" value="03"/>
+		<option name="Diagonal Wave" value="04"/>
+		<option name="Diagonal Wave (variable period)" value="05"/>
+		<option name="Slide" value="06"/>
+		<option name="Slide (variable period)" value="07"/>
+		<option name="Noise" value="08"/>
+		<option name="Jitter" value="09"/>
+		<option name="Wander" value="10"/>
+		<option name="Spark" value="11"/>
+	</enum16>
+	
+	<float name="Wobble Period" note="" info="" info_img="" offset="0x10" visible="true"/>
+	<float name="Wobble Magnitude" note="" info="" info_img="" offset="0x14" visible="true"/>
+	<float name="Square Wave Threshold" note="0 - 1 only" info="" info_img="" offset="0x18" visible="true"/>
+	
+	<short name="Step Count" note="" info="" info_img="" offset="0x1C" visible="true"/>
+	
+	<enum16 name="Map to" note="" info="" info_img="" offset="0x1E" visible="true">
+		<option name="Linear" value="00"/>
+		<option name="Early" value="01"/>
+		<option name="Very Early" value="02"/>
+		<option name="Late" value="03"/>
+		<option name="Very Late" value="04"/>
+		<option name="Cosine" value="05"/>
+	</enum16>
+	
+	<short name="Sawtooth Count" note="" info="" info_img="" offset="0x20" visible="true"/>
+	
+	<enum16 name="Add" note="" info="" info_img="" offset="0x22" visible="true">
+		<option name="none" value="00"/>
+		<option name="A in" value="01"/>
+		<option name="B in" value="02"/>
+		<option name="C in" value="03"/>
+		<option name="D in" value="04"/>
+		<option name="A out" value="05"/>
+		<option name="B out" value="06"/>
+		<option name="C out" value="07"/>
+		<option name="D out" value="08"/>
+	</enum16>
+	
+	<enum16 name="Scale Result by" note="" info="" info_img="" offset="0x24" visible="true">
+		<option name="none" value="00"/>
+		<option name="A in" value="01"/>
+		<option name="B in" value="02"/>
+		<option name="C in" value="03"/>
+		<option name="D in" value="04"/>
+		<option name="A out" value="05"/>
+		<option name="B out" value="06"/>
+		<option name="C out" value="07"/>
+		<option name="D out" value="08"/>
+	</enum16>
+	
+	<enum16 name="Bounds Mode" note="" info="" info_img="" offset="0x26" visible="true">
+		<option name="Clip" value="00"/>
+		<option name="Clip and Normalize" value="01"/>
+		<option name="Scale to Fit" value="02"/>
+	</enum16>
+	
+	<float name="Bounds: from" note="0 - 1 only" info="" info_img="" offset="0x28" visible="true"/>
+	<float name="Bounds: to" note="0 - 1 only" info="" info_img="" offset="0x2C" visible="true"/>
+	
+	<enum16 name="Turn off with" note="NOTE: This is a hack, use Indexes type instead." info="" info_img="" offset="0x36" visible="true">
+		<option name="none" value="65535"/>
+		<option name="A out (Function 1)" value="00"/>
+		<option name="B out (Function 2)" value="01"/>
+		<option name="C out (Function 3)" value="02"/>
+		<option name="D out (Function 4)" value="03"/>
+	</enum16>
+	
+	<index name="Turn off with" note="Functions/Chunks 1-4 = 'A out' through 'D out'" info="" info_img="" offset="0x36" reflexive="main:Functions" visible="true"/>
+	
+	<float name="Scale by" note="" info="applied before clip; ignored if zero" info_img="" offset="0x38" visible="true"/>
+	<float name="Function Acceleration Scale" note="0 = function is disabled" info="tested by 002. 'When playing with the banshee's wingtip, I noticed that 0 disabled the contrail, causing the contrail sound to be at lowest. Setting it to 50 causes the function to speed up in acceleration and maxed out the contrail and contrail pitch, reminding me why they called it the 'Banshee'.'" info_img="" offset="0x138" visible="true"/>
+	
+	<string32 name="Usage" note="" info="" info_img="" offset="0x148" visible="true"/>
+</struct>
+
+<struct name="Change Colors" note="" info="" info_img="" offset="0x164" visible="true" size="72">
+	<enum16 name="Darken by" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="none" value="00"/>
+		<option name="A in" value="01"/>
+		<option name="B in" value="02"/>
+		<option name="C in" value="03"/>
+		<option name="D in" value="04"/>
+		<option name="A out" value="05"/>
+		<option name="B out" value="06"/>
+		<option name="C out" value="07"/>
+		<option name="D out" value="08"/>
+	</enum16>
+	
+	<enum16 name="Scale by" note="" info="" info_img="" offset="0x02" visible="true">
+		<option name="none" value="00"/>
+		<option name="A in" value="01"/>
+		<option name="B in" value="02"/>
+		<option name="C in" value="03"/>
+		<option name="D in" value="04"/>
+		<option name="A out" value="05"/>
+		<option name="B out" value="06"/>
+		<option name="C out" value="07"/>
+		<option name="D out" value="08"/>
+	</enum16>
+	
+	<bitmask32 name="Scale Flags" note="" info="" info_img="" offset="0x04" visible="true">
+		<option name="Blend in HSV" value="31"/>
+		<option name="...More Colors" value="30"/>
+	</bitmask32>
+	
+	<colorRGB name="Color Lower Bound" note="" info="" info_img="" offset="0x08" visible="true"/>
+	<colorRGB name="Color Upper Bound" note="" info="" info_img="" offset="0x14" visible="true"/>
+	
+	<struct name="Permutations" note="" info="" info_img="" offset="0x20" visible="true" size="28">
+		<float name="Weight" note="" info="confusing formula, ask Sparky for help if this matters to you, otherwise don't touch" info_img="" offset="0x00" visible="true"/>
+		
+		<colorRGB name="Color Lower Bound" note="" info="" info_img="" offset="0x04" visible="true"/>
+		<colorRGB name="Color Upper Bound" note="" info="" info_img="" offset="0x10" visible="true"/>
+	</struct>
+</struct>
+
+<struct name="Predicted Resources" note="" info="Note: Useless, don't touch, doesn't even exist" info_img="" offset="0x170" visible="true" size="6">
+	<enum16 name="Type" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Bitmap" value="00"/>
+		<option name="Sound" value="01"/>
+	</enum16>
+	
+	<short name="Resource Index" note="" info="" info_img="" offset="0x02" visible="true"/>
+	<short name="Tag Index" note="" info="" info_img="" offset="0x04" visible="true"/>
+</struct>
+
+<bitmask32 name="Unit.Flags" note="" info="" info_img="" offset="0x17C" visible="true">
+	<option name="Circular Aiming" value="31"/>
+	<option name="Destroyed After Dying" value="30"/>
+	<option name="Half-Speed Interpolation" value="29"/>
+	<option name="Fires From Camera" value="28"/>
+	<option name="Entrance Inside Bounding Sphere" value="27"/>
+	<option name="Unused" value="26"/>
+	<option name="Causes Passenger Dialogue" value="25"/>
+	<option name="Resists Pings" value="24"/>
+	<option name="Melee Attack is Fatal" value="23"/>
+	<option name="Don't Reface During Pings" value="22"/>
+	<option name="Has No Aiming" value="21"/>
+	<option name="Simple Creature" value="20"/>
+	<option name="Impact Melee Attaches to Unit" value="19"/>
+	<option name="Impact Melee Dies on Shields" value="18"/>
+	<option name="Cannot Open Doors Automatically" value="17"/>
+	<option name="Melee Attackers Cannot Attach" value="16"/>
+	<option name="Not Instantly Killed by Melee" value="15"/>
+	<option name="Shield Sapping" value="14"/>
+	<option name="Runs Around Flaming" value="13"/>
+	<option name="Inconsequential" value="12"/>
+	<option name="Special Cinematic Unit" value="11"/>
+	<option name="Ignored by Autoaiming" value="10"/>
+	<option name="Shields Fry Infection Forms" value="09"/>
+	<option name="Integrated Light Controls Weapon" value="08"/>
+	<option name="Integrated Light Lasts Forever" value="07"/>
+</bitmask32>
+
+<enum16 name="Unit.Default Team" note="" info="" info_img="" offset="0x180" visible="true">
+	<option name="None" value="00"/>
+	<option name="Player" value="01"/>
+	<option name="Human" value="02"/>
+	<option name="Covenant" value="03"/>
+	<option name="Flood" value="04"/>
+	<option name="Sentinel" value="05"/>
+	<option name="Unused (6)" value="06"/>
+	<option name="Unused (7)" value="07"/>
+	<option name="Unused (8)" value="08"/>
+	<option name="Unused (9)" value="09"/>
+</enum16>
+
+<enum16 name="Unit.Constant Sound Volume" note="" info="" info_img="" offset="0x182" visible="true">
+	<option name="Silent" value="00"/>
+	<option name="Medium" value="01"/>
+	<option name="Loud" value="02"/>
+	<option name="Shout" value="03"/>
+	<option name="Quiet" value="04"/>
+</enum16>
+
+<float name="Unit.Rider Damage Fraction" note="" info="this percentage of damage goes through to our children (ie. riders)" info_img="" offset="0x184" visible="true"/>
+
+<dependency name="Unit.Integrated Light Toggle" note="effe" info="" info_img="" offset="0x188" visible="true"/>
+
+<enum16 name="Unit.A in" note="" info="" info_img="" offset="0x198" visible="true">
+	<option name="none" value="00"/>
+	<option name="Driver Seat Power" value="01"/>
+	<option name="Gunner Seat Power" value="02"/>
+	<option name="Aiming Change" value="03"/>
+	<option name="Mouth Aperture" value="04"/>
+	<option name="Integrated Light Power" value="05"/>
+	<option name="Can Blink" value="06"/>
+	<option name="Shield Sapping" value="07"/>
+</enum16>
+
+<enum16 name="Unit.B in" note="" info="" info_img="" offset="0x19A" visible="true">
+	<option name="none" value="00"/>
+	<option name="Driver Seat Power" value="01"/>
+	<option name="Gunner Seat Power" value="02"/>
+	<option name="Aiming Change" value="03"/>
+	<option name="Mouth Aperture" value="04"/>
+	<option name="Integrated Light Power" value="05"/>
+	<option name="Can Blink" value="06"/>
+	<option name="Shield Sapping" value="07"/>
+</enum16>
+
+<enum16 name="Unit.C in" note="" info="" info_img="" offset="0x19C" visible="true">
+	<option name="none" value="00"/>
+	<option name="Driver Seat Power" value="01"/>
+	<option name="Gunner Seat Power" value="02"/>
+	<option name="Aiming Change" value="03"/>
+	<option name="Mouth Aperture" value="04"/>
+	<option name="Integrated Light Power" value="05"/>
+	<option name="Can Blink" value="06"/>
+	<option name="Shield Sapping" value="07"/>
+</enum16>
+
+<enum16 name="Unit.D in" note="" info="" info_img="" offset="0x19E" visible="true">
+	<option name="none" value="00"/>
+	<option name="Driver Seat Power" value="01"/>
+	<option name="Gunner Seat Power" value="02"/>
+	<option name="Aiming Change" value="03"/>
+	<option name="Mouth Aperture" value="04"/>
+	<option name="Integrated Light Power" value="05"/>
+	<option name="Can Blink" value="06"/>
+	<option name="Shield Sapping" value="07"/>
+</enum16>
+
+<float name="Unit.Camera Field of View" note="radians" info="" info_img="" offset="0x1A0" visible="true"/>
+<float name="Unit.Camera Stiffness" note="" info="" info_img="" offset="0x1A4" visible="true"/>
+
+<string32 name="Unit.Camera Marker Name" note="" info="" info_img="" offset="0x1A8" visible="true"/>
+<string32 name="Unit.Camera Submerged Marker Name" note="" info="" info_img="" offset="0x1C8" visible="true"/>
+
+<float name="Unit.Pitch Auto-Level" note="radians" info="" info_img="" offset="0x1E8" visible="true"/>
+<float name="Unit.Pitch Range: from" note="radians" info="" info_img="" offset="0x1EC" visible="true"/>
+<float name="Unit.Pitch Range: to" note="radians" info="" info_img="" offset="0x1F0" visible="true"/>
+
+<struct name="Unit.Camera Tracks" note="" info="" info_img="" offset="0x1F4" visible="true" size="28">
+	<dependency name="Track" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<float name="Unit.Seat Acceleration Scale: i (1)" note="" info="" info_img="" offset="0x200" visible="true"/>
+<float name="Unit.Seat Acceleration Scale: i (2)" note="" info="" info_img="" offset="0x204" visible="true"/>
+<float name="Unit.Seat Acceleration Scale: k" note="" info="" info_img="" offset="0x208" visible="true"/>
+<float name="Unit.Soft Ping Threshold" note="0 - 1 only" info="" info_img="" offset="0x218" visible="true"/>
+<float name="Unit.Soft Ping Interrupt Time" note="seconds" info="" info_img="" offset="0x21C" visible="true"/>
+<float name="Unit.Hard Ping Threshold" note="0 - 1 only" info="" info_img="" offset="0x220" visible="true"/>
+<float name="Unit.Hard Ping Interrupt Time" note="seconds" info="" info_img="" offset="0x224" visible="true"/>
+<float name="Unit.Hard Death Threshold" note="0 - 1 only" info="" info_img="" offset="0x228" visible="true"/>
+<float name="Unit.Feign Death Threshold" note="0 - 1 only" info="" info_img="" offset="0x22C" visible="true"/>
+<float name="Unit.Feign Death Time" note="seconds" info="" info_img="" offset="0x230" visible="true"/>
+<float name="Unit.Distance of Evade Animation" note="world units" info="must be set to tell the AI how far the animation moves us" info_img="" offset="0x234" visible="true"/>
+<float name="Unit.Distance of Dive Animation" note="world units" info="must be set to tell the AI how far the animation moves us" info_img="" offset="0x238" visible="true"/>
+<float name="Unit.Stunned Movement Threshold" note="0 - 1 only" info="play 'stunned movement' animations when this much damage is taken in a short period of time" info_img="" offset="0x240" visible="true"/>
+<float name="Unit.Feign Death Chance" note="0 - 1 only" info="" info_img="" offset="0x244" visible="true"/>
+<float name="Unit.Feign Repeat Chance" note="0 - 1 only" info="" info_img="" offset="0x248" visible="true"/>
+
+<dependency name="Unit.Spawned Actor" note="actv" info="spawns when we are destroyed or self-destruct" info_img="" offset="0x24C" visible="true"/>
+
+<short name="Unit.Spawned Actor Count: from" note="" info="number of actors which we spawn" info_img="" offset="0x25C" visible="true"/>
+<short name="Unit.Spawned Actor Count: to" note="" info="number of actors which we spawn" info_img="" offset="0x25E" visible="true"/>
+
+<float name="Unit.Spawned Velocity" note="" info="velocity at which we throw spawned actors" info_img="" offset="0x260" visible="true"/>
+<float name="Unit.Aiming Velocity Maximum" note="radians per second" info="" info_img="" offset="0x264" visible="true"/>
+<float name="Unit.Aiming Acceleration Maximum" note="radians per second squared" info="" info_img="" offset="0x268" visible="true"/>
+<float name="Unit.Casual Aiming Modifier" note="0 - 1 only" info="" info_img="" offset="0x26C" visible="true"/>
+<float name="Unit.Looking Velocity Maximum" note="radians per second" info="" info_img="" offset="0x270" visible="true"/>
+<float name="Unit.Looking Acceleration Maximum" note="radians per second squared" info="" info_img="" offset="0x274" visible="true"/>
+<float name="Unit.AI Vehicle Radius" note="0 = use bounding sphere radius" info="radius around this unit that the AI tries to avoid when entering it as a vehicle" info_img="" offset="0x280" visible="true"/>
+<float name="Unit.AI Danger Radius" note="" info="danger radius around this unit that the AI tries to avoid" info_img="" offset="0x284" visible="true"/>
+
+<dependency name="Unit.Melee Damage" note="" info="" info_img="" offset="0x288" visible="true"/>
+
+<enum16 name="Unit.Motion Sensor Blip Size" note="" info="" info_img="" offset="0x298" visible="true">
+	<option name="Medium" value="00"/>
+	<option name="Small" value="01"/>
+	<option name="Large" value="02"/>
+</enum16>
+
+<struct name="Unit.New HUD Interfaces (default/solo player hud; multiplayer hud)" note="" info="" info_img="" offset="0x2A8" visible="true" size="48">
+	<dependency name="Unit HUD Interface" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Unit.Dialogue Variants" note="" info="" info_img="" offset="0x2B4" visible="true" size="24">
+	<short name="Variant Number" note="" info="must match suffix in the permutations on the unit's model" info_img="" offset="0x00" visible="true"/>
+	<dependency name="Dialogue" note="" info="" info_img="" offset="0x08" visible="true"/>
+</struct>
+
+<float name="Unit.Grenade Velocity" note="world units per second" info="" info_img="" offset="0x2C0" visible="true"/>
+
+<enum16 name="Unit.Grenade Type" note="" info="" info_img="" offset="0x2C4" visible="true">
+	<option name="Human Fragmentation" value="00"/>
+	<option name="Covenant Plasma" value="01"/>
+</enum16>
+
+<short name="Unit.Grenade Count" note="" info="" info_img="" offset="0x2C6" visible="true"/>
+
+<struct name="Unit.Powered Seats (Chunk 1 = driver; Chunk 2 = gunner)" note="" info="" info_img="" offset="0x2CC" visible="true" size="68">
+	<float name="Driver Powerup Time" note="seconds" info="" info_img="" offset="0x04" visible="true"/>
+	<float name="Driver Powerdown Time" note="seconds" info="" info_img="" offset="0x08" visible="true"/>
+</struct>
+
+<struct name="Unit.Weapons" note="" info="" info_img="" offset="0x2D8" visible="true" size="36">
+	<dependency name="Weapon" note="" info="" info_img="" offset="0x00" visible="true"/>
+</struct>
+
+<struct name="Unit.Seats" note="" info="" info_img="" offset="0x2E4" visible="true" size="284">
+	<bitmask32 name="Flags" note="" info="" info_img="" offset="0x00" visible="true">
+		<option name="Invisible" value="31"/>
+		<option name="Locked" value="30"/>
+		<option name="Driver" value="29"/>
+		<option name="Gunner" value="28"/>
+		<option name="Third Person Camera" value="27"/>
+		<option name="Allows Weapons" value="26"/>
+		<option name="Third Person on Enter" value="25"/>
+		<option name="First Person Camera Slaved to Gun" value="24"/>
+		<option name="Allow Vehicle Communication Animations" value="23"/>
+		<option name="Not Valid Without Driver" value="22"/>
+		<option name="Allow AI Noncombatants" value="21"/>
+	</bitmask32>
+	
+	<string32 name="Unit.Seats.Label" note="" info="" info_img="" offset="0x04" visible="true"/>
+	<string32 name="Unit.Seats.Marker Name" note="" info="" info_img="" offset="0x24" visible="true"/>
+	
+	<float name="Unit.Seats.Acceleration Scale: i (1)" note="" info="" info_img="" offset="0x64" visible="true"/>
+	<float name="Unit.Seats.Acceleration Scale: i (2)" note="" info="" info_img="" offset="0x68" visible="true"/>
+	<float name="Unit.Seats.Acceleration Scale: k" note="" info="" info_img="" offset="0x6C" visible="true"/>
+	<float name="Unit.Seats.Yaw Rate" note="degrees(!) per second" info="" info_img="" offset="0x7C" visible="true"/>
+	<float name="Unit.Seats.Pitch Rate" note="degrees(!) per second" info="" info_img="" offset="0x80" visible="true"/>
+
+	<string32 name="Unit.Seats.Camera Marker Name" note="" info="" info_img="" offset="0x84" visible="true"/>
+	<string32 name="Unit.Seats.Camera Submerged Marker Name" note="" info="" info_img="" offset="0xA4" visible="true"/>
+
+	<float name="Unit.Seats.Pitch Auto-Level" note="radians" info="" info_img="" offset="0xC4" visible="true"/>
+
+	<float name="Unit.Seats.Pitch Range: from" note="radians" info="" info_img="" offset="0xC8" visible="true"/>
+	<float name="Unit.Seats.Pitch Range: to" note="radians" info="" info_img="" offset="0xCC" visible="true"/>
+	
+	<struct name="Camera Tracks (loose; tight)" note="" info="" info_img="" offset="0xD0" visible="true" size="28">
+		<dependency name="Track" note="" info="" info_img="" offset="0x00" visible="true"/>
+	</struct>
+	
+	<struct name="Unit HUD Interface (default/solo player hud; multiplayer hud)" note="" info="" info_img="" offset="0xDC" visible="true" size="48">
+		<dependency name="Unit HUD Interface" note="" info="" info_img="" offset="0x00" visible="true"/>
+	</struct>
+	
+	<short name="Unit.Seats.HUD Text Message Index" note="" info="" info_img="" offset="0xEC" visible="true"/>
+	
+	<float name="Unit.Seats.Yaw Minimum" note="radians" info="" info_img="" offset="0xF0" visible="true"/>
+	<float name="Unit.Seats.Yaw Maximum" note="radians" info="" info_img="" offset="0xF4" visible="true"/>
+	
+	<dependency name="Unit.Seats.Built-in Gunner" note="actv" info="" info_img="" offset="0xF8" visible="true"/>
+</struct>
+
+<float name="Biped.Moving Turning Speed" note="radians per second" info="" info_img="" offset="0x2F0" visible="true"/>
+
+<bitmask32 name="Biped.Flags" note="" info="" info_img="" offset="0x2F4" visible="true">
+	<option name="Turns Without Animating" value="31"/>
+	<option name="Uses Player Physics" value="30"/>
+	<option name="Flying" value="29"/>
+	<option name="Physics Pill Centered at Origin" value="28"/>
+	<option name="Spherical" value="27"/>
+	<option name="Passes Through Other Bipeds" value="26"/>
+	<option name="Can Climb Any Surface" value="25"/>
+	<option name="Immune to Falling Damage" value="24"/>
+	<option name="Rotate While Airborne" value="23"/>
+	<option name="Uses Limp Body Physics" value="22"/>
+	<option name="Has No Dying Airborne" value="21"/>
+	<option name="Random Speed Increase" value="20"/>
+	<option name="Unit Uses Old (NTSC) Player Physics" value="19"/>
+</bitmask32>
+
+<float name="Biped.Stationary Turning Threshold" note="radians" info="" info_img="" offset="0x2F8" visible="true"/>
+
+<enum16 name="Biped.A in" note="" info="" info_img="" offset="0x30C" visible="true">
+	<option name="none" value="00"/>
+	<option name="Flying Velocity" value="01"/>
+</enum16>
+
+<enum16 name="Biped.B in" note="" info="" info_img="" offset="0x30E" visible="true">
+	<option name="none" value="00"/>
+	<option name="Flying Velocity" value="01"/>
+</enum16>
+
+<enum16 name="Biped.C in" note="" info="" info_img="" offset="0x310" visible="true">
+	<option name="none" value="00"/>
+	<option name="Flying Velocity" value="01"/>
+</enum16>
+
+<enum16 name="Biped.D in" note="" info="" info_img="" offset="0x312" visible="true">
+	<option name="none" value="00"/>
+	<option name="Flying Velocity" value="01"/>
+</enum16>
+
+<float name="Flying.Bank Angle" note="radians" info="angle at which we bank left/right when sidestepping or turning while moving forwards" info_img="" offset="0x324" visible="true"/>
+<float name="Flying.Bank Apply Time" note="seconds" info="time it takes us to apply a bank" info_img="" offset="0x328" visible="true"/>
+<float name="Flying.Bank Decay Time" note="seconds" info="time it takes us to recover from a bank" info_img="" offset="0x32C" visible="true"/>
+<float name="Flying.Pitch Ratio" note="" info="amount that we pitch up/down when moving up/down" info_img="" offset="0x330" visible="true"/>
+<float name="Flying.Max Velocity" note="world units per second" info="when not crouching" info_img="" offset="0x334" visible="true"/>
+<float name="Flying.Max Sidestep Velocity" note="world units per second" info="max sideways or up/down velocity when not crouching" info_img="" offset="0x338" visible="true"/>
+<float name="Flying.Acceleration" note="world units per second squared" info="" info_img="" offset="0x33C" visible="true"/>
+<float name="Flying.Deceleration" note="world units per second squared" info="" info_img="" offset="0x340" visible="true"/>
+<float name="Flying.Angular Velocity Maximum" note="radians per second" info="turn rate" info_img="" offset="0x344" visible="true"/>
+<float name="Flying.Angular Acceleration Maximum" note="radians per second squared" info="turn acceleration rate" info_img="" offset="0x348" visible="true"/>
+<float name="Flying.Crouch Velocity Modifier" note="0 - 1 only; 0 = same speed" info="how much slower we fly if crouching" info_img="" offset="0x34C" visible="true"/>
+
+<float name="Movement.Maximum Slope Angle" note="radians" info="" info_img="" offset="0x358" visible="true"/>
+<float name="Movement.Downhill Falloff Angle" note="radians" info="" info_img="" offset="0x35C" visible="true"/>
+<float name="Movement.Downhill Cutoff Angle" note="radians" info="" info_img="" offset="0x360" visible="true"/>
+<float name="Movement.Downhill Velocity Scale" note="" info="" info_img="" offset="0x364" visible="true"/>
+<float name="Movement.Uphill Falloff Angle" note="radians" info="" info_img="" offset="0x368" visible="true"/>
+<float name="Movement.Uphill Cutoff Angle" note="radians" info="" info_img="" offset="0x36C" visible="true"/>
+<float name="Movement.Uphill Velocity Scale" note="" info="" info_img="" offset="0x370" visible="true"/>
+
+<dependency name="Movement.Footsteps" note="" info="" info_img="" offset="0x38C" visible="true"/>
+
+<float name="Jumping and Landing.Jump Velocity" note="world units per second" info="" info_img="" offset="0x3B4" visible="true"/>
+<float name="Jumping and Landing.Maximum Soft Landing Time" note="seconds" info="the longest amount of time the biped can take to recover from a soft landing" info_img="" offset="0x3D4" visible="true"/>
+<float name="Jumping and Landing.Maximum Hard Landing Time" note="seconds" info="the longest amount of time the biped can take to recover from a hard landing" info_img="" offset="0x3D8" visible="true"/>
+<float name="Jumping and Landing.Minimum Soft Landing Velocity" note="world units per second" info="below this velocity, the biped does not react when landing" info_img="" offset="0x3DC" visible="true"/>
+<float name="Jumping and Landing.Maximum Hard Landing Velocity" note="world units per second" info="below this velocity, the biped will not do a soft landing when returning to the ground" info_img="" offset="0x3E0" visible="true"/>
+<float name="Jumping and Landing.Maximum Hard Landing Velocity" note="world units per second" info="the velocity corresponding to the maximum landing time" info_img="" offset="0x3E4" visible="true"/>
+<float name="Jumping and Landing.Death Hard Landing Velocity" note="world units per second" info="the maximum velocity at which a character can strike the ground and live" info_img="" offset="0x3E8" visible="true"/>
+
+<float name="Camera, Collision and Autoaim.Standing Camera Height" note="world units" info="" info_img="" offset="0x400" visible="true"/>
+<float name="Camera, Collision and Autoaim.Crouching Camera Height" note="world units" info="" info_img="" offset="0x404" visible="true"/>
+<float name="Camera, Collision and Autoaim.Crouch Transition Time" note="seconds" info="" info_img="" offset="0x408" visible="true"/>
+<float name="Camera, Collision and Autoaim.Camera Crouch Transition Speed Modifier" note="0 - 1 only" info="tested by 002. 0 = normal; 1 = instant crouch" info_img="" offset="0x4CC" visible="true"/>
+<float name="Camera, Collision and Autoaim.Standing Collision Height" note="world units" info="" info_img="" offset="0x424" visible="true"/>
+<float name="Camera, Collision and Autoaim.Crouching Collision Height" note="world units" info="" info_img="" offset="0x428" visible="true"/>
+<float name="Camera, Collision and Autoaim.Collision Radius" note="world units" info="" info_img="" offset="0x42C" visible="true"/>
+<float name="Camera, Collision and Autoaim.Collision Ground Friction Scale Modifier" note="0 - 1 only" info="tested by 002. 0 = walk on walls; 1 = constantly drifting and cannot walk up ramps (think moonwalking)" info_img="" offset="0x4D0" visible="true"/>
+<float name="Camera, Collision and Autoaim.Autoaim Width" note="world units" info="" info_img="" offset="0x458" visible="true"/>
+
+<struct name="Camera, Collision and Autoaim.Contact Points" note="" info="" info_img="" offset="0x4E8" visible="true" size="64">
+	<string32 name="Marker Name" note="" info="the point where the biped touches the ground" info_img="" offset="0x20" visible="true"/>
+</struct>
+
+</plugin>

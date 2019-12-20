@@ -1,0 +1,16 @@
+<plugin class="devc" author="sparky" version="4.0" headersize="Main">
+
+<enum16 name="Device Type" note="" info="" info_img="" offset="0x00" visible="true">
+	<option name="Mouse and Keyboard" value="00"/>
+	<option name="Joysticks/Gamepads/etc..." value="01"/>
+	<option name="Full Profile Definition" value="02"/>
+</enum16>
+
+<bitmask8 name="Flags" note="" info="" info_img="" offset="0x02" visible="true">
+	<option name="Unused" value="07"/>
+</bitmask8>
+
+<long name="Device ID" note="bytes" info="" info_img="" offset="0x04" visible="true"/>
+<long name="Profile" note="bytes" info="uses Halo Savegame files with suffix '.sav' from your Documents folder" info_img="" offset="0x18" visible="true"/>
+
+</plugin>

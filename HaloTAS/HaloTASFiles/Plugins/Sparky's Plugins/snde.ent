@@ -1,0 +1,23 @@
+<plugin class="snde" author="sparky" version="4.0" headersize="Main">
+
+<short name="Priority" note="" info="when multiple listeners are in different sound environments in split screen, the combined environment will be the one with the highest priority" info_img="" offset="0x04" visible="true"/>
+
+<float name="Room Intensity" note="0 - 1 only" info="intensity of the room effect" info_img="" offset="0x08" visible="true"/>
+<float name="Room Intensity High Frequency" note="0 - 1 only" info="intensity of the room effect above the High Frequency Reference" info_img="" offset="0x0C" visible="true"/>
+<float name="Room Rolloff" note="0 - 10 only" info="how quickly the room effect rolls off" info_img="" offset="0x10" visible="true"/>
+
+<float name="Decay Time" note="seconds; 0.1 - 20 only" info="" info_img="" offset="0x14" visible="true"/>
+<float name="Decay High Frequency Ratio" note="0.1 - 2 only" info="" info_img="" offset="0x18" visible="true"/>
+
+<float name="Reflections Intensity" note="0 - 1 only" info="" info_img="" offset="0x1C" visible="true"/>
+<float name="Reflections Delay" note="seconds; 0 - 0.3 only" info="" info_img="" offset="0x20" visible="true"/>
+
+<float name="Reverb Intensity" note="0 - 1 only" info="" info_img="" offset="0x24" visible="true"/>
+<float name="Reverb Delay" note="seconds; 0 - 0.1 only" info="" info_img="" offset="0x28" visible="true"/>
+
+<float name="Diffusion" note="0 - 1 only" info="" info_img="" offset="0x2C" visible="true"/>
+<float name="Density" note="0 - 1 only" info="" info_img="" offset="0x30" visible="true"/>
+
+<float name="High Frequency Reference" note="Herz; 20 - 20,000 only" info="for high frequency values, what value defines high frequency" info_img="" offset="0x34" visible="true"/>
+
+</plugin>
