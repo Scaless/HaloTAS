@@ -120,6 +120,9 @@
     <ClCompile Include="halo_map_data.cpp">
       <Filter>Source Files\plugins</Filter>
     </ClCompile>
+    <ClCompile Include="tas_hooks.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h">
@@ -229,6 +232,9 @@
     </ClInclude>
     <ClInclude Include="halo_map_data.h">
       <Filter>Header Files\plugins</Filter>
+    </ClInclude>
+    <ClInclude Include="tas_hooks.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

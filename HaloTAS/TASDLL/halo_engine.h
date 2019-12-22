@@ -73,6 +73,8 @@ public:
 	void mouse_directinput_override_enable();
 	void disable_cutscene_fps_cap();
 	void enable_cutscene_fps_cap();
+	void disable_look_centering();
+	void enable_look_centering();
 
 public:
 	halo_engine(halo_engine const&) = delete;

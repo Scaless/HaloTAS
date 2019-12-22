@@ -193,10 +193,6 @@ void tas_input_handler::pre_tick()
 {
 	const int32_t tick = *SIMULATION_TICK;
 
-	if (tick < 5) {
-		auto f = tick;
-	}
-
 	if (playback) {
 		*DINPUT_MOUSEX = 0;
 		*DINPUT_MOUSEY = 0;
@@ -245,6 +241,13 @@ void tas_input_handler::pre_tick()
 	rng_count_since_last_tick = calc_rng_count(last_rng, *RNG, 5000);
 	last_rng = *RNG;
 	rng_count_histogram_buffer.push_back(static_cast<float>(rng_count_since_last_tick));
+
+	// Keep people honest
+	if (tick > 0 && tick % 3600 == 0) {
+		auto& gEngine = halo_engine::get();
+		gEngine.print_hud_text(L"HaloTAS is running!");
+	}
+
 }
 
 static std::string recordCurrentPath;
@@ -288,7 +291,6 @@ void tas_input_handler::post_tick()
 	}
 }
 
-static bool justThisOnce = false;
 void tas_input_handler::pre_frame()
 {
 	if (enter_down_previous_tick) {

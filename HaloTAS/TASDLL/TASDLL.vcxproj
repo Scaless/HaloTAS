@@ -157,6 +157,7 @@
     <ClCompile Include="plugin_loader.cpp" />
     <ClCompile Include="randomizer.cpp" />
     <ClCompile Include="render_d3d9.cpp" />
+    <ClCompile Include="tas_hooks.cpp" />
     <ClCompile Include="tas_info_window.cpp" />
     <ClCompile Include="tas_input.cpp" />
     <ClCompile Include="tas_input_handler.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="plugin_loader.h" />
     <ClInclude Include="randomizer.h" />
     <ClInclude Include="render_d3d9.h" />
+    <ClInclude Include="tas_hooks.h" />
     <ClInclude Include="tas_info_window.h" />
     <ClInclude Include="tas_input.h" />
     <ClInclude Include="tas_input_handler.h" />

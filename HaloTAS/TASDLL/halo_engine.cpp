@@ -50,22 +50,22 @@ void halo_engine::patch_memory(LPVOID dest_address, uint8_t* src_address, size_t
 
 void halo_engine::disable_render()
 {
-	//*ENGINE_RENDER_ENABLE = 1;
+	*ENGINE_RENDER_ENABLE = 1;
 }
 
 void halo_engine::enable_render()
 {
-	//*ENGINE_RENDER_ENABLE = 0;
+	*ENGINE_RENDER_ENABLE = 0;
 }
 
 void halo_engine::disable_sound()
 {
-	//*SOUND_ENABLED = 0;
+	*SOUND_ENABLED = 0;
 }
 
 void halo_engine::enable_sound()
 {
-	//*SOUND_ENABLED = 1;
+	*SOUND_ENABLED = 1;
 }
 
 void halo_engine::set_window_handle(HWND handle)
@@ -77,6 +77,7 @@ halo_engine::halo_engine()
 {
 	update_window_handle();
 	disable_cutscene_fps_cap();
+	disable_look_centering();
 
 	auto addr = &enableFastForward;
 	patch_memory(FAST_FORWARD_POINTER, (uint8_t*)& addr, 4);
@@ -88,6 +89,7 @@ halo_engine::~halo_engine()
 	patch_memory(FAST_FORWARD_POINTER, (uint8_t*)& defaultAddr, 4);
 
 	enable_cutscene_fps_cap();
+	enable_look_centering();
 }
 
 HWND halo_engine::window_handle()
@@ -386,4 +388,14 @@ void halo_engine::disable_cutscene_fps_cap()
 void halo_engine::enable_cutscene_fps_cap()
 {
 	patch_memory(CUTSCENE_FPS_CAP_PATCH, halo::constants::PATCH_CUTSCENE_FPS_CAP_ORIGINAL, sizeof(halo::constants::PATCH_CUTSCENE_FPS_CAP_ORIGINAL));
+}
+
+void halo_engine::disable_look_centering()
+{
+	patch_memory(LOOK_CENTERING_PATCH, halo::constants::PATCH_LOOK_CENTERING, sizeof(halo::constants::PATCH_LOOK_CENTERING));
+}
+
+void halo_engine::enable_look_centering()
+{
+	patch_memory(LOOK_CENTERING_PATCH, halo::constants::PATCH_LOOK_CENTERING_ORIGINAL, sizeof(halo::constants::PATCH_LOOK_CENTERING_ORIGINAL));
 }

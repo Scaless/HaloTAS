@@ -16,6 +16,7 @@ struct tas_info_input
 	bool forceSimulate = true;
 	bool updateViewPos = true;
 	bool disable_cutscene_fps_cap = true;
+	bool disable_look_centering = true;
 
 	tas_overlay_render_options overlayOptions;
 };
@@ -35,7 +36,6 @@ private:
 	void render_d3d();
 	void render_inputs();
 	void render_menubar();
-	void render_header();
 	void render_rng();
 	void render_other();
 	void render_randomizer();

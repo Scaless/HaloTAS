@@ -251,6 +251,20 @@ void tas_info_window::render_tas()
 
 	if (ImGui::TreeNode("Engine Functions"))
 	{
+		static float lockedGameSpeed = 1.0f;
+		static bool lockSpeed = false;
+
+		ImGui::PushItemWidth(200);
+		ImGui::DragFloat("Game Speed", GAME_SPEED, .005f, 0, 4);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		if (ImGui::Checkbox("Lock", &lockSpeed)) {
+			lockedGameSpeed = *GAME_SPEED;
+		}
+		if (lockSpeed) {
+			*GAME_SPEED = lockedGameSpeed;
+		}
+
 		if (ImGui::Button("Load Checkpoint")) {
 			gEngine.load_checkpoint();
 		}
@@ -271,6 +285,25 @@ void tas_info_window::render_tas()
 			gEngine.core_load();
 		}
 
+		ImGui::Text("Debug Camera: ");
+		ImGui::SameLine();
+		if (ImGui::Button("save")) {
+			gEngine.execute_command("debug_camera_save");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("load")) {
+			gEngine.execute_command("debug_camera_load");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("save+load")) {
+			gEngine.execute_command("debug_camera_save");
+			gEngine.execute_command("debug_camera_load");
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("camera_control 0")) {
+			gEngine.execute_command("camera_control 0");
+		}
+
 		if (ImGui::Checkbox("Cutscene FPS Unlock", &currentInput.disable_cutscene_fps_cap)) {
 			auto& gEngine = halo_engine::get();
 			if (currentInput.disable_cutscene_fps_cap) {
@@ -279,6 +312,11 @@ void tas_info_window::render_tas()
 			else {
 				gEngine.enable_cutscene_fps_cap();
 			}
+		}
+
+		if (ImGui::Checkbox("Disable Look Smoothing", &currentInput.disable_look_centering)) {
+			auto& gEngine = halo_engine::get();
+
 		}
 
 		ImGui::TreePop();
@@ -873,8 +911,10 @@ void tas_info_window::render_inputs()
 
 #pragma endregion
 
-			ImGui::Text("%d", it->rng);
+#pragma region RNG
+			ImGui::Text("%08X", it->rng);
 			ImGui::NextColumn();
+#pragma endregion
 
 			if (autoScrollInputs) {
 				if (tas_input_handler::inputTickCounter == (count + fixEditorTickOffset) && *GAME_SPEED > 0) {
@@ -922,43 +962,20 @@ void tas_info_window::render_menubar()
 			ImGui::EndMenu();
 		}
 
-		const char* appText = "App: %.0f ms/frame (%.0f FPS)";
-		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::CalcTextSize(appText).x);
-		ImGui::Text(appText, 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("| Map: %s\t", MAP_STRING);
+		ImGui::SameLine();
+		ImGui::Text("Tick: %d\t", *SIMULATION_TICK);
+		ImGui::SameLine();
+		ImGui::Text("Frame: %d\t", *FRAMES_ABSOLUTE);
+		ImGui::SameLine();
+		ImGui::Text("RNG: %08X\t", *RNG);
+
+		//const char* appText = "App: %.0f ms/frame (%.0f FPS)";
+		//ImGui::SameLine(ImGui::GetWindowContentRegionMax().x - ImGui::CalcTextSize(appText).x);
+		//ImGui::Text(appText, 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
 		ImGui::EndMainMenuBar();
 	}
-}
-
-static float lockedGameSpeed = 1.0f;
-static bool lockSpeed = false;
-void tas_info_window::render_header()
-{
-	ImGui::Text("Map: %s\t", MAP_STRING);
-	ImGui::SameLine();
-	ImGui::Text("Tick: %d\t", *SIMULATION_TICK);
-	ImGui::SameLine();
-	ImGui::Text("Frame: %d\t", *FRAMES_ABSOLUTE);
-	ImGui::SameLine();
-	ImGui::Text("Frames Since Load: %d\t", *FRAMES_SINCE_LEVEL_START);
-	ImGui::SameLine();
-	ImGui::PushItemWidth(200);
-	ImGui::DragFloat("Game Speed", GAME_SPEED, .005f, 0, 4);
-	ImGui::PopItemWidth();
-	ImGui::SameLine();
-	if (ImGui::Checkbox("Lock", &lockSpeed)) {
-		lockedGameSpeed = *GAME_SPEED;
-	}
-
-	if (lockSpeed) {
-		*GAME_SPEED = lockedGameSpeed;
-	}
-
-	//ImGui::Checkbox("Force Simulate", &currentInput.forceSimulate);
-	*ALLOW_SIMULATE = currentInput.forceSimulate ? 0 : 1;
-	*ALLOW_INPUT = (*ALLOW_SIMULATE == 1 ? 0 : 1);
-
-	
-
 }
 
 void tas_info_window::render_rng() {
@@ -1220,17 +1237,19 @@ void tas_info_window::render_imgui()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0);
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0);
 
-	ImGui::Begin("##Main", NULL, ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+	ImGui::Begin("##Main", NULL, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
+
+	*ALLOW_SIMULATE = currentInput.forceSimulate ? 0 : 1;
+	*ALLOW_INPUT = (*ALLOW_SIMULATE == 1 ? 0 : 1);
 
 	render_menubar();
-	render_header();
 	render_randomizer();
 	render_rng();
 	render_d3d();
 	render_overlay();
 	render_other();
-	render_tas();
 	render_tags();
+	render_tas();
 
 	//ImGui::ShowDemoWindow();
 

@@ -78,6 +78,9 @@ namespace halo::constants {
 
 	static uint8_t PATCH_CUTSCENE_FPS_CAP[]= { 0xEB };
 	static uint8_t PATCH_CUTSCENE_FPS_CAP_ORIGINAL[] = {0x74};
+
+	static uint8_t PATCH_LOOK_CENTERING[] = { 0x90, 0x90 };
+	static uint8_t PATCH_LOOK_CENTERING_ORIGINAL[] = {0x7A, 0x0B};
 }
 
 #if defined(HALO_VANILLA)
@@ -133,6 +136,7 @@ namespace halo::addr {
 	inline extern char* INPUT_SLOT = reinterpret_cast<char*>(0x400003C4);
 	inline extern uint8_t* SOUND_ENABLED = reinterpret_cast<uint8_t*>(0x00725201);
 	inline extern uint8_t* CUTSCENE_FPS_CAP_PATCH = reinterpret_cast<uint8_t*>(0x004C9FB3); // 0x74 Default, 0xEB No Cap
+	inline extern uint8_t* LOOK_CENTERING_PATCH = reinterpret_cast<uint8_t*>(0x0047254A);
 
 	// HUD Stuff
 	inline extern bool* HUD_TIMER_PAUSED = reinterpret_cast<bool*>(0x40000846);
