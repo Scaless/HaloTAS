@@ -81,6 +81,8 @@ namespace halo::constants {
 
 	static uint8_t PATCH_LOOK_CENTERING[] = { 0x90, 0x90 };
 	static uint8_t PATCH_LOOK_CENTERING_ORIGINAL[] = {0x7A, 0x0B};
+
+	static size_t CORE_SAVE_SIZE = 0x440000;
 }
 
 #if defined(HALO_VANILLA)
@@ -92,7 +94,7 @@ namespace halo::function {
 
 	inline extern uintptr_t PLAY_SOUND_PTR = 0x00549af0;
 	typedef uint32_t play_sound_actual_func(uint32_t sndIndex, int16_t*, int, int, int*, int, int);
-	inline extern  play_sound_actual_func* PLAY_SOUND = (play_sound_actual_func*)PLAY_SOUND_PTR;
+	inline extern play_sound_actual_func* PLAY_SOUND = (play_sound_actual_func*)PLAY_SOUND_PTR;
 }
 
 

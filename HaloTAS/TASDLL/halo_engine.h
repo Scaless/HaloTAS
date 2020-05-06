@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include "halo_constants.h"
+#include "halo_core_cache.h"
 #include "gameobject.h"
 #include <atomic>
 
@@ -28,6 +29,13 @@ private:
 	int32_t enableFastForward{ 0 };
 	int32_t fastForwardTick{ 0 };
 	bool isPresentEnabled{ true };
+	bool queueFullCoreSave{ false };
+	bool queueFullCoreLoad{ false };
+	int32_t queueFullCoreLoadTick = 0;
+	bool autoCoreSave{ true };
+	int32_t autoCoreSaveTickInterval{ 150 };
+	int coreLoadStage{ 0 };
+	halo_core_cache core_cache;
 
 	void patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size);
 
@@ -58,11 +66,15 @@ public:
 	void map_reset();
 	void core_save();
 	void core_load();
+	void core_save_full();
+	void core_load_full(int32_t tick_id);
+	std::vector<uint32_t> get_cache_ticks();
 	void save_checkpoint();
 	void load_checkpoint();
 	void execute_command(const char* command);
 
 	void pre_frame();
+	void post_tick();
 
 	std::string current_bsp_name();
 	halo::MAP current_map();

@@ -12,15 +12,15 @@ randomizer_level_rule randomizer::make_rule()
 	// Turn flags on based on randomness and if they are enabled globally
 	for (size_t i = 0; i < sizeof(rule.feature_flags) * 8; i++) {
 		size_t flag = (1 << i);
-		if (distribution(eng) <= global_options.randomness) {
-			if (global_options.feature_flags & flag) {
+		if (global_options.feature_flags & flag) {
+			if (distribution(eng) <= global_options.randomness) {
 				rule.feature_flags |= flag;
 			}
 		}
 	}
 	
 	if (rule.feature_flags & RANDOMIZER_FEATURE::TIME_SCALE) {
-		std::uniform_real_distribution<float> timeOffsetDistribution(.75f, 1.25f);
+		std::uniform_real_distribution<float> timeOffsetDistribution(.8f, 1.2f);
 		rule.time_scale = timeOffsetDistribution(eng);
 	}
 
@@ -111,7 +111,9 @@ void randomizer::pre_tick()
 
 	auto& gEngine = halo_engine::get();
 
+
 	
+
 }
 
 void randomizer::pre_loop()
@@ -161,6 +163,21 @@ void randomizer::pre_loop()
 
 		if (rule.feature_flags & RANDOMIZER_FEATURE::TIME_SCALE) {
 			*halo::addr::GAME_SPEED = rule.time_scale;
+		}
+
+		if (rule.feature_flags & RANDOMIZER_FEATURE::OOPS_ALL_REVIVERS) {
+			engine_snapshot snapshot = {};
+			gEngine.get_snapshot(snapshot);
+
+			// Find objects that are flood and set their reviver flag
+			for (GameObject* v : snapshot.gameObjects) {
+				const uint32_t HUMAN_FLOOD_TAG_ID = 5792;
+				const uint32_t COVE_FLOOD_TAG_ID = 6024;
+
+				if (v->tag_id == HUMAN_FLOOD_TAG_ID || v->tag_id == COVE_FLOOD_TAG_ID) {
+					v->unit_flags |= (uint32_t)UNIT_FLAGS::IS_FLOOD_REVIVER;
+				}
+			}
 		}
 	}
 

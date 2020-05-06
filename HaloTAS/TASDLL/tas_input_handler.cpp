@@ -188,7 +188,6 @@ void tas_input_handler::reload_playback_buffer(tas_input* input)
 	playback_buffer_current_level = *input->input_buffer();
 }
 
-static bool enter_down_previous_tick = false;
 void tas_input_handler::pre_tick()
 {
 	const int32_t tick = *SIMULATION_TICK;
@@ -214,10 +213,6 @@ void tas_input_handler::pre_tick()
 			*PLAYER_PITCH_ROTATION_RADIANS = savedIM.cameraPitch;
 			*LEFTMOUSE = savedIM.leftMouse;
 			*RIGHTMOUSE = savedIM.rightMouse;
-
-			if (savedIM.inputBuf[to_underlying(KEYS::Enter)] > 0) {
-				enter_down_previous_tick = true;
-			}
 
 			if (savedIM.middleMouse == 0) {
 				*MIDDLEMOUSE = 0;
@@ -293,11 +288,6 @@ void tas_input_handler::post_tick()
 
 void tas_input_handler::pre_frame()
 {
-	if (enter_down_previous_tick) {
-		KEYBOARD_INPUT[to_underlying(KEYS::Enter)] = 0;
-		enter_down_previous_tick = false;
-	}
-
 	if (*MIDDLEMOUSE == 1) {
 		*MIDDLEMOUSE = 2;
 	}

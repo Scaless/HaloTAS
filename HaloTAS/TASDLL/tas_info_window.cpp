@@ -118,9 +118,23 @@ void tas_info_window::render_overlay()
 						ImGui::DragFloat3("POS", &(v->unit_x), .1f, -10000, 10000);
 
 						ImGui::SameLine();
-						glm::vec3 eulerRotation = glm::eulerAngles(v->rotationQuaternion);
-						if (ImGui::DragFloat3("ROT", &eulerRotation.x, .1f, -10000, 10000)) {
-							v->rotationQuaternion = glm::quat(eulerRotation);
+						glm::quat q = glm::quat(v->rotationQuaternion[0], v->rotationQuaternion[1], v->rotationQuaternion[2], v->rotationQuaternion[3]);
+						glm::vec3 eulerRotation = glm::eulerAngles(q);
+						float euler[3];
+						euler[0] = eulerRotation.x * 57.29578f;
+						euler[1] = eulerRotation.y * 57.29578f;
+						euler[2] = eulerRotation.z * 57.29578f;
+
+						if (ImGui::DragFloat3("ROT", &euler[0], .1f, -10000, 10000)) {
+							//v->rotationQuaternion = glm::quat(eulerRotation);
+							eulerRotation.x = euler[0] / 57.29578f;
+							eulerRotation.y = euler[1] / 57.29578f;
+							eulerRotation.z = euler[2] / 57.29578f;
+							q = glm::quat(eulerRotation);
+							v->rotationQuaternion[0] = q.w;
+							v->rotationQuaternion[1] = q.x;
+							v->rotationQuaternion[2] = q.y;
+							v->rotationQuaternion[3] = q.z;
 						}
 						ImGui::PopItemWidth();
 
@@ -174,8 +188,8 @@ void tas_info_window::render_overlay()
 		ImGui::SliderInt("RawMouseX", DINPUT_MOUSEX, -5, 5);
 		ImGui::SliderInt("RawMouseY", DINPUT_MOUSEY, -5, 5);
 
-		ImGui::SliderFloat("Vertical View Angle", UPDOWNVIEW, -1.492f, 1.492f);
-		ImGui::SliderFloat("Horizontal View Angle", LEFTRIGHTVIEW, 0, glm::pi<float>() * 2.0f);
+		ImGui::InputFloat("Vertical View Angle", UPDOWNVIEW, .0001, .001);// -1.492f, 1.492f);
+		ImGui::InputFloat("Horizontal View Angle", LEFTRIGHTVIEW, .0001, .001);// 0, glm::pi<float>() * 2.0f);
 
 		ImGui::Columns(6, "inputmap", true);
 		ImGui::Separator();
@@ -249,6 +263,17 @@ void tas_info_window::render_tas()
 		gInputHandler.save_input_to_file(current_selected_hbin);
 	}
 
+	if (ImGui::TreeNode("Saves")) {
+		auto ticks = gEngine.get_cache_ticks();
+		for (auto& t : ticks) {
+			std::string f = std::to_string(t) + "##Saves";
+			if (ImGui::Button(f.c_str())) {
+				gEngine.core_load_full(t);
+			}
+		}
+		ImGui::TreePop();
+	}
+
 	if (ImGui::TreeNode("Engine Functions"))
 	{
 		static float lockedGameSpeed = 1.0f;
@@ -283,6 +308,15 @@ void tas_info_window::render_tas()
 		ImGui::SameLine();
 		if (ImGui::Button("core_load")) {
 			gEngine.core_load();
+		}
+
+		if (ImGui::Button("core_save_full")) {
+			gEngine.core_save_full();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("core_load_full")) {
+			//TODO: SELECT FROM MULTIPLE
+			//gEngine.core_load_full();
 		}
 
 		ImGui::Text("Debug Camera: ");
@@ -1055,6 +1089,12 @@ void tas_info_window::render_randomizer()
 			return;
 		}
 
+		std::string currentMap{ halo::addr::MAP_STRING };
+		if (currentMap != "levels\\ui\\ui") {
+			ImGui::Text("Must be on the main menu to change randomizer settings.");
+			return;
+		}
+
 		if (ImGui::Checkbox("##RandomizerActive", &randomizerActive)) {
 			if (randomizerActive) {
 				randomizer.start();
@@ -1074,12 +1114,6 @@ void tas_info_window::render_randomizer()
 
 		ImGui::TextColored(ImVec4(0, 1, 0, 1), "Current Seed: %s", seedTextActual.c_str());
 
-		std::string currentMap{ halo::addr::MAP_STRING };
-		if (currentMap != "levels\\ui\\ui") {
-			ImGui::Text("Must be on the main menu to change randomizer settings.");
-			return;
-		}
-
 		ImGui::PushItemWidth(300);
 		ImGui::InputText("##RandomizerSeedText", seedTextInput, IM_ARRAYSIZE(seedTextInput));
 		ImGui::PopItemWidth();
@@ -1098,19 +1132,23 @@ void tas_info_window::render_randomizer()
 		static bool bRANDOM_LEVEL_ORDER = true;
 		static bool bTIME_SCALE = true;
 		static bool bSKULL_BLIND = true;
+		static bool bOOPS_ALL_REVIVERS = true;
 		static int randomizer_change_mode_current = 0;
 		static int randomizerRandomness = 5;
 
 		if (ImGui::TreeNode("Customize##RandomizerOptions")) {
 			
 			const char* randomizerChangeMode[] = { "GLOBAL", "PER_LEVEL" };
+			ImGui::Text("GLOBAL will apply the same randomizer settings to each level.");
+			ImGui::Text("PER_LEVEL will apply unique randomizer settings to each level.");
 			ImGui::Text("Mode: ");
 			ImGui::SameLine();
 			ImGui::PushItemWidth(200);
 			optionsNeedUpdate |= ImGui::Combo("##RandomizerChangeMode", &randomizer_change_mode_current, randomizerChangeMode, IM_ARRAYSIZE(randomizerChangeMode));
 			ImGui::PopItemWidth();
+			ImGui::Separator();
 
-			ImGui::Text("Randomness:  ");
+			/*ImGui::Text("Randomness:  ");
 			ImGui::SameLine();
 			ImGui::Text("Minimum");
 			ImGui::SameLine();
@@ -1118,13 +1156,14 @@ void tas_info_window::render_randomizer()
 			optionsNeedUpdate |= ImGui::SliderInt("##RandomizerRandomness", &randomizerRandomness, 0, 10);
 			ImGui::PopItemWidth();
 			ImGui::SameLine();
-			ImGui::Text("Maximum");
+			ImGui::Text("Maximum");*/
 
 			ImGui::Text("Checked features are available to be altered. Just because a feature is checked does not mean it will always be active.");
 
 			optionsNeedUpdate |= ImGui::Checkbox("Random Level Order##Randomizer", &bRANDOM_LEVEL_ORDER);
-			optionsNeedUpdate |= ImGui::Checkbox("Time Scale (Changes the speed of time)##Randomizer", &bTIME_SCALE);
-			optionsNeedUpdate |= ImGui::Checkbox("Blind Skull (Disabled HUD)##Randomizer", &bSKULL_BLIND);
+			optionsNeedUpdate |= ImGui::Checkbox("Time Scale##Randomizer", &bTIME_SCALE);
+			optionsNeedUpdate |= ImGui::Checkbox("Blind Skull##Randomizer", &bSKULL_BLIND);
+			optionsNeedUpdate |= ImGui::Checkbox("Oops All Revivers##Randomizer", &bOOPS_ALL_REVIVERS);
 
 			ImGui::TreePop();
 		}
@@ -1139,6 +1178,7 @@ void tas_info_window::render_randomizer()
 			if (bRANDOM_LEVEL_ORDER) { newOptions.feature_flags |= RANDOMIZER_FEATURE::RANDOM_LEVEL_ORDER; }
 			if (bTIME_SCALE) { newOptions.feature_flags |= RANDOMIZER_FEATURE::TIME_SCALE; }
 			if (bSKULL_BLIND) { newOptions.feature_flags |= RANDOMIZER_FEATURE::SKULL_BLIND; }
+			if (bOOPS_ALL_REVIVERS) { newOptions.feature_flags |= RANDOMIZER_FEATURE::OOPS_ALL_REVIVERS;}
 
 			// Set Change Mode
 			if (randomizer_change_mode_current == 0) {

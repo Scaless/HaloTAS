@@ -19,6 +19,7 @@ enum RANDOMIZER_FEATURE : uint32_t {
 	GRAVITATIONAL_ANOMALY	= 1 << 11, // Change gravity more/less
 	RANDOM_PROJECTILES		= 1 << 12, // Projectiles randomized (ex: AR might shoot needles)
 	TIME_SCALE				= 1 << 13, // Changes time scale
+
 };
 
 enum class RANDOMIZER_CHANGE_TYPE {
@@ -27,7 +28,7 @@ enum class RANDOMIZER_CHANGE_TYPE {
 };
 
 struct randomizer_options {
-	uint32_t feature_flags{ UINT32_MAX };
+	uint32_t feature_flags{ 0 };
 	RANDOMIZER_CHANGE_TYPE change_type;
 	float randomness {.5f}; // 0 to 1, 0 = nothing enabled, 1 = everything enabled
 };

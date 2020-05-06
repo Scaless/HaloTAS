@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include <Psapi.h>
 #include "tas_input_handler.h"
+#include <fstream>
 
 using namespace halo::addr;
 
@@ -50,22 +51,22 @@ void halo_engine::patch_memory(LPVOID dest_address, uint8_t* src_address, size_t
 
 void halo_engine::disable_render()
 {
-	*ENGINE_RENDER_ENABLE = 1;
+	//*ENGINE_RENDER_ENABLE = 1;
 }
 
 void halo_engine::enable_render()
 {
-	*ENGINE_RENDER_ENABLE = 0;
+	//*ENGINE_RENDER_ENABLE = 0;
 }
 
 void halo_engine::disable_sound()
 {
-	*SOUND_ENABLED = 0;
+	//*SOUND_ENABLED = 0;
 }
 
 void halo_engine::enable_sound()
 {
-	*SOUND_ENABLED = 1;
+	//*SOUND_ENABLED = 1;
 }
 
 void halo_engine::set_window_handle(HWND handle)
@@ -231,8 +232,6 @@ void halo_engine::fast_forward_to(uint32_t tick)
 	}
 }
 
-
-
 void halo_engine::map_reset()
 {
 	*MAP_RESET = 1;
@@ -246,6 +245,22 @@ void halo_engine::core_save()
 void halo_engine::core_load()
 {
 	*CORE_LOAD = 1;
+}
+
+void halo_engine::core_save_full()
+{
+	queueFullCoreSave = true;
+}
+
+void halo_engine::core_load_full(int32_t tick_id)
+{
+	queueFullCoreLoad = true;
+	queueFullCoreLoadTick = tick_id;
+}
+
+std::vector<uint32_t> halo_engine::get_cache_ticks()
+{
+	return core_cache.get_cached_ticks();
 }
 
 void halo_engine::save_checkpoint()
@@ -265,6 +280,39 @@ void halo_engine::execute_command(const char* command)
 		push edi
 		call halo::function::EXECUTE_COMMAND
 		add esp, 4
+	}
+}
+
+void halo_engine::post_tick()
+{
+	if (autoCoreSave &&
+		*halo::addr::SIMULATION_TICK > 0 &&
+		*halo::addr::SIMULATION_TICK % autoCoreSaveTickInterval == 0) {
+		core_cache.add_to_cache(*halo::addr::SIMULATION_TICK,
+			(const char*)halo::addr::RUNTIME_DATA_BEGIN, halo::constants::CORE_SAVE_SIZE);
+	}
+	if (queueFullCoreSave) {
+		core_cache.add_to_cache(*halo::addr::SIMULATION_TICK,
+			(const char*)halo::addr::RUNTIME_DATA_BEGIN, halo::constants::CORE_SAVE_SIZE);
+		queueFullCoreSave = false;
+	}
+	if (queueFullCoreLoad) {
+		if (coreLoadStage == 0) {
+			bool map_load_needed = core_cache.load_cache_entry_stage1(queueFullCoreLoadTick);
+
+			if (!map_load_needed) {
+				core_cache.load_cache_entry_stage2(queueFullCoreLoadTick);
+				queueFullCoreLoad = false;
+				coreLoadStage = -1;
+			}
+		}
+
+		coreLoadStage++;
+		if (coreLoadStage == 100) {
+			core_cache.load_cache_entry_stage2(queueFullCoreLoadTick);
+			queueFullCoreLoad = false;
+			coreLoadStage = 0;
+		}
 	}
 }
 

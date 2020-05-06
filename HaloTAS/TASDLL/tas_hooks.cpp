@@ -101,10 +101,16 @@ void tas_hooks::hook_d3d9()
 		exit(1);
 	}
 
+	int mainMonitorX = GetSystemMetrics(SM_CXSCREEN);
+	int mainMonitorY = GetSystemMetrics(SM_CYSCREEN);
+
 	D3DPRESENT_PARAMETERS d3dpp = { 0 };
 	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
 	d3dpp.hDeviceWindow = GetForegroundWindow();
 	d3dpp.Windowed = TRUE;
+	d3dpp.BackBufferCount = 1;
+	d3dpp.BackBufferWidth = std::clamp(mainMonitorX, 800, 8000);
+	d3dpp.BackBufferHeight = std::clamp(mainMonitorY, 600, 8000);
 
 	IDirect3DDevice9* dummyD3D9Device = nullptr;
 	pD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, d3dpp.hDeviceWindow, D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &dummyD3D9Device);
@@ -260,11 +266,13 @@ HRESULT __stdcall hkGetDeviceData(LPDIRECTINPUTDEVICE* pDevice, DWORD cbObjectDa
 void hkSimulateTick(int ticksAfterThis) {
 	auto& gInputHandler = tas_input_handler::get();
 	auto& gRandomizer = randomizer::get();
+	auto& gEngine = halo_engine::get();
 
 	gRandomizer.pre_tick();
 	gInputHandler.pre_tick();
 	originalSimulateTick(ticksAfterThis);
 	gInputHandler.post_tick();
+	gEngine.post_tick();
 }
 
 char hkAdvanceFrame(float deltaTime) {
@@ -282,6 +290,7 @@ char hkAdvanceFrame(float deltaTime) {
 int __cdecl hkBeginLoop() {
 	auto& gInputHandler = tas_input_handler::get();
 	auto& gRandomizer = randomizer::get();
+	auto& gEngine = halo_engine::get();
 
 	gRandomizer.pre_loop();
 	gInputHandler.pre_loop();

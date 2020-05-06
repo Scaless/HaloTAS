@@ -34,6 +34,9 @@
     <Filter Include="Libraries\tinyxml2">
       <UniqueIdentifier>{b6d49ef2-5805-423d-b5de-98ee0419f17c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Libraries\lz4">
+      <UniqueIdentifier>{9654ff77-9a3a-4b60-8ce1-44cadea52d86}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -122,6 +125,12 @@
     </ClCompile>
     <ClCompile Include="tas_hooks.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="halo_core_cache.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="lz4.cpp">
+      <Filter>Libraries\lz4</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -235,6 +244,12 @@
     </ClInclude>
     <ClInclude Include="tas_hooks.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="halo_core_cache.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lz4.h">
+      <Filter>Libraries\lz4</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

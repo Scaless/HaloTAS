@@ -235,6 +235,35 @@ void draw_element_enum16(tag_property& prop, void* base_ptr) {
 
 }
 
+void draw_element_bitmask(tag_property& prop, void* base_ptr, size_t bit_count) {
+	if (ImGui::TreeNode(prop.name.c_str())) {
+		uint32_t* bitmaskPtr = (uint32_t*)((char*)base_ptr + prop.local_offset);
+
+		for (int i = 0; i < bit_count; i++) {
+			auto it = std::find_if(prop.reflexive.begin(), prop.reflexive.end(), 
+				[i,bit_count](const tag_property& tp) { if (((bit_count - 1) - tp.option_value) == i) { return true; } return false; });
+
+			if (it != prop.reflexive.end()) {
+				uint32_t bit = (bit_count - 1) - it->option_value; // mask values are in reverse bit order
+				bool v = (*bitmaskPtr & (1U << bit)) > 0;
+				if (ImGui::Checkbox(it->name.c_str(), &v)) {
+					*bitmaskPtr ^= 1U << bit;
+				}
+			}
+			else {
+				uint32_t bit = i;
+				bool v = (*bitmaskPtr & (1U << bit)) > 0;
+				std::string bitString = "UNKNOWN BIT #" + std::to_string(bit);
+				if (ImGui::Checkbox(bitString.c_str(), &v)) {
+					*bitmaskPtr ^= 1U << bit;
+				}
+			}
+		}
+
+		ImGui::TreePop();
+	}
+}
+
 void imgui_draw_element(tag_property& prop, void* base_ptr) {
 	ImGui::PushID(prop.name.c_str());
 	switch (prop.type) {
@@ -290,6 +319,15 @@ void imgui_draw_element(tag_property& prop, void* base_ptr) {
 		break;
 	case TAG_PROPERTY_TYPE::ENUM16:
 		draw_element_enum16(prop, base_ptr);
+		break;
+	case TAG_PROPERTY_TYPE::BITMASK8:
+		draw_element_bitmask(prop, base_ptr, 8);
+		break;
+	case TAG_PROPERTY_TYPE::BITMASK16:
+		draw_element_bitmask(prop, base_ptr, 16);
+		break;
+	case TAG_PROPERTY_TYPE::BITMASK32:
+		draw_element_bitmask(prop, base_ptr, 32);
 		break;
 	default:
 		break;

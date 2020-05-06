@@ -147,11 +147,13 @@
     <ClCompile Include="..\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
     <ClCompile Include="gameobject.cpp" />
+    <ClCompile Include="halo_core_cache.cpp" />
     <ClCompile Include="halo_engine.cpp" />
     <ClCompile Include="halo_map_data.cpp" />
     <ClCompile Include="helpers.cpp" />
     <ClCompile Include="hotkeys.cpp" />
     <ClCompile Include="livesplit.cpp" />
+    <ClCompile Include="lz4.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="plugin.cpp" />
     <ClCompile Include="plugin_loader.cpp" />
@@ -186,11 +188,13 @@
     <ClInclude Include="..\lib\gl3w\GL\glcorearb.h" />
     <ClInclude Include="gameobject.h" />
     <ClInclude Include="halo_constants.h" />
+    <ClInclude Include="halo_core_cache.h" />
     <ClInclude Include="halo_engine.h" />
     <ClInclude Include="halo_map_data.h" />
     <ClInclude Include="helpers.h" />
     <ClInclude Include="hotkeys.h" />
     <ClInclude Include="livesplit.h" />
+    <ClInclude Include="lz4.h" />
     <ClInclude Include="plugin.h" />
     <ClInclude Include="plugin_loader.h" />
     <ClInclude Include="randomizer.h" />

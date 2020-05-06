@@ -112,22 +112,26 @@ const std::vector<std::string> REQUIRED_PATHS = {
 	"HaloTASFiles/Recordings",
 	"HaloTASFiles/Recordings/_Autosave",
 	"HaloTASFiles/Plugins",
-	"HaloTASFiles/Patches"
+	"HaloTASFiles/Patches",
+	"HaloTASFiles/Cache",
+	"HaloTASFiles/Saves",
 };
 
 bool verify_file_structure() {
 	bool path_error = false;
 	for (auto& path : REQUIRED_PATHS) {
-		if (!std::filesystem::create_directories(path)) {
-			// Directory wasnt created
-			tas_logger::warning("Failed to create directory (%s)", path.c_str());
-			path_error = true;
+		if (!std::filesystem::exists(path)) {
+			if (!std::filesystem::create_directories(path)) {
+				// Directory wasnt created
+				tas_logger::warning("Failed to create directory (%s)", path.c_str());
+				path_error = true;
+			}
 		}
 	}
 	return path_error;
 }
 
-DWORD WINAPI Main_Thread(HMODULE hDLL)
+DWORD WINAPI MainThread(HMODULE hDLL)
 {
 	try {
 		verify_file_structure();
@@ -154,6 +158,11 @@ DWORD WINAPI Main_Thread(HMODULE hDLL)
 			FreeLibraryAndExitThread(hDLL, NULL);
 		}
 
+		auto& gInputHandler = tas_input_handler::get();
+		auto& gRandomizer = randomizer::get();
+		auto& gEngine = halo_engine::get();
+		auto& d3d9 = render_d3d9::get();
+
 		auto tasHooks = std::make_unique<tas_hooks>();
 		tasHooks->attach_all();
 		run();
@@ -175,7 +184,7 @@ INT APIENTRY DllMain(HMODULE hDLL, DWORD Reason, LPVOID /*Reserved*/)
 {
 	DWORD dwThreadID;
 	if (Reason == DLL_PROCESS_ATTACH) {
-		CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)Main_Thread, hDLL, 0, &dwThreadID);
+		CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)MainThread, hDLL, 0, &dwThreadID);
 	}
 	return TRUE;
 }
