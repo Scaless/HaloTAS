@@ -131,7 +131,7 @@ void tas_hooks::hook_d3d9()
 	}
 #endif
 
-	originalD3D9BeginScene = (D3D9EndScene_t)(d3d9VTable[41]);
+	originalD3D9BeginScene = (D3D9BeginScene_t)(d3d9VTable[41]);
 	hook_function(&(PVOID&)originalD3D9BeginScene, hkD3D9BeginScene);
 
 	originalD3D9EndScene = (D3D9EndScene_t)(d3d9VTable[42]);

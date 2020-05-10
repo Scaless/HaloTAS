@@ -1,12 +1,13 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
 #include <string>
-#include <tchar.h>
-#include <Psapi.h>
 #include <iostream>
 #include <windows.h>
 #include <atomic>
+#include <vector>
 
+#include "windows_utilities.h"
+#include "tas_hooks.h"
 
 // https://stackoverflow.com/a/5866648
 void clear_screen(char fill = ' ') {
@@ -21,33 +22,20 @@ void clear_screen(char fill = ' ') {
 }
 
 bool print_dlls() {
-    HMODULE hMods[1024];
-    HANDLE hProcess = GetCurrentProcess();
-    DWORD cbNeeded;
 
-    if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
+    std::vector<loaded_dll_info> dlls = 
     {
-        for (int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)
-        {
-            TCHAR szModName[MAX_PATH];
-            
-            if (GetModuleBaseName(hProcess, hMods[i], szModName, sizeof(szModName) / sizeof(TCHAR))) {
-                //_tprintf(TEXT("\t%s (0x%08X)\n"), szModName, hMods[i]);
-            }
+        loaded_dll_info(L"halo1.dll"),
+        loaded_dll_info(L"haloreach.dll") 
+    };
 
-            auto gameDllNames = { L"halo1.dll", L"haloreach.dll" };
+    fill_loaded_dlls_info(dlls);
 
-            for (auto& dllName : gameDllNames) {
-                if (!wcscmp(szModName, dllName)) {
-
-                    MODULEINFO lpModInfo = {};
-                    if (GetModuleInformation(hProcess, hMods[i], &lpModInfo, sizeof(lpModInfo))) {
-                        wprintf(L"%s: \r\n", szModName);
-                        printf("\tbase address = %p\r\n", lpModInfo.lpBaseOfDll);
-                    }
-                }
-            }
-        }
+    for(auto& dll : dlls) {
+        wprintf(L"%s: \r\n", dll.name.c_str());
+        wprintf(L"\tBase Address = %p\r\n", dll.info.lpBaseOfDll);
+        wprintf(L"\tEntry Point = %p\r\n", dll.info.EntryPoint);
+        wprintf(L"\tImage Size = %d bytes\r\n", dll.info.SizeOfImage);
     }
 
     return true;
@@ -57,8 +45,6 @@ std::atomic_bool exitFlag = false;
 
 BOOL WINAPI ConsoleHandler(DWORD CEvent)
 {
-    char mesg[128];
-
     switch (CEvent)
     {
     case CTRL_C_EVENT:
@@ -77,19 +63,56 @@ void init() {
     AllocConsole();
     freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
     SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE);
+
+    
 }
 void deinit() {
     
 }
 
+void pipe_shit() {
+    static int i = 0;
+    i++;
+
+    LPCWSTR lpszPipeName = TEXT("\\\\.\\pipe\\MCCTAS");
+    CHAR chReadBuf[1024];
+    DWORD cbRead;
+    BOOL fResult;
+
+    std::string Message = "Test " + std::to_string(i) + "\n";
+
+    char writeBuffer[256];
+    ZeroMemory(&writeBuffer, 256);
+
+    Message.copy(&writeBuffer[1], Message.length());
+    DWORD c = Message.length() + 1;
+    writeBuffer[0] = (char)c;
+
+    fResult = CallNamedPipe(
+        lpszPipeName,          // pipe name 
+        &writeBuffer,          // message to server 
+        c,                     // message length 
+        chReadBuf,             // buffer to receive reply 
+        sizeof(chReadBuf),     // size of read buffer 
+        &cbRead,               // number of bytes read 
+        NMPWAIT_WAIT_FOREVER); // wait;-) 
+}
+
 DWORD WINAPI MainThread(HMODULE hDLL) {
     init();
+
+    auto tasHooks = std::make_unique<tas_hooks>();
+    
+    tasHooks->attach_all(NULL, hDLL);
     
     while (!exitFlag) {
         print_dlls();
         Sleep(1000);
         clear_screen();
+        pipe_shit();
     }
+
+    tasHooks->detach_all();
 
     deinit();
     Sleep(3000);
