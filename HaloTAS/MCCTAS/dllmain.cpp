@@ -3,23 +3,11 @@
 #include <string>
 #include <iostream>
 #include <windows.h>
-#include <atomic>
-#include <vector>
 
 #include "windows_utilities.h"
+#include "windows_console.h"
 #include "tas_hooks.h"
-
-// https://stackoverflow.com/a/5866648
-void clear_screen(char fill = ' ') {
-    COORD tl = { 0,0 };
-    CONSOLE_SCREEN_BUFFER_INFO s;
-    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
-    GetConsoleScreenBufferInfo(console, &s);
-    DWORD written, cells = s.dwSize.X * s.dwSize.Y;
-    FillConsoleOutputCharacter(console, fill, cells, tl, &written);
-    FillConsoleOutputAttribute(console, s.wAttributes, cells, tl, &written);
-    SetConsoleCursorPosition(console, tl);
-}
+#include "halo_constants.h"
 
 bool print_dlls() {
 
@@ -39,35 +27,6 @@ bool print_dlls() {
     }
 
     return true;
-}
-
-std::atomic_bool exitFlag = false;
-
-BOOL WINAPI ConsoleHandler(DWORD CEvent)
-{
-    switch (CEvent)
-    {
-    case CTRL_C_EVENT:
-    case CTRL_BREAK_EVENT:
-    case CTRL_CLOSE_EVENT:
-    case CTRL_LOGOFF_EVENT:
-    case CTRL_SHUTDOWN_EVENT:
-        exitFlag = true;
-        FreeConsole();
-        break;
-    }
-    return TRUE;
-}
-
-void init() {
-    AllocConsole();
-    freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
-    SetConsoleCtrlHandler((PHANDLER_ROUTINE)ConsoleHandler, TRUE);
-
-    
-}
-void deinit() {
-    
 }
 
 void pipe_shit() {
@@ -99,23 +58,31 @@ void pipe_shit() {
 }
 
 DWORD WINAPI MainThread(HMODULE hDLL) {
-    init();
+    auto consoleWindow = std::make_unique<windows_console>();
 
-    auto tasHooks = std::make_unique<tas_hooks>();
-    
-    tasHooks->attach_all(NULL, hDLL);
-    
-    while (!exitFlag) {
+    char* halo1DLLAddress = reinterpret_cast<char*>(0x180000000);
+    char** halo1RuntimePtr = reinterpret_cast<char**>(halo1DLLAddress + 0x218E250);
+    char* halo1RuntimeBase = reinterpret_cast<char*>(*halo1RuntimePtr);
+
+    int32_t* tick = reinterpret_cast<int32_t*>(halo1RuntimeBase + 0x2F4);
+    char* InputArray = reinterpret_cast<char*>(halo1DLLAddress + 0x218E2B0);
+
+    int32_t lastTick = 0;
+    while (!consoleWindow->get_exit_status()) {
         print_dlls();
-        Sleep(1000);
-        clear_screen();
+        consoleWindow->clear();
+
         pipe_shit();
+
+        if (*tick != lastTick) {
+            InputArray[to_underlying(halo1::COMMON_KEYS::S)] = lastTick % 2;
+            lastTick = *tick;
+        }
+        
+        Sleep(10);
     }
 
-    tasHooks->detach_all();
-
-    deinit();
-    Sleep(3000);
+    Sleep(1000);
     FreeLibraryAndExitThread(hDLL, NULL);
 }
 
@@ -138,4 +105,3 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 
     return TRUE;
 }
-

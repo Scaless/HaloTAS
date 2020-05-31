@@ -14,12 +14,8 @@ namespace MCCTASGUI
         public TASInterop()
         {
             PipeServerThread = new Thread(ServerThread);
+            PipeServerThread.IsBackground = true;
             PipeServerThread.Start();
-        }
-
-        public void Stop()
-        {
-            
         }
 
         private static void ServerThread(object data)
@@ -36,40 +32,8 @@ namespace MCCTASGUI
                         System.Diagnostics.Debug.WriteLine(filename);
                     }
                     pipeServer.Disconnect();
-                    //stream.Read(buffer, 0, size);
-                    //Handle buffer values
                 }
             }
-
-            
-
-            //while (true)
-            //{
-            //    try
-            //    {
-            //        if (!pipeServer.IsConnected)
-            //        {
-            //            pipeServer.WaitForConnection();
-            //        }
-
-            //        System.Diagnostics.Debug.WriteLine("Client connected.");
-            //        StreamString ss = new StreamString(pipeServer);
-
-            //        string filename = ss.ReadString();
-            //        if (!string.IsNullOrEmpty(filename))
-            //        {
-            //            System.Diagnostics.Debug.WriteLine(filename);
-            //        }
-            //    }
-            //    catch (IOException e)
-            //    {
-            //        System.Diagnostics.Debug.WriteLine($"ERROR: {e.Message}");
-            //        pipeServer.Disconnect();
-            //    }
-                    
-            //}
-
-            //pipeServer.Close();
         }
 
     }

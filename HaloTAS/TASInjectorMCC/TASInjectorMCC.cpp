@@ -64,7 +64,7 @@ int main()
 				}
 			} while (Process32Next(hProcSnap, &pe32));
 		}
-		Sleep(1000);
+		Sleep(500);
 
 		CloseHandle(hProcSnap);
 	}

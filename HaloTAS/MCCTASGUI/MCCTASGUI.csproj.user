@@ -7,7 +7,45 @@
     </ApplicationDefinition>
   </ItemGroup>
   <ItemGroup>
+    <Compile Update="AboutWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\ActionListVis.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\InputListVis.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="Controls\InputTickItem.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="LiveMapDataViewer.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Update="TASInputEditor.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="AboutWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\ActionListVis.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\InputListVis.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="Controls\InputTickItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="LiveMapDataViewer.xaml">
+      <SubType>Designer</SubType>
+    </Page>
     <Page Update="MainWindow.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="TASInputEditor.xaml">
       <SubType>Designer</SubType>
     </Page>
   </ItemGroup>

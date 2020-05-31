@@ -5,6 +5,19 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MCCTASGUI"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded" Closing="Window_Closing">
-    <Grid/>
+        Title="MCCTAS GUI - github.com/Scaless/HaloTAS" Height="720" Width="1280" Loaded="Window_Loaded">
+    <Grid>
+        <Menu>
+            <MenuItem Header="File">
+                <MenuItem Header="Close"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="View">
+                <MenuItem Header="Map Data" Click="MenuOpenMapData"></MenuItem>
+                <MenuItem Header="Input Editor" Click="MenuOpenInputEditor"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="About" Click="MenuOpenAbout"></MenuItem>
+            </MenuItem>
+        </Menu>
+    </Grid>
 </Window>

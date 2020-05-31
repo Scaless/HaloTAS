@@ -11,7 +11,7 @@ public:
 	tas_hooks() = default;
 	~tas_hooks() = default;
 
-	void attach_all(HWND hwnd, HMODULE hMod);
+	void attach_all();
 	void detach_all();
 
 private:

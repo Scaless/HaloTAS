@@ -1,0 +1,112 @@
+﻿<Window xmlns:Controls="clr-namespace:MCCTASGUI.Controls"  x:Class="MCCTASGUI.TASInputEditor"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MCCTASGUI"
+        mc:Ignorable="d"
+        Title="TASInputEditor" Height="720" Width="1280">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="20"></RowDefinition>
+            <RowDefinition Height="100"></RowDefinition>
+            <RowDefinition Height="20"></RowDefinition>
+            <RowDefinition Height="1*"></RowDefinition>
+        </Grid.RowDefinitions>
+        
+        <Menu Grid.Row="0">
+            
+            <MenuItem Header="File">
+                <MenuItem Header="Close" Click="MenuClose_Click"></MenuItem>
+            </MenuItem>
+            <MenuItem Header="Edit">
+                <MenuItem Header="Undo"></MenuItem>
+            </MenuItem>
+        </Menu>
+
+        <Grid Grid.Row="1">
+            <Button>Yes</Button>
+        </Grid>
+
+        <Grid Grid.Row="2" Margin="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+                <ColumnDefinition Width="1*"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="60"></ColumnDefinition>
+                    <ColumnDefinition Width="1*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+
+                <TextBlock HorizontalAlignment="Center" Grid.Column="0">Tick</TextBlock>
+                <TextBlock HorizontalAlignment="Center" Grid.Column="1">MouseX</TextBlock>
+                <TextBlock HorizontalAlignment="Center" Grid.Column="2">MouseY</TextBlock>
+                <TextBlock HorizontalAlignment="Center" Grid.Column="3">Action</TextBlock>
+                <TextBlock HorizontalAlignment="Center" Grid.Column="4">Inputs</TextBlock>
+            </Grid>
+            
+            <TextBlock HorizontalAlignment="Center" Grid.Column="1">Actions</TextBlock>
+        </Grid>
+
+        <ListBox Grid.Row="3" x:Name="lbTickItems" Margin="2" HorizontalContentAlignment="Stretch" SelectionMode="Extended">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"></ColumnDefinition>
+                            <ColumnDefinition Width="5"></ColumnDefinition>
+                            <ColumnDefinition Width="1*"></ColumnDefinition>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid Grid.Column="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"></ColumnDefinition>
+                                <ColumnDefinition Width="60"></ColumnDefinition>
+                                <ColumnDefinition Width="60"></ColumnDefinition>
+                                <ColumnDefinition Width="60"></ColumnDefinition>
+                                <ColumnDefinition Width="1*"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" Text="{Binding Tick}" />
+                            <TextBlock Grid.Column="1" HorizontalAlignment="Center" Text="{Binding LookX}" />
+                            <TextBlock Grid.Column="2" HorizontalAlignment="Center" Text="{Binding LookY}" />
+                            <Menu Grid.Column="3">
+                                <MenuItem Header="Add">
+                                    <MenuItem Header="Mouse">
+                                        <MenuItem Header="Mouse X"></MenuItem>
+                                        <MenuItem Header="Mouse Y"></MenuItem>
+                                    </MenuItem>
+                                    <MenuItem Header="Action">
+                                        <MenuItem Header="Throw Grenade"></MenuItem>
+                                        <MenuItem Header="Melee"></MenuItem>
+                                    </MenuItem>
+                                </MenuItem>
+                            </Menu>
+
+                            <Controls:InputListVis Grid.Column="4" Inputs="{Binding Inputs}">
+                                
+                            </Controls:InputListVis>
+                            
+                        </Grid>
+
+                        <Rectangle Grid.Column="1" HorizontalAlignment="Center" VerticalAlignment="Stretch" Fill="Black" Margin="0,-2,2,-2" Width="1"/>
+                        
+                        <Grid Grid.Column="2">
+                            <Controls:ActionListVis Actions="{Binding Actions}">
+                                
+                            </Controls:ActionListVis>
+                        </Grid>
+                        
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+
+    </Grid>
+</Window>

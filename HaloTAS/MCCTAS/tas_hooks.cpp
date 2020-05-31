@@ -14,7 +14,6 @@
 #include <mutex>
 
 static HWND                     g_hWnd = nullptr;
-static HMODULE					g_hModule = nullptr;
 static ID3D11Device* g_pd3dDevice = nullptr;
 static ID3D11DeviceContext* g_pd3dContext = nullptr;
 static IDXGISwapChain* g_pSwapChain = nullptr;
@@ -65,10 +64,9 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
 	return TRUE;
 }
 
-void tas_hooks::attach_all(HWND hwnd, HMODULE hMod) {
+void tas_hooks::attach_all() {
 
-	g_hModule = hMod;
-
+	// Get hwnd for the main MCC window
 	EnumWindows(EnumWindowsProc, NULL);
 
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
