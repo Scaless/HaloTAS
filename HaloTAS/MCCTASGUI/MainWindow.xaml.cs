@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -12,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace MCCTASGUI
 {
@@ -20,10 +23,11 @@ namespace MCCTASGUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        TASInterop TASInterop;
-        LiveMapDataViewer liveMapDataViewer = null;
-        AboutWindow aboutWindow = null;
-        TASInputEditor inputEditorWindow = null;
+        private TASInterop TASInterop;
+        private LiveMapDataViewer liveMapDataViewer = null;
+        private AboutWindow aboutWindow = null;
+        private TASInputEditor inputEditorWindow = null;
+        private DispatcherTimer UpdateUITimer;
 
         public MainWindow()
         {
@@ -31,11 +35,28 @@ namespace MCCTASGUI
 
             Application.Current.MainWindow = this;
             Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
+
+            TASInterop = new TASInterop();
+
+            UpdateUITimer = new DispatcherTimer();
+            UpdateUITimer.Tick += UpdateUITimer_Tick;
+            UpdateUITimer.Interval = new TimeSpan(0, 0, 1);
+            UpdateUITimer.Start();
+        }
+
+        private void UpdateUITimer_Tick(object sender, EventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var Status = TASInterop.GetCurrentStatus();
+
+                tblkStatusConnected.Text = Status.Connected ? "CONNECTED" : "NOT CONNECTED";
+            });
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            TASInterop = new TASInterop();
+            
         }
 
         private void MenuOpenMapData(object sender, RoutedEventArgs e)

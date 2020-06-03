@@ -54,6 +54,7 @@
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
   </ImportGroup>
   <ImportGroup Label="Shared">
   </ImportGroup>
@@ -173,11 +174,13 @@
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h" />
     <ClInclude Include="..\lib\gl3w\GL\glcorearb.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="gui_interop.h" />
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="kiero.h" />
     <ClInclude Include="tas_hooks.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="tas_input.h" />
+    <ClInclude Include="tas_utilities.h" />
     <ClInclude Include="windows_console.h" />
     <ClInclude Include="windows_utilities.h" />
   </ItemGroup>
@@ -191,6 +194,7 @@
     <ClCompile Include="..\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="gui_interop.cpp" />
     <ClCompile Include="kiero.cpp" />
     <ClCompile Include="tas_hooks.cpp" />
     <ClCompile Include="pch.cpp">
@@ -200,10 +204,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="tas_input.cpp" />
+    <ClCompile Include="tas_utilities.cpp" />
     <ClCompile Include="windows_console.cpp" />
     <ClCompile Include="windows_utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
   </ImportGroup>
 </Project>

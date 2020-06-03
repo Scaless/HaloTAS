@@ -19,5 +19,8 @@
                 <MenuItem Header="About" Click="MenuOpenAbout"></MenuItem>
             </MenuItem>
         </Menu>
+        <TextBlock x:Name="tblkStatusConnected" HorizontalAlignment="Left" Margin="17,57,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top"/>
+
+
     </Grid>
 </Window>

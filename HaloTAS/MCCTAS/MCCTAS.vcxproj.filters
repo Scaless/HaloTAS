@@ -81,6 +81,12 @@
     <ClInclude Include="tas_input.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="gui_interop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tas_utilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -126,6 +132,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tas_input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gui_interop.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tas_utilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
