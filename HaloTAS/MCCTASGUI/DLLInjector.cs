@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -44,7 +46,7 @@ namespace MCCTASGUI
         {
             // the target process - I'm using a dummy process for this
             // if you don't have one, open Task Manager and choose wisely
-            Process targetProcess = Process.GetProcessesByName("MCC-Win64-Shipping.exe")[0];
+            Process targetProcess = Process.GetProcessesByName("MCC-Win64-Shipping").FirstOrDefault();
 
             if(targetProcess == null)
             {
@@ -58,16 +60,24 @@ namespace MCCTASGUI
             // searching for the address of LoadLibraryA and storing it in a pointer
             IntPtr loadLibraryAddr = GetProcAddress(GetModuleHandle("kernel32.dll"), "LoadLibraryA");
 
-            // name of the dll we want to inject
-            string dllName = "MCCTAS.dll";
+            // full path of the dll we want to inject
+            string dllFullPath = Directory.GetFiles(".", "MCCTAS.dll").FirstOrDefault();
+
+            if (string.IsNullOrWhiteSpace(dllFullPath))
+            {
+                // Error: TAS dll not found
+                return;
+            }
+
+            dllFullPath = Path.GetFullPath(dllFullPath);
 
             // alocating some memory on the target process - enough to store the name of the dll
             // and storing its address in a pointer
-            IntPtr allocMemAddress = VirtualAllocEx(procHandle, IntPtr.Zero, (uint)((dllName.Length + 1) * Marshal.SizeOf(typeof(char))), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            IntPtr allocMemAddress = VirtualAllocEx(procHandle, IntPtr.Zero, (uint)((dllFullPath.Length + 1) * Marshal.SizeOf(typeof(char))), MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
             // writing the name of the dll there
             UIntPtr bytesWritten;
-            WriteProcessMemory(procHandle, allocMemAddress, Encoding.Default.GetBytes(dllName), (uint)((dllName.Length + 1) * Marshal.SizeOf(typeof(char))), out bytesWritten);
+            WriteProcessMemory(procHandle, allocMemAddress, Encoding.Default.GetBytes(dllFullPath), (uint)((dllFullPath.Length + 1) * Marshal.SizeOf(typeof(char))), out bytesWritten);
 
             // creating a thread that will call LoadLibraryA with allocMemAddress as argument
             CreateRemoteThread(procHandle, IntPtr.Zero, 0, loadLibraryAddr, allocMemAddress, 0, IntPtr.Zero);

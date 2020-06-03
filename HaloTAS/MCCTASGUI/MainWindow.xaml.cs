@@ -42,6 +42,8 @@ namespace MCCTASGUI
             UpdateUITimer.Tick += UpdateUITimer_Tick;
             UpdateUITimer.Interval = new TimeSpan(0, 0, 1);
             UpdateUITimer.Start();
+
+            tblkStatusConnected.Text = Directory.GetCurrentDirectory();
         }
 
         private void UpdateUITimer_Tick(object sender, EventArgs e)
@@ -119,5 +121,9 @@ namespace MCCTASGUI
             inputEditorWindow = null;
         }
 
+        private void btnInject_Click(object sender, RoutedEventArgs e)
+        {
+            DLLInjector.Inject();
+        }
     }
 }

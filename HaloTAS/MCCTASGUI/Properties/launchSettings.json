@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MCCTASGUI": {
+      "commandName": "Project",
+      "workingDirectory": "C:\\Github\\HaloTAS\\HaloTAS\\Debug"
+    }
+  }
+}
