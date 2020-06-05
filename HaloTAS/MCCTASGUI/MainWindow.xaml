@@ -21,6 +21,7 @@
         </Menu>
         <TextBlock x:Name="tblkStatusConnected" HorizontalAlignment="Left" Margin="17,57,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <Button x:Name="btnInject" Content="Inject" HorizontalAlignment="Left" Margin="27,118,0,0" VerticalAlignment="Top" Click="btnInject_Click"/>
+        <Button x:Name="btnKillConnection" Content="Kill Connection" HorizontalAlignment="Left" Margin="88,118,0,0" VerticalAlignment="Top" Click="btnKillConnection_Click"/>
 
 
     </Grid>

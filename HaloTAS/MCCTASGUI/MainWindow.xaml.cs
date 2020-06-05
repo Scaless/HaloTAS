@@ -125,5 +125,10 @@ namespace MCCTASGUI
         {
             DLLInjector.Inject();
         }
+
+        private void btnKillConnection_Click(object sender, RoutedEventArgs e)
+        {
+            TASInterop.KillConnection();
+        }
     }
 }

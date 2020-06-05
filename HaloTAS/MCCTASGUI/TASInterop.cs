@@ -4,6 +4,9 @@ using System.Text;
 using System.IO;
 using System.IO.Pipes;
 using System.Threading;
+using System.Runtime.InteropServices;
+using System.Drawing;
+using System.Runtime.CompilerServices;
 
 namespace MCCTASGUI
 {
@@ -18,28 +21,55 @@ namespace MCCTASGUI
     public enum InteropResponseType
     {
         Pong = 0,
-        GetDLLInformation = 1,
+
+        DLLInformationFound = 1,
+        DLLInformationNotFound = 2,
 
         Invalid = -1
     }
 
-    public struct InteropRequest
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct InteropRequestHeader
     {
-        public InteropRequestType RequestType { get; set; }
-        public int RequestPayloadSize { get; set; }
-        public byte[] RequestPayload { get; set; }
+        [MarshalAs(UnmanagedType.I4)]
+        public InteropRequestType RequestType;
+        [MarshalAs(UnmanagedType.I4)]
+        public int RequestPayloadSize;
     }
 
-    public struct InteropResponse
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct InteropResponseHeader
     {
-        public InteropResponseType ResponseType { get; set; }
-        public int ResponsePayloadSize { get; set; }
-        public byte[] ResponsePayload { get; set; }
+        [MarshalAs(UnmanagedType.I4)]
+        public InteropResponseType ResponseType;
+        [MarshalAs(UnmanagedType.I4)]
+        public int ResponsePayloadSize;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public unsafe struct DLLInformationRequest
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string DLLName;
+    }
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
+    public unsafe struct DLLInformationResponse
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string DLLName;
+        [MarshalAs(UnmanagedType.U8)]
+        public UInt64 DLLAddress;
+        [MarshalAs(UnmanagedType.U8)]
+        public UInt64 EntryPoint;
+        [MarshalAs(UnmanagedType.U8)]
+        public UInt64 ImageSize;
     }
 
     public struct TASStatus
     {
         public bool Connected { get; set; }
+        public bool KillConnection { get; set; }
     }
 
     public class TASInterop
@@ -59,6 +89,11 @@ namespace MCCTASGUI
             return CurrentStatus;
         }
 
+        public void KillConnection()
+        {
+            CurrentStatus.KillConnection = true;
+        }
+
         private static void PipeClientThread(ref TASStatus status)
         {
             while (true)
@@ -67,26 +102,34 @@ namespace MCCTASGUI
                 {
                     pipeClient.Connect();
 
+                    InteropDataStream ids = new InteropDataStream(pipeClient);
+                    
                     while (pipeClient.IsConnected)
                     {
                         status.Connected = true;
                         Thread.Sleep(1000);
                         try
                         {
-                            InteropDataStream ids = new InteropDataStream(pipeClient);
-
-                            InteropRequest ireq = new InteropRequest();
-                            ireq.RequestType = InteropRequestType.Ping;
+                            InteropRequestHeader ireq = new InteropRequestHeader();
+                            ireq.RequestType = InteropRequestType.GetDLLInformation;
                             ireq.RequestPayloadSize = 0;
-                            ireq.RequestPayload = new byte[0];
 
-                            ids.SendRequest(ireq);
+                            var headerData = InteropDataStream.MarshalObjectToArray(ireq);
+                            ids.WriteData(headerData);
 
-                            var irep = ids.ReadResponse();
+                            DLLInformationRequest ireqPayload = new DLLInformationRequest();
+                            ireqPayload.DLLName = "halo1.dll";
+                            var payloadData = InteropDataStream.MarshalObjectToArray(ireqPayload);
+                            ids.WriteData(payloadData);
 
-                            if (irep.HasValue)
+                            ids.FlushRequest();
+
+                            ids.HandleResponse();
+                           
+                            if (status.KillConnection)
                             {
-                                System.Diagnostics.Debug.WriteLine(irep.Value.ResponseType);
+                                status.KillConnection = false;
+                                pipeClient.Dispose();
                             }
                         }
                         catch (Exception e)
@@ -106,96 +149,82 @@ namespace MCCTASGUI
 
     public class InteropDataStream
     {
-        private Stream stream;
+        private Stream DataStream;
+        private byte[] WriteBuffer;
+        private int WrittenBytes;
 
         public InteropDataStream(Stream stream)
         {
-            this.stream = stream;
+            this.DataStream = stream;
+            WriteBuffer = new byte[4 * 1024 * 1024];
         }
 
-        public void SendRequest(InteropRequest request)
+        public void WriteData(byte[] data)
         {
-            stream.WriteByte((byte)request.RequestType);
-
-            byte[] requestSizeBytes = BitConverter.GetBytes(request.RequestPayloadSize);
-            stream.Write(requestSizeBytes, 0, 4);
-
-            stream.Write(request.RequestPayload);
-
-            stream.Flush();
+            Buffer.BlockCopy(data, 0, WriteBuffer, WrittenBytes, data.Length);
+            WrittenBytes += data.Length;
         }
 
-        public InteropResponse? ReadResponse()
+        public void FlushRequest()
         {
-            InteropResponse response;
+            DataStream.Write(WriteBuffer, 0, WrittenBytes);
+            DataStream.Flush();
+            WrittenBytes = 0;
+        }
 
-            InteropResponseType responseCode = (InteropResponseType)stream.ReadByte();
-            if (responseCode == InteropResponseType.Invalid)
+        public static unsafe void MarshalArrayToObject<T>(ref T obj, byte[] rawObjectData)
+        {
+            int size = Marshal.SizeOf(obj);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.Copy(rawObjectData, 0, ptr, size);
+            obj = (T)Marshal.PtrToStructure(ptr, obj.GetType());
+            Marshal.FreeHGlobal(ptr);
+        }
+
+        public static unsafe byte[] MarshalObjectToArray<T>(T obj)
+        {
+            int size = Marshal.SizeOf(obj);
+            byte[] arr = new byte[size];
+
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(obj, ptr, true);
+            Marshal.Copy(ptr, arr, 0, size);
+            Marshal.FreeHGlobal(ptr);
+            return arr;
+        }
+
+        public unsafe void HandleResponse()
+        {
+            InteropResponseHeader response;
+
+            byte[] responseHeaderArray = new byte[sizeof(InteropResponseHeader)];
+            DataStream.Read(responseHeaderArray, 0, responseHeaderArray.Length);
+
+            response = new InteropResponseHeader();
+
+            MarshalArrayToObject(ref response, responseHeaderArray);
+
+            switch (response.ResponseType)
             {
-                return null;
+                case InteropResponseType.Pong:
+                    System.Diagnostics.Debug.WriteLine($"{response.ResponseType} - {response.ResponsePayloadSize}");
+                    break;
+                case InteropResponseType.DLLInformationFound:
+                    if (response.ResponsePayloadSize > 0)
+                    {
+                        DLLInformationResponse responsePayload = new DLLInformationResponse();
+                        byte[] responsePayloadBytes = new byte[response.ResponsePayloadSize];
+                        DataStream.Read(responsePayloadBytes, 0, response.ResponsePayloadSize);
+
+                        MarshalArrayToObject(ref responsePayload, responsePayloadBytes);
+
+                        System.Diagnostics.Debug.WriteLine($"0x{responsePayload.DLLAddress:X}");
+                    }
+                    break;
+                default:
+                    break;
             }
 
-            response = new InteropResponse();
-            response.ResponseType = responseCode;
-
-            byte[] responseSizeBytes = new byte[4];
-            stream.Read(responseSizeBytes, 0, 4);
-            response.ResponsePayloadSize = BitConverter.ToInt32(responseSizeBytes, 0);
-
-            if (response.ResponsePayloadSize > 0)
-            {
-                response.ResponsePayload = new byte[response.ResponsePayloadSize];
-                stream.Read(response.ResponsePayload, 0, response.ResponsePayloadSize);
-            }
-
-            return response;
-        }
-    }
-
-    // Defines the data protocol for reading and writing strings on our stream
-    public class StreamString
-    {
-        private Stream ioStream;
-        private ASCIIEncoding streamEncoding;
-
-        public StreamString(Stream ioStream)
-        {
-            this.ioStream = ioStream;
-            streamEncoding = new ASCIIEncoding();
-        }
-
-        public string ReadString()
-        {
-            int len = ioStream.ReadByte();
-            if (len == -1)
-            {
-                return string.Empty;
-            }
-
-            byte[] inBuffer = new byte[len];
-            ioStream.Read(inBuffer, 0, len);
-
-            return streamEncoding.GetString(inBuffer);
-        }
-
-        public int WriteString(string outString)
-        {
-            ioStream.WriteByte(128);
-            ioStream.Flush();
-            return 1;
-
-            //byte[] outBuffer = streamEncoding.GetBytes(outString);
-            //int len = outBuffer.Length;
-            //if (len > UInt16.MaxValue)
-            //{
-            //    len = (int)UInt16.MaxValue;
-            //}
-            //ioStream.WriteByte((byte)(len / 256));
-            //ioStream.WriteByte((byte)(len & 255));
-            //ioStream.Write(outBuffer, 0, len);
-            //ioStream.Flush();
-
-            //return outBuffer.Length + 2;
         }
     }
 
