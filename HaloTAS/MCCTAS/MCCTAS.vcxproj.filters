@@ -87,6 +87,12 @@
     <ClInclude Include="tas_utilities.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows_pipe_server.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tas_logger.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -138,6 +144,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="tas_utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows_pipe_server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tas_logger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -11,5 +11,9 @@
 #include "framework.h"
 
 #include "tas_utilities.h"
+#include "tas_logger.h"
+
+#include <string>
+#include <memory>
 
 #endif //PCH_H

@@ -1,17 +1,20 @@
 #pragma once
-
+#include "pch.h"
 #include <atomic>
+#include <memory>
+#include "windows_pipe_server.h"
 
 class gui_interop
 {
 private:
-	std::atomic_bool mServerKillFlag{ false };
+	std::unique_ptr<windows_pipe_server> pipe_server;
 
 public:
-	gui_interop() = default;
-	~gui_interop() = default;
+	gui_interop();
+	~gui_interop();
 
-	void start_pipe_server();
-	void stop_pipe_server();
+private:
+
+	static void answer_request(windows_pipe_server::LPPIPEINST pipe);
 };
 

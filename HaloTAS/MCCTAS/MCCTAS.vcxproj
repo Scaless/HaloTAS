@@ -180,8 +180,10 @@
     <ClInclude Include="tas_hooks.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="tas_input.h" />
+    <ClInclude Include="tas_logger.h" />
     <ClInclude Include="tas_utilities.h" />
     <ClInclude Include="windows_console.h" />
+    <ClInclude Include="windows_pipe_server.h" />
     <ClInclude Include="windows_utilities.h" />
   </ItemGroup>
   <ItemGroup>
@@ -204,8 +206,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="tas_input.cpp" />
+    <ClCompile Include="tas_logger.cpp" />
     <ClCompile Include="tas_utilities.cpp" />
     <ClCompile Include="windows_console.cpp" />
+    <ClCompile Include="windows_pipe_server.cpp" />
     <ClCompile Include="windows_utilities.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

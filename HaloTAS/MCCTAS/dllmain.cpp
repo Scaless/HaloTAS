@@ -40,23 +40,17 @@ void RealMain() {
     char* InputArray = reinterpret_cast<char*>(halo1DLLAddress + 0x218E2B0);*/
 
     auto interop = std::make_unique<gui_interop>();
-    interop->start_pipe_server();
-
     auto consoleWindow = std::make_unique<windows_console>();
-    
     auto hooks = std::make_unique<tas_hooks>();
     //hooks->attach_all();
 
     while (!consoleWindow->get_exit_status()) {
-        consoleWindow->clear();
-        print_dlls();
+        //print_dlls();
 
         //pipe_shit();
 
         Sleep(100);
     }
-
-    interop->stop_pipe_server();
 
     //hooks->detach_all();
 }

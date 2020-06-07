@@ -6,12 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
 
-// Utility to get an enum value as the underlying type
-template <typename E>
-constexpr auto to_underlying(E e) noexcept
-{
-	return static_cast<std::underlying_type_t<E>>(e);
-}
+#include "tas_utilities.h"
 
 namespace halo1 {
 

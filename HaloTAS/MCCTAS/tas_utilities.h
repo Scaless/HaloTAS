@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <type_traits>
 
 namespace tas::literals {
 	constexpr auto operator""_KiB(const uint64_t x) { return (1024ULL) * x; }
@@ -12,5 +13,12 @@ namespace tas::literals {
 	constexpr auto operator""_MB(const uint64_t x) { return (1000ULL * 1000ULL) * x; }
 	constexpr auto operator""_GB(const uint64_t x) { return (1000ULL * 1000ULL * 1000ULL) * x; }
 	constexpr auto operator""_TB(const uint64_t x) { return (1000ULL * 1000ULL * 1000ULL * 1000ULL) * x; }
+}
+
+// Utility to get an enum value as the underlying type
+template <typename E>
+constexpr auto to_underlying(E e) noexcept
+{
+	return static_cast<std::underlying_type_t<E>>(e);
 }
 

@@ -1,10 +1,9 @@
-#include "pch.h"
 #include "gui_interop.h"
-
 #include <thread>
 #include <chrono>
 #include <vector>
 #include <string>
+#include <unordered_map>
 #include "windows_utilities.h"
 
 enum class InteropRequestType : int32_t {
@@ -12,6 +11,11 @@ enum class InteropRequestType : int32_t {
 	GET_DLL_INFORMATION = 1,
 
 	INVALID = -1
+};
+std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
+	{to_underlying(InteropRequestType::PING), L"PING"},
+	{to_underlying(InteropRequestType::GET_DLL_INFORMATION), L"GET_DLL_INFORMATION"},
+	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
 };
 
 enum class InteropResponseType : int32_t {
@@ -21,6 +25,12 @@ enum class InteropResponseType : int32_t {
 	DLL_INFORMATION_NOT_FOUND = 2,
 
 	INVALID = -1
+};
+std::unordered_map<int32_t, const wchar_t*> InteropResponseTypeString{
+	{to_underlying(InteropResponseType::PONG), L"PONG"},
+	{to_underlying(InteropResponseType::DLL_INFORMATION_FOUND), L"DLL_INFORMATION_FOUND"},
+	{to_underlying(InteropResponseType::DLL_INFORMATION_NOT_FOUND), L"DLL_INFORMATION_NOT_FOUND"},
+	{to_underlying(InteropResponseType::INVALID), L"INVALID"},
 };
 
 struct InteropRequestHeader {
@@ -43,7 +53,6 @@ public:
 		: type(InteropResponseType::INVALID), payload_size(0)
 	{
 	}
-
 };
 
 struct DLLInformationRequestPayload {
@@ -64,8 +73,21 @@ public:
 	}
 };
 
-bool create_response_dll_information(DLLInformationResponsePayload& payloadOut, std::wstring& dllName)
+struct InteropRequest {
+	InteropRequestHeader header;
+	const char* payload;
+};
+struct InteropResponse {
+	InteropResponseHeader header;
+	std::vector<char> payload;
+};
+
+void create_response_dll_information(const InteropRequest& request, InteropResponse& response)
 {
+	DLLInformationRequestPayload requestPayload;
+	memcpy_s(&requestPayload, sizeof(requestPayload), request.payload, sizeof(requestPayload));
+	std::wstring dllName(requestPayload.dll_name);
+
 	std::vector<loaded_dll_info> dlls =
 	{
 		loaded_dll_info(dllName),
@@ -74,174 +96,84 @@ bool create_response_dll_information(DLLInformationResponsePayload& payloadOut, 
 	fill_loaded_dlls_info(dlls);
 
 	if (dlls[0].info.SizeOfImage == 0) {
-		return false;
+		response.header.type = InteropResponseType::DLL_INFORMATION_NOT_FOUND;
+		return;
 	}
+
+	DLLInformationResponsePayload payloadOut;
 
 	dlls[0].name.copy(payloadOut.dll_name, dlls[0].name.size(), 0);
 	payloadOut.base_address = (uint64_t)dlls[0].info.lpBaseOfDll;
 	payloadOut.entry_point = (uint64_t)dlls[0].info.EntryPoint;
 	payloadOut.image_size = (uint64_t)dlls[0].info.SizeOfImage;
 
-	return true;
+	response.header.type = InteropResponseType::DLL_INFORMATION_FOUND;
+	response.header.payload_size = sizeof(payloadOut);
+
+	response.payload.reserve(response.header.payload_size);
+	memcpy_s(response.payload.data(), response.payload.capacity(), &payloadOut, sizeof(payloadOut));
 }
 
-void pipe_server_main(std::atomic_bool* close)
+void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 {
-	using namespace tas::literals;
-	using namespace std;
+	InteropRequest request = { };
+	memcpy_s(&request.header, sizeof(request.header), pipe->chRequest, sizeof(request.header));
+	request.payload = pipe->chRequest + sizeof(request.header);
 
-	constexpr DWORD dwInBufferSize = 4_MiB;
-	constexpr DWORD dwOutBufferSize = 4_MiB;
+	InteropResponse response = { };
 
-	vector<char> inBuffer(dwInBufferSize, 0);
-	vector<char> outBuffer(dwOutBufferSize, 0);
+	switch (request.header.type) {
+	case InteropRequestType::PING:
+	{
+		response.header.type = InteropResponseType::PONG;
+		break;
+	}
+	case InteropRequestType::GET_DLL_INFORMATION:
+	{
+		create_response_dll_information(request, response);
+		break;
+	}
+	case InteropRequestType::INVALID:
+	default:
+	{
+		response.header.type = InteropResponseType::INVALID;
+		break;
+	}
+	}
+	
+	DWORD TotalWriteSize = 0;
 
-	while (*close != true) {
-		LPCWSTR lpcwPipeName = TEXT("\\\\.\\pipe\\MCCTAS");
-		HANDLE hPipe = CreateNamedPipeW(
-			lpcwPipeName,
-			PIPE_ACCESS_DUPLEX,
-			PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT,
-			PIPE_UNLIMITED_INSTANCES,
-			dwInBufferSize,
-			dwOutBufferSize,
-			0,
-			nullptr
-			);
+	// Copy Header
+	memcpy_s(pipe->chReply, windows_pipe_server::PIPE_BUFFER_SIZE, &response.header, sizeof(response.header));
+	TotalWriteSize += sizeof(response.header);
 
-		if (hPipe == INVALID_HANDLE_VALUE) {
-			return;
-		}
-
-		// Wait for the client to connect; if it succeeds, 
-		// the function returns a nonzero value. If the function
-		// returns zero, GetLastError returns ERROR_PIPE_CONNECTED. 
-		auto clientConnected = ConnectNamedPipe(hPipe, NULL) ?
-			TRUE : (GetLastError() == ERROR_PIPE_CONNECTED);
-
-		if (clientConnected) {
-			while (true) {
-				if (*close) {
-					break;
-				}
-
-				DWORD dwBytesRead, dwBytesWritten;
-
-				auto readSuccess = ReadFile(
-					hPipe,
-					inBuffer.data(),
-					dwInBufferSize,
-					&dwBytesRead,
-					nullptr
-					);
-
-				if (!readSuccess || dwBytesRead == 0) {
-					break;
-				}
-
-				static int i = 0;
-				i++;
-
-				// Process the read buffer
-				// Create a response
-				// ...
-
-				InteropRequestHeader requestHeader = { };
-				memcpy_s(&requestHeader, sizeof(requestHeader), inBuffer.data(), sizeof(requestHeader));
-
-				DWORD TotalWriteSize = 0;
-				InteropResponseHeader responseHeader = { };
-
-				//////////////////
-				switch (requestHeader.type) {
-				case InteropRequestType::PING:
-				{
-					responseHeader.type = InteropResponseType::PONG;
-					responseHeader.payload_size = i;
-					memcpy_s(outBuffer.data(), outBuffer.capacity(), &responseHeader, sizeof(responseHeader));
-					TotalWriteSize = sizeof(responseHeader);
-					break;
-				}
-				case InteropRequestType::GET_DLL_INFORMATION:
-				{
-					DLLInformationRequestPayload requestPayload;
-					memcpy_s(&requestPayload, sizeof(requestPayload), inBuffer.data() + sizeof(requestHeader), sizeof(requestPayload));
-					std::wstring dllName(requestPayload.dll_name);
-
-					DLLInformationResponsePayload responsePayload;
-					bool success = create_response_dll_information(responsePayload, dllName);
-
-					if (success) {
-						responseHeader.type = InteropResponseType::DLL_INFORMATION_FOUND;
-						responseHeader.payload_size = sizeof(responsePayload);
-						char* currentWritePos = outBuffer.data();
-						size_t remainingWriteSize = outBuffer.capacity();
-						
-						memcpy_s(currentWritePos, remainingWriteSize, &responseHeader, sizeof(responseHeader));
-						currentWritePos += sizeof(responseHeader);
-						remainingWriteSize -= sizeof(responseHeader);
-
-						memcpy_s(currentWritePos, remainingWriteSize, &responsePayload, sizeof(responsePayload));
-						currentWritePos += sizeof(responsePayload);
-						remainingWriteSize -= sizeof(responsePayload);
-
-						TotalWriteSize = outBuffer.capacity() - remainingWriteSize;
-					}
-					else {
-						responseHeader.type = InteropResponseType::DLL_INFORMATION_NOT_FOUND;
-						responseHeader.payload_size = 0;
-						memcpy_s(outBuffer.data(), outBuffer.capacity(), &responseHeader, sizeof(responseHeader));
-						TotalWriteSize = sizeof(responseHeader);
-					}
-
-					break;
-				}
-				case InteropRequestType::INVALID:
-				default:
-				{
-					responseHeader.type = InteropResponseType::INVALID;
-					responseHeader.payload_size = 0;
-					memcpy_s(outBuffer.data(), outBuffer.capacity(), &responseHeader, sizeof(responseHeader));
-					TotalWriteSize = sizeof(responseHeader);
-					break;
-				}
-				} // End Switch, Refactor this later :)
-
-				auto writeSuccess = WriteFile(
-					hPipe,
-					outBuffer.data(),
-					TotalWriteSize,
-					&dwBytesWritten,
-					nullptr
-					);
-
-				if (!writeSuccess || TotalWriteSize != dwBytesWritten) {
-					break;
-				}
-			}
-
-			FlushFileBuffers(hPipe);
-			DisconnectNamedPipe(hPipe);
-			CloseHandle(hPipe);
-		}
+	// Copy Payload
+	if (response.header.payload_size > 0) {
+		memcpy_s(
+			pipe->chReply + sizeof(response.header),
+			windows_pipe_server::PIPE_BUFFER_SIZE - sizeof(response.header), 
+			response.payload.data(),
+			response.header.payload_size);
+		TotalWriteSize += response.header.payload_size;
 	}
 
-	*close = false;
+	pipe->cbToWrite = TotalWriteSize;
+
+	auto requestStr = InteropRequestTypeString.at(to_underlying(request.header.type));
+	auto responseStr = InteropResponseTypeString.at(to_underlying(response.header.type));
+
+	tas_logger::log(L"Pipe serviced request %s with response %s\r\n", requestStr, responseStr);
 }
 
-void gui_interop::start_pipe_server()
+gui_interop::gui_interop()
 {
-	//std::future<void> serverFuture = std::async(std::launch::async, pipe_server_main, &mServerKillFlag);
-	std::thread serverThread = std::thread(pipe_server_main, &mServerKillFlag);
+	pipe_server = std::make_unique<windows_pipe_server>();
+	pipe_server->set_request_callback(&answer_request);
+	std::thread serverThread = std::thread(&windows_pipe_server::server_main, pipe_server.get());
 	serverThread.detach();
 }
 
-void gui_interop::stop_pipe_server()
+gui_interop::~gui_interop()
 {
-	mServerKillFlag = true;
-
-	while (mServerKillFlag == true) {
-
-	}
+	pipe_server->stop();
 }
-
