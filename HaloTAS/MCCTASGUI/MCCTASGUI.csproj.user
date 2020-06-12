@@ -19,6 +19,9 @@
     <Compile Update="Controls\InputTickItem.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Update="H1CinematicCameraWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="LiveMapDataViewer.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -37,6 +40,9 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Update="Controls\InputTickItem.xaml">
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Update="H1CinematicCameraWindow.xaml">
       <SubType>Designer</SubType>
     </Page>
     <Page Update="LiveMapDataViewer.xaml">

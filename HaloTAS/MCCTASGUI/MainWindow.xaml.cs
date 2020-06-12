@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ namespace MCCTASGUI
         private LiveMapDataViewer liveMapDataViewer = null;
         private AboutWindow aboutWindow = null;
         private TASInputEditor inputEditorWindow = null;
+        private H1CinematicCameraWindow H1CinematicCameraWindow = null;
         private DispatcherTimer UpdateUITimer;
 
         public MainWindow()
@@ -71,14 +73,30 @@ namespace MCCTASGUI
             } 
             else
             {
-                if(liveMapDataViewer.WindowState == WindowState.Minimized)
-                    liveMapDataViewer.WindowState = WindowState.Normal;
-                liveMapDataViewer.Focus();
+                FocusWindow(liveMapDataViewer);
             }
         }
         private void LiveMapDataViewer_Closed(object sender, EventArgs e)
         {
             liveMapDataViewer = null;
+        }
+
+        private void MenuOpenH1CinematicCamera(object sender, RoutedEventArgs e)
+        {
+            if(H1CinematicCameraWindow == null)
+            {
+                H1CinematicCameraWindow = new H1CinematicCameraWindow();
+                H1CinematicCameraWindow.Closed += H1CinematicCamera_Closed;
+                H1CinematicCameraWindow.Show();
+            } 
+            else
+            {
+                FocusWindow(H1CinematicCameraWindow);
+            }
+        }
+        private void H1CinematicCamera_Closed(object sender, EventArgs e)
+        {
+            H1CinematicCameraWindow = null;
         }
 
         private void MenuOpenAbout(object sender, RoutedEventArgs e)
@@ -91,9 +109,7 @@ namespace MCCTASGUI
             }
             else
             {
-                if (aboutWindow.WindowState == WindowState.Minimized)
-                    aboutWindow.WindowState = WindowState.Normal;
-                aboutWindow.Focus();
+                FocusWindow(aboutWindow);
             }
         }
         private void AboutWindow_Closed(object sender, EventArgs e)
@@ -111,14 +127,22 @@ namespace MCCTASGUI
             }
             else
             {
-                if (inputEditorWindow.WindowState == WindowState.Minimized)
-                    inputEditorWindow.WindowState = WindowState.Normal;
-                inputEditorWindow.Focus();
+                FocusWindow(inputEditorWindow);
             }
         }
         private void InputEditorWindow_Closed(object sender, EventArgs e)
         {
             inputEditorWindow = null;
+        }
+
+        private void FocusWindow(Window window)
+        {
+            if (window == null)
+                return;
+
+            if (window.WindowState == WindowState.Minimized)
+                window.WindowState = WindowState.Normal;
+            window.Focus();
         }
 
         private void btnInject_Click(object sender, RoutedEventArgs e)
@@ -130,5 +154,28 @@ namespace MCCTASGUI
         {
             TASInterop.KillConnection();
         }
+
+        private async void btnTestRequest_Click(object sender, RoutedEventArgs e)
+        {
+            InteropRequest request = new InteropRequest();
+            request.header.RequestType = InteropRequestType.GetDLLInformation;
+            request.header.RequestPayloadSize = Marshal.SizeOf(typeof(DLLInformationRequest));
+
+            var payload = new DLLInformationRequest();
+            payload.DLLName = "halo1.dll";
+            request.requestData = TASInterop.MarshalObjectToArray(payload);
+
+            var response = await TASInterop.MakeRequestAsync(request);
+
+            if(response.header.ResponseType == InteropResponseType.DLLInformationFound)
+            {
+                DLLInformationResponse responseData = new DLLInformationResponse();
+                TASInterop.MarshalArrayToObject(ref responseData, response.responseData);
+                System.Diagnostics.Debug.WriteLine($"0x{responseData.DLLAddress:X}");
+            }
+            
+        }
+
+       
     }
 }

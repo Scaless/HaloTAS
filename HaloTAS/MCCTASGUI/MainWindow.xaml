@@ -14,6 +14,7 @@
             <MenuItem Header="View">
                 <MenuItem Header="Map Data" Click="MenuOpenMapData"></MenuItem>
                 <MenuItem Header="Input Editor" Click="MenuOpenInputEditor"></MenuItem>
+                <MenuItem Header="Halo 1 Cinematic Camera" Click="MenuOpenH1CinematicCamera"></MenuItem>
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About" Click="MenuOpenAbout"></MenuItem>
@@ -22,6 +23,7 @@
         <TextBlock x:Name="tblkStatusConnected" HorizontalAlignment="Left" Margin="17,57,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top"/>
         <Button x:Name="btnInject" Content="Inject" HorizontalAlignment="Left" Margin="27,118,0,0" VerticalAlignment="Top" Click="btnInject_Click"/>
         <Button x:Name="btnKillConnection" Content="Kill Connection" HorizontalAlignment="Left" Margin="88,118,0,0" VerticalAlignment="Top" Click="btnKillConnection_Click"/>
+        <Button x:Name="btnTestRequest" Content="Button" HorizontalAlignment="Left" Margin="66,193,0,0" VerticalAlignment="Top" Click="btnTestRequest_Click"/>
 
 
     </Grid>

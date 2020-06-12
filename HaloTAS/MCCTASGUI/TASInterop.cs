@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Text;
 using System.IO;
 using System.IO.Pipes;
@@ -7,6 +8,7 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 
 namespace MCCTASGUI
 {
@@ -14,13 +16,14 @@ namespace MCCTASGUI
     {
         Ping = 0,
         GetDLLInformation = 1,
+        SetCameraDetails = 2,
 
         Invalid = -1
     }
 
     public enum InteropResponseType
     {
-        Pong = 0,
+        Success = 0,
 
         DLLInformationFound = 1,
         DLLInformationNotFound = 2,
@@ -66,16 +69,51 @@ namespace MCCTASGUI
         public UInt64 ImageSize;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct SetCameraDetailsRequest
+    {
+        [MarshalAs(UnmanagedType.R4)]
+        public float PositionX;
+        [MarshalAs(UnmanagedType.R4)]
+        public float PositionY;
+        [MarshalAs(UnmanagedType.R4)]
+        public float PositionZ;
+    }
+
     public struct TASStatus
     {
         public bool Connected { get; set; }
         public bool KillConnection { get; set; }
     }
 
+    public class InteropRequest
+    {
+        public InteropRequestHeader header;
+        public byte[] requestData;
+        public TaskCompletionSource<bool> Completed;
+        public InteropResponse response;
+
+        public InteropRequest()
+        {
+            header = new InteropRequestHeader();
+            Completed = new TaskCompletionSource<bool>();
+            response = new InteropResponse();
+            requestData = null;
+        }
+    }
+
+    public struct InteropResponse
+    {
+        public InteropResponseHeader header;
+        public byte[] responseData;
+    }
+
     public class TASInterop
     {
         private Thread PipeServerThread;
         private TASStatus CurrentStatus;
+
+        private static ConcurrentQueue<InteropRequest> RequestQueue = new ConcurrentQueue<InteropRequest>();
 
         public TASInterop()
         {
@@ -94,6 +132,13 @@ namespace MCCTASGUI
             CurrentStatus.KillConnection = true;
         }
 
+        public static async Task<InteropResponse> MakeRequestAsync(InteropRequest request)
+        {
+            RequestQueue.Enqueue(request);
+            await request.Completed.Task;
+            return request.response;
+        }
+
         private static void PipeClientThread(ref TASStatus status)
         {
             while (true)
@@ -106,37 +151,36 @@ namespace MCCTASGUI
                     
                     while (pipeClient.IsConnected)
                     {
+                        if (status.KillConnection)
+                        {
+                            status.KillConnection = false;
+                            break;
+                        }
+
                         status.Connected = true;
-                        Thread.Sleep(1000);
+                        Thread.Sleep(20);
                         try
                         {
-                            InteropRequestHeader ireq = new InteropRequestHeader();
-                            ireq.RequestType = InteropRequestType.GetDLLInformation;
-                            ireq.RequestPayloadSize = 0;
-
-                            var headerData = InteropDataStream.MarshalObjectToArray(ireq);
-                            ids.WriteData(headerData);
-
-                            DLLInformationRequest ireqPayload = new DLLInformationRequest();
-                            ireqPayload.DLLName = "halo1.dll";
-                            var payloadData = InteropDataStream.MarshalObjectToArray(ireqPayload);
-                            ids.WriteData(payloadData);
-
-                            ids.FlushRequest();
-
-                            ids.HandleResponse();
-                           
-                            if (status.KillConnection)
+                            InteropRequest request;
+                            while (RequestQueue.TryDequeue(out request))
                             {
-                                status.KillConnection = false;
-                                pipeClient.Dispose();
+                                var headerData = MarshalObjectToArray(request.header);
+                                ids.WriteData(headerData);
+                                
+                                if(request.requestData != null)
+                                {
+                                    ids.WriteData(request.requestData);
+                                }
+
+                                ids.FlushRequest();
+
+                                request.response = ids.GetResponse();
+                                request.Completed.SetResult(true);
                             }
-                        }
-                        catch (Exception e)
-                        {
+                        }   
+                        catch(Exception e) {
                             var f = e.ToString();
                         }
-
                     }
 
                     status.Connected = false;
@@ -145,6 +189,26 @@ namespace MCCTASGUI
 
         }
 
+        public static unsafe void MarshalArrayToObject<T>(ref T obj, byte[] rawObjectData)
+        {
+            int size = Marshal.SizeOf(obj);
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.Copy(rawObjectData, 0, ptr, size);
+            obj = (T)Marshal.PtrToStructure(ptr, obj.GetType());
+            Marshal.FreeHGlobal(ptr);
+        }
+
+        public static unsafe byte[] MarshalObjectToArray<T>(T obj)
+        {
+            int size = Marshal.SizeOf(obj);
+            byte[] arr = new byte[size];
+
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(obj, ptr, true);
+            Marshal.Copy(ptr, arr, 0, size);
+            Marshal.FreeHGlobal(ptr);
+            return arr;
+        }
     }
 
     public class InteropDataStream
@@ -172,59 +236,23 @@ namespace MCCTASGUI
             WrittenBytes = 0;
         }
 
-        public static unsafe void MarshalArrayToObject<T>(ref T obj, byte[] rawObjectData)
+        public unsafe InteropResponse GetResponse()
         {
-            int size = Marshal.SizeOf(obj);
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.Copy(rawObjectData, 0, ptr, size);
-            obj = (T)Marshal.PtrToStructure(ptr, obj.GetType());
-            Marshal.FreeHGlobal(ptr);
-        }
-
-        public static unsafe byte[] MarshalObjectToArray<T>(T obj)
-        {
-            int size = Marshal.SizeOf(obj);
-            byte[] arr = new byte[size];
-
-            IntPtr ptr = Marshal.AllocHGlobal(size);
-            Marshal.StructureToPtr(obj, ptr, true);
-            Marshal.Copy(ptr, arr, 0, size);
-            Marshal.FreeHGlobal(ptr);
-            return arr;
-        }
-
-        public unsafe void HandleResponse()
-        {
-            InteropResponseHeader response;
+            InteropResponse response = new InteropResponse();
+            response.header = new InteropResponseHeader();
 
             byte[] responseHeaderArray = new byte[sizeof(InteropResponseHeader)];
             DataStream.Read(responseHeaderArray, 0, responseHeaderArray.Length);
 
-            response = new InteropResponseHeader();
+            TASInterop.MarshalArrayToObject(ref response.header, responseHeaderArray);
 
-            MarshalArrayToObject(ref response, responseHeaderArray);
-
-            switch (response.ResponseType)
+            response.responseData = new byte[response.header.ResponsePayloadSize];
+            if (response.header.ResponsePayloadSize > 0)
             {
-                case InteropResponseType.Pong:
-                    System.Diagnostics.Debug.WriteLine($"{response.ResponseType} - {response.ResponsePayloadSize}");
-                    break;
-                case InteropResponseType.DLLInformationFound:
-                    if (response.ResponsePayloadSize > 0)
-                    {
-                        DLLInformationResponse responsePayload = new DLLInformationResponse();
-                        byte[] responsePayloadBytes = new byte[response.ResponsePayloadSize];
-                        DataStream.Read(responsePayloadBytes, 0, response.ResponsePayloadSize);
-
-                        MarshalArrayToObject(ref responsePayload, responsePayloadBytes);
-
-                        System.Diagnostics.Debug.WriteLine($"0x{responsePayload.DLLAddress:X}");
-                    }
-                    break;
-                default:
-                    break;
+                DataStream.Read(response.responseData, 0, response.header.ResponsePayloadSize);
             }
 
+            return response;
         }
     }
 

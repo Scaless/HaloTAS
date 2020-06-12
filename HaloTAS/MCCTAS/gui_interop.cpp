@@ -9,17 +9,20 @@
 enum class InteropRequestType : int32_t {
 	PING = 0,
 	GET_DLL_INFORMATION = 1,
+	SET_CAMERA_DETAILS = 2,
 
 	INVALID = -1
 };
 std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
 	{to_underlying(InteropRequestType::PING), L"PING"},
 	{to_underlying(InteropRequestType::GET_DLL_INFORMATION), L"GET_DLL_INFORMATION"},
+	{to_underlying(InteropRequestType::SET_CAMERA_DETAILS), L"SET_CAMERA_DETAILS"},
+	
 	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
 };
 
 enum class InteropResponseType : int32_t {
-	PONG = 0,
+	SUCCESS = 0,
 
 	DLL_INFORMATION_FOUND = 1,
 	DLL_INFORMATION_NOT_FOUND = 2,
@@ -27,9 +30,10 @@ enum class InteropResponseType : int32_t {
 	INVALID = -1
 };
 std::unordered_map<int32_t, const wchar_t*> InteropResponseTypeString{
-	{to_underlying(InteropResponseType::PONG), L"PONG"},
+	{to_underlying(InteropResponseType::SUCCESS), L"SUCCESS"},
 	{to_underlying(InteropResponseType::DLL_INFORMATION_FOUND), L"DLL_INFORMATION_FOUND"},
 	{to_underlying(InteropResponseType::DLL_INFORMATION_NOT_FOUND), L"DLL_INFORMATION_NOT_FOUND"},
+
 	{to_underlying(InteropResponseType::INVALID), L"INVALID"},
 };
 
@@ -73,6 +77,12 @@ public:
 	}
 };
 
+struct SetCameraDetailsRequestPayload {
+	float positionX;
+	float positionY;
+	float positionZ;
+};
+
 struct InteropRequest {
 	InteropRequestHeader header;
 	const char* payload;
@@ -82,7 +92,7 @@ struct InteropResponse {
 	std::vector<char> payload;
 };
 
-void create_response_dll_information(const InteropRequest& request, InteropResponse& response)
+void handle_response_dll_information(const InteropRequest& request, InteropResponse& response)
 {
 	DLLInformationRequestPayload requestPayload;
 	memcpy_s(&requestPayload, sizeof(requestPayload), request.payload, sizeof(requestPayload));
@@ -114,6 +124,20 @@ void create_response_dll_information(const InteropRequest& request, InteropRespo
 	memcpy_s(response.payload.data(), response.payload.capacity(), &payloadOut, sizeof(payloadOut));
 }
 
+void handle_response_set_camera_details(const InteropRequest& request, InteropResponse& response) {
+	
+	SetCameraDetailsRequestPayload cameraDetailsPayload;
+	memcpy_s(&cameraDetailsPayload, sizeof(cameraDetailsPayload), request.payload, sizeof(cameraDetailsPayload));
+
+	float* cameraPositionArr = reinterpret_cast<float*>(0x182199338);
+
+	cameraPositionArr[0] = cameraDetailsPayload.positionX;
+	cameraPositionArr[1] = cameraDetailsPayload.positionY;
+	cameraPositionArr[2] = cameraDetailsPayload.positionZ;
+	
+	response.header.type = InteropResponseType::SUCCESS;
+}
+
 void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 {
 	InteropRequest request = { };
@@ -125,12 +149,17 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 	switch (request.header.type) {
 	case InteropRequestType::PING:
 	{
-		response.header.type = InteropResponseType::PONG;
+		response.header.type = InteropResponseType::SUCCESS;
 		break;
 	}
 	case InteropRequestType::GET_DLL_INFORMATION:
 	{
-		create_response_dll_information(request, response);
+		handle_response_dll_information(request, response);
+		break;
+	}
+	case InteropRequestType::SET_CAMERA_DETAILS:
+	{
+		handle_response_set_camera_details(request, response);
 		break;
 	}
 	case InteropRequestType::INVALID:
