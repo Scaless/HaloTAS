@@ -20,13 +20,20 @@ namespace MCCTASGUI
     /// </summary>
     public partial class H1CinematicCameraWindow : Window
     {
+        private bool Initializing;    
+
         public H1CinematicCameraWindow()
         {
+            Initializing = true;
             InitializeComponent();
+            Initializing = false;
         }
 
         private async void SliderCameraPosition_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
+            if (Initializing)
+                return;
+
             await UpdateCameraPositionAsync((float)sliderCameraXPos.Value, (float)sliderCameraYPos.Value, (float)sliderCameraZPos.Value);
         }
 
@@ -54,6 +61,14 @@ namespace MCCTASGUI
 
         float aX, aY, aZ, bX, bY, bZ;
 
+        private void sliderLerpTime_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (Initializing)
+                return;
+
+            lblTimeSlider.Content = sliderLerpTime.Value;
+        }
+
         //a/b = values, t between 0 and 1
         private float Lerp(float a, float b, float t)
         {
@@ -62,20 +77,18 @@ namespace MCCTASGUI
 
         private async void btnLerp_Click(object sender, RoutedEventArgs e)
         {
-            for (float i = 0; i <= 1; i += .01f)
+            double time = sliderLerpTime.Value;
+            for (float i = 0; i <= time; i += .01f)
             {
-                float newX = Lerp(aX, bX, i);
-                float newY = Lerp(aY, bY, i);
-                float newZ = Lerp(aZ, bZ, i);
+                float frac = i / (float)time;
+
+                float newX = Lerp(aX, bX, frac);
+                float newY = Lerp(aY, bY, frac);
+                float newZ = Lerp(aZ, bZ, frac);
 
                 await UpdateCameraPositionAsync(newX, newY, newZ);
                 await Task.Delay(1);
             }
-        }
-
-        private void Window_KeyDown(object sender, KeyEventArgs e)
-        {
-            
         }
 
         private void btnLocA_Click(object sender, RoutedEventArgs e)
