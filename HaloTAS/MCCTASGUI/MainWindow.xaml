@@ -5,11 +5,11 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MCCTASGUI"
         mc:Ignorable="d"
-        Title="MCCTAS GUI - github.com/Scaless/HaloTAS" Height="560" Width="800">
+        Title="MCCTAS GUI - github.com/Scaless/HaloTAS" Height="560" Width="800" Loaded="Window_Loaded">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"></RowDefinition>
-            <RowDefinition Height="100"></RowDefinition>
+            <RowDefinition Height="60"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Menu Grid.Row="0">
@@ -32,8 +32,79 @@
 
         </Grid>
         <Grid Grid.Row="2">
-            <Button x:Name="btnSendCommand" Content="Send Command" HorizontalAlignment="Left" Margin="27,247,0,0" VerticalAlignment="Top" Click="btnSendCommand_Click"/>
-            <TextBox x:Name="tbCommand" HorizontalAlignment="Left" Margin="27,224,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="613" KeyDown="tbCommand_KeyDown"/>
+
+            <TabControl>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Halo 1"></TextBlock>
+                            <Ellipse x:Name="iconHalo1Loaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+                        <StackPanel HorizontalAlignment="Left">
+                            <Button x:Name="btnSendCommand" Content="Send Command" Margin="2" HorizontalAlignment="Left" Click="btnSendCommand_Click"/>
+                            <TextBox x:Name="tbCommand" HorizontalAlignment="Left" Margin="2" TextWrapping="Wrap" VerticalAlignment="Top" Width="613" KeyDown="tbCommand_KeyDown"/>
+                            <TextBlock Text="Skulls: "></TextBlock>
+
+                            <!--<ListBox>
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <ItemsControl ItemsSource="{Binding}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <VirtualizingStackPanel Orientation="Horizontal">
+                                                        
+                                                    </VirtualizingStackPanel>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            
+                            <WrapPanel>
+                                    <CheckBox Content="{Binding Path=Name}" IsChecked="{Binding Path=Enabled}" Margin="2"></CheckBox>
+                                
+                            </WrapPanel>-->
+                            
+                        </StackPanel>
+                    </Grid>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Halo 2"></TextBlock>
+                            <Ellipse x:Name="iconHalo2Loaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+
+                    </Grid>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Halo 3"></TextBlock>
+                            <Ellipse x:Name="iconHalo3Loaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+
+                    </Grid>
+                </TabItem>
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Reach"></TextBlock>
+                            <Ellipse x:Name="iconHaloReachLoaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+
+                    </Grid>
+                </TabItem>
+            </TabControl>
         </Grid>
 
 

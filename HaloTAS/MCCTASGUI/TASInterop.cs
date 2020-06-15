@@ -14,22 +14,19 @@ namespace MCCTASGUI
 {
     public enum InteropRequestType
     {
+        Invalid = -1,
         Ping = 0,
         GetDLLInformation = 1,
         SetCameraDetails = 2,
         ExecuteCommand = 3,
-
-        Invalid = -1
+        GetGameInformation = 4,
     }
 
     public enum InteropResponseType
     {
+        InvalidRequest = -2,
+        Failure = -1,
         Success = 0,
-
-        DLLInformationFound = 1,
-        DLLInformationNotFound = 2,
-
-        Invalid = -1
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -88,10 +85,34 @@ namespace MCCTASGUI
         public string Command;
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct GetGameInformationResponse
+    {
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool Halo1Loaded;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool Halo2Loaded;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool Halo3Loaded;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool ODSTLoaded;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool ReachLoaded;
+        [MarshalAs(UnmanagedType.Bool)]
+        public bool Halo4Loaded;
+    }
+
     public struct TASStatus
     {
         public bool Connected { get; set; }
         public bool KillConnection { get; set; }
+
+        public bool H1DLLLoaded { get; set; }
+        public bool H2DLLLoaded { get; set; }
+        public bool H3DLLLoaded { get; set; }
+        public bool ReachDLLLoaded { get; set; }
+        public bool ODSTDLLLoaded { get; set; }
+        public bool H4DLLLoaded { get; set; }
     }
 
     public class InteropRequest

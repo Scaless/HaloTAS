@@ -19,6 +19,12 @@ using System.Windows.Threading;
 
 namespace MCCTASGUI
 {
+    public class Halo1Skull
+    {
+        public string Name { get; set; }
+        public bool Enabled { get; set; }
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -29,7 +35,14 @@ namespace MCCTASGUI
         private AboutWindow aboutWindow = null;
         private TASInputEditor inputEditorWindow = null;
         private H1CinematicCameraWindow H1CinematicCameraWindow = null;
-        private DispatcherTimer UpdateUITimer;
+
+        public List<Halo1Skull> Halo1Skulls = new List<Halo1Skull>() {
+            new Halo1Skull(){Name = "Anger", Enabled = false},
+            new Halo1Skull(){Name = "Blind", Enabled = false},
+            new Halo1Skull(){Name = "Black Eye", Enabled = false},
+            new Halo1Skull(){Name = "Catch", Enabled = false},
+            new Halo1Skull(){Name = "Eye Patch", Enabled = false},
+        };
 
         public MainWindow()
         {
@@ -40,22 +53,48 @@ namespace MCCTASGUI
 
             TASInterop = new TASInterop();
 
-            UpdateUITimer = new DispatcherTimer();
-            UpdateUITimer.Tick += UpdateUITimer_Tick;
-            UpdateUITimer.Interval = new TimeSpan(0, 0, 1);
-            UpdateUITimer.Start();
-
             tblkStatusConnected.Text = Directory.GetCurrentDirectory();
         }
 
-        private void UpdateUITimer_Tick(object sender, EventArgs e)
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            Dispatcher.Invoke(() =>
-            {
-                var Status = TASInterop.GetCurrentStatus();
+            await UpdatePingTimer();
+        }
 
-                tblkStatusConnected.Text = Status.Connected ? "CONNECTED" : "NOT CONNECTED";
-            });
+        private async Task UpdatePingTimer()
+        {
+            while (true)
+            {
+                await Task.Delay(1000);
+
+                await Dispatcher.Invoke(async () =>
+                {
+                    var Status = TASInterop.GetCurrentStatus();
+
+                    InteropRequest request = new InteropRequest();
+                    request.header.RequestType = InteropRequestType.GetGameInformation;
+                    var response = await TASInterop.MakeRequestAsync(request);
+
+                    tblkStatusConnected.Text = Status.Connected ? "CONNECTED" : "NOT CONNECTED";
+
+                    if (response.header.ResponseType == InteropResponseType.Success)
+                    {
+                        GetGameInformationResponse responseData = new GetGameInformationResponse();
+                        TASInterop.MarshalArrayToObject(ref responseData, response.responseData);
+                        Status.H1DLLLoaded = responseData.Halo1Loaded;
+                        Status.H2DLLLoaded = responseData.Halo2Loaded;
+                        Status.H3DLLLoaded = responseData.Halo3Loaded;
+                        Status.ODSTDLLLoaded = responseData.ODSTLoaded;
+                        Status.ReachDLLLoaded = responseData.ReachLoaded;
+                        Status.H4DLLLoaded = responseData.Halo4Loaded;
+                    }
+
+                    iconHalo1Loaded.Fill = Status.H1DLLLoaded ? Brushes.Green : Brushes.Red;
+                    iconHalo2Loaded.Fill = Status.H2DLLLoaded ? Brushes.Green : Brushes.Red;
+                    iconHalo3Loaded.Fill = Status.H3DLLLoaded ? Brushes.Green : Brushes.Red;
+                    iconHaloReachLoaded.Fill = Status.ReachDLLLoaded ? Brushes.Green : Brushes.Red;
+                });
+            }
         }
 
         private void MenuOpenMapData(object sender, RoutedEventArgs e)
@@ -201,5 +240,6 @@ namespace MCCTASGUI
             await ExecuteCommand();
         }
 
+       
     }
 }

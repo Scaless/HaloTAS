@@ -7,37 +7,31 @@
 #include "windows_utilities.h"
 
 enum class InteropRequestType : int32_t {
+	INVALID = -1,
 	PING = 0,
 	GET_DLL_INFORMATION = 1,
 	SET_CAMERA_DETAILS = 2,
 	EXECUTE_COMMAND = 3,
-
-	INVALID = -1
+	GET_GAME_INFORMATION = 4,
 };
 std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
+	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
 	{to_underlying(InteropRequestType::PING), L"PING"},
 	{to_underlying(InteropRequestType::GET_DLL_INFORMATION), L"GET_DLL_INFORMATION"},
 	{to_underlying(InteropRequestType::SET_CAMERA_DETAILS), L"SET_CAMERA_DETAILS"},
 	{to_underlying(InteropRequestType::EXECUTE_COMMAND), L"EXECUTE_COMMAND"},
-	
-	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
+	{to_underlying(InteropRequestType::GET_GAME_INFORMATION), L"GET_GAME_INFORMATION"},
 };
 
 enum class InteropResponseType : int32_t {
+	INVALID_REQUEST = -2,
+	FAILURE = -1,
 	SUCCESS = 0,
-
-	DLL_INFORMATION_FOUND = 1,
-	DLL_INFORMATION_NOT_FOUND = 2,
-
-	INVALID = -1
 };
 std::unordered_map<int32_t, const wchar_t*> InteropResponseTypeString{
+	{to_underlying(InteropResponseType::INVALID_REQUEST), L"INVALID_REQUEST"},
+	{to_underlying(InteropResponseType::FAILURE), L"FAILURE"},
 	{to_underlying(InteropResponseType::SUCCESS), L"SUCCESS"},
-
-	{to_underlying(InteropResponseType::DLL_INFORMATION_FOUND), L"DLL_INFORMATION_FOUND"},
-	{to_underlying(InteropResponseType::DLL_INFORMATION_NOT_FOUND), L"DLL_INFORMATION_NOT_FOUND"},
-
-	{to_underlying(InteropResponseType::INVALID), L"INVALID"},
 };
 
 struct InteropRequestHeader {
@@ -57,7 +51,7 @@ public:
 	int32_t payload_size;
 
 	InteropResponseHeader()
-		: type(InteropResponseType::INVALID), payload_size(0)
+		: type(InteropResponseType::FAILURE), payload_size(0)
 	{
 	}
 };
@@ -90,6 +84,15 @@ struct ExecuteCommandRequestPayload {
 	char command[256];
 };
 
+struct GetGameInformationResponsePayload {
+	BOOL Halo1Loaded;
+	BOOL Halo2Loaded;
+	BOOL Halo3Loaded;
+	BOOL ODSTLoaded;
+	BOOL ReachLoaded;
+	BOOL Halo4Loaded;
+};
+
 struct InteropRequest {
 	InteropRequestHeader header;
 	const char* payload;
@@ -113,7 +116,7 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 	fill_loaded_dlls_info(dlls);
 
 	if (dlls[0].info.SizeOfImage == 0) {
-		response.header.type = InteropResponseType::DLL_INFORMATION_NOT_FOUND;
+		response.header.type = InteropResponseType::FAILURE;
 		return;
 	}
 
@@ -124,7 +127,7 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 	payloadOut.entry_point = (uint64_t)dlls[0].info.EntryPoint;
 	payloadOut.image_size = (uint64_t)dlls[0].info.SizeOfImage;
 
-	response.header.type = InteropResponseType::DLL_INFORMATION_FOUND;
+	response.header.type = InteropResponseType::SUCCESS;
 	response.header.payload_size = sizeof(payloadOut);
 
 	response.payload.reserve(response.header.payload_size);
@@ -160,6 +163,50 @@ void handle_response_execute_command(const InteropRequest& request, InteropRespo
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
+void handle_response_get_game_information(const InteropRequest& request, InteropResponse& response) {
+
+	std::vector<loaded_dll_info> dlls =
+	{
+		loaded_dll_info(L"halo1.dll"),
+		loaded_dll_info(L"halo2.dll"),
+		loaded_dll_info(L"halo3.dll"),
+		loaded_dll_info(L"halo3odst.dll"),
+		loaded_dll_info(L"haloreach.dll"),
+		loaded_dll_info(L"halo4.dll"),
+	};
+
+	fill_loaded_dlls_info(dlls);
+
+	GetGameInformationResponsePayload gameInfoPayload = {};
+
+	for (auto& dll : dlls) {
+		if (dll.name == L"halo1.dll") {
+			gameInfoPayload.Halo1Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
+		}
+		if (dll.name == L"halo2.dll") {
+			gameInfoPayload.Halo2Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
+		}
+		if (dll.name == L"halo3.dll") {
+			gameInfoPayload.Halo3Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
+		}
+		if (dll.name == L"halo3odst.dll") {
+			gameInfoPayload.ODSTLoaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
+		}
+		if (dll.name == L"haloreach.dll") {
+			gameInfoPayload.ReachLoaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
+		}
+		if (dll.name == L"halo4.dll") {
+			gameInfoPayload.Halo4Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
+		}
+	}
+
+	response.header.type = InteropResponseType::SUCCESS;
+	response.header.payload_size = sizeof(gameInfoPayload);
+
+	response.payload.reserve(response.header.payload_size);
+	memcpy_s(response.payload.data(), response.payload.capacity(), &gameInfoPayload, sizeof(gameInfoPayload));
+}
+
 void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 {
 	InteropRequest request = { };
@@ -189,10 +236,15 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 		handle_response_execute_command(request, response);
 		break;
 	}
+	case InteropRequestType::GET_GAME_INFORMATION:
+	{
+		handle_response_get_game_information(request, response);
+		break;
+	}
 	case InteropRequestType::INVALID:
 	default:
 	{
-		response.header.type = InteropResponseType::INVALID;
+		response.header.type = InteropResponseType::INVALID_REQUEST;
 		break;
 	}
 	}
