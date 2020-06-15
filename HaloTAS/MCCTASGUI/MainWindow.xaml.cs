@@ -58,11 +58,6 @@ namespace MCCTASGUI
             });
         }
 
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-            
-        }
-
         private void MenuOpenMapData(object sender, RoutedEventArgs e)
         {
             if (liveMapDataViewer == null)
@@ -157,25 +152,54 @@ namespace MCCTASGUI
 
         private async void btnTestRequest_Click(object sender, RoutedEventArgs e)
         {
-            InteropRequest request = new InteropRequest();
-            request.header.RequestType = InteropRequestType.GetDLLInformation;
-            request.header.RequestPayloadSize = Marshal.SizeOf(typeof(DLLInformationRequest));
+            //InteropRequest request = new InteropRequest();
+            //request.header.RequestType = InteropRequestType.GetDLLInformation;
+            //request.header.RequestPayloadSize = Marshal.SizeOf(typeof(DLLInformationRequest));
 
-            var payload = new DLLInformationRequest();
-            payload.DLLName = "halo1.dll";
-            request.requestData = TASInterop.MarshalObjectToArray(payload);
+            //var payload = new DLLInformationRequest();
+            //payload.DLLName = "halo1.dll";
+            //request.requestData = TASInterop.MarshalObjectToArray(payload);
 
-            var response = await TASInterop.MakeRequestAsync(request);
+            //var response = await TASInterop.MakeRequestAsync(request);
 
-            if(response.header.ResponseType == InteropResponseType.DLLInformationFound)
-            {
-                DLLInformationResponse responseData = new DLLInformationResponse();
-                TASInterop.MarshalArrayToObject(ref responseData, response.responseData);
-                System.Diagnostics.Debug.WriteLine($"0x{responseData.DLLAddress:X}");
-            }
-            
+            //if(response.header.ResponseType == InteropResponseType.DLLInformationFound)
+            //{
+            //    DLLInformationResponse responseData = new DLLInformationResponse();
+            //    TASInterop.MarshalArrayToObject(ref responseData, response.responseData);
+            //    System.Diagnostics.Debug.WriteLine($"0x{responseData.DLLAddress:X}");
+            //}
+
+            await Task.Delay(0);
         }
 
-       
+        private async Task ExecuteCommand()
+        {
+            InteropRequest request = new InteropRequest();
+            request.header.RequestType = InteropRequestType.ExecuteCommand;
+            request.header.RequestPayloadSize = Marshal.SizeOf(typeof(ExecuteCommandRequest));
+
+
+            var payload = new ExecuteCommandRequest();
+            payload.Command = tbCommand.Text;
+            request.requestData = TASInterop.MarshalObjectToArray(payload);
+
+            tbCommand.Text = "";
+            
+            var response = await TASInterop.MakeRequestAsync(request);
+        }
+
+        private async void tbCommand_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                await ExecuteCommand();
+            }
+        }
+
+        private async void btnSendCommand_Click(object sender, RoutedEventArgs e)
+        {
+            await ExecuteCommand();
+        }
+
     }
 }

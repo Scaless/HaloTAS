@@ -5,9 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MCCTASGUI"
         mc:Ignorable="d"
-        Title="MCCTAS GUI - github.com/Scaless/HaloTAS" Height="720" Width="1280" Loaded="Window_Loaded">
+        Title="MCCTAS GUI - github.com/Scaless/HaloTAS" Height="560" Width="800">
     <Grid>
-        <Menu>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"></RowDefinition>
+            <RowDefinition Height="100"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Menu Grid.Row="0">
             <MenuItem Header="File">
                 <MenuItem Header="Close"></MenuItem>
             </MenuItem>
@@ -20,10 +25,16 @@
                 <MenuItem Header="About" Click="MenuOpenAbout"></MenuItem>
             </MenuItem>
         </Menu>
-        <TextBlock x:Name="tblkStatusConnected" HorizontalAlignment="Left" Margin="17,57,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <Button x:Name="btnInject" Content="Inject" HorizontalAlignment="Left" Margin="27,118,0,0" VerticalAlignment="Top" Click="btnInject_Click"/>
-        <Button x:Name="btnKillConnection" Content="Kill Connection" HorizontalAlignment="Left" Margin="88,118,0,0" VerticalAlignment="Top" Click="btnKillConnection_Click"/>
-        <Button x:Name="btnTestRequest" Content="Button" HorizontalAlignment="Left" Margin="66,193,0,0" VerticalAlignment="Top" Click="btnTestRequest_Click"/>
+        <Grid Grid.Row="1">
+            <TextBlock x:Name="tblkStatusConnected" HorizontalAlignment="Left" Margin="10,10,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top"/>
+            <Button x:Name="btnInject" Content="Inject" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" Click="btnInject_Click"/>
+            <Button x:Name="btnKillConnection" Content="Kill Connection" HorizontalAlignment="Left" Margin="48,31,0,0" VerticalAlignment="Top" Click="btnKillConnection_Click"/>
+
+        </Grid>
+        <Grid Grid.Row="2">
+            <Button x:Name="btnSendCommand" Content="Send Command" HorizontalAlignment="Left" Margin="27,247,0,0" VerticalAlignment="Top" Click="btnSendCommand_Click"/>
+            <TextBox x:Name="tbCommand" HorizontalAlignment="Left" Margin="27,224,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="613" KeyDown="tbCommand_KeyDown"/>
+        </Grid>
 
 
     </Grid>

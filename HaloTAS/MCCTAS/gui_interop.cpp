@@ -10,6 +10,7 @@ enum class InteropRequestType : int32_t {
 	PING = 0,
 	GET_DLL_INFORMATION = 1,
 	SET_CAMERA_DETAILS = 2,
+	EXECUTE_COMMAND = 3,
 
 	INVALID = -1
 };
@@ -17,6 +18,7 @@ std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
 	{to_underlying(InteropRequestType::PING), L"PING"},
 	{to_underlying(InteropRequestType::GET_DLL_INFORMATION), L"GET_DLL_INFORMATION"},
 	{to_underlying(InteropRequestType::SET_CAMERA_DETAILS), L"SET_CAMERA_DETAILS"},
+	{to_underlying(InteropRequestType::EXECUTE_COMMAND), L"EXECUTE_COMMAND"},
 	
 	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
 };
@@ -31,6 +33,7 @@ enum class InteropResponseType : int32_t {
 };
 std::unordered_map<int32_t, const wchar_t*> InteropResponseTypeString{
 	{to_underlying(InteropResponseType::SUCCESS), L"SUCCESS"},
+
 	{to_underlying(InteropResponseType::DLL_INFORMATION_FOUND), L"DLL_INFORMATION_FOUND"},
 	{to_underlying(InteropResponseType::DLL_INFORMATION_NOT_FOUND), L"DLL_INFORMATION_NOT_FOUND"},
 
@@ -81,6 +84,10 @@ struct SetCameraDetailsRequestPayload {
 	float positionX;
 	float positionY;
 	float positionZ;
+};
+
+struct ExecuteCommandRequestPayload {
+	char command[256];
 };
 
 struct InteropRequest {
@@ -138,6 +145,21 @@ void handle_response_set_camera_details(const InteropRequest& request, InteropRe
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
+typedef char __fastcall ExecuteCommand(char* src, uint16_t a2);
+ExecuteCommand* Exec = (ExecuteCommand*)(0x1807ED5A0); // halo1.dll+7ED5A0
+
+void handle_response_execute_command(const InteropRequest& request, InteropResponse& response) {
+	
+	ExecuteCommandRequestPayload commandPayload;
+	memcpy_s(&commandPayload, sizeof(commandPayload), request.payload, sizeof(commandPayload));
+
+	std::string x = commandPayload.command;
+
+	Exec(x.data(), 0);
+	
+	response.header.type = InteropResponseType::SUCCESS;
+}
+
 void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 {
 	InteropRequest request = { };
@@ -160,6 +182,11 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 	case InteropRequestType::SET_CAMERA_DETAILS:
 	{
 		handle_response_set_camera_details(request, response);
+		break;
+	}
+	case InteropRequestType::EXECUTE_COMMAND:
+	{
+		handle_response_execute_command(request, response);
 		break;
 	}
 	case InteropRequestType::INVALID:

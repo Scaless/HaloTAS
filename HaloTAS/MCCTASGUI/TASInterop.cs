@@ -17,6 +17,7 @@ namespace MCCTASGUI
         Ping = 0,
         GetDLLInformation = 1,
         SetCameraDetails = 2,
+        ExecuteCommand = 3,
 
         Invalid = -1
     }
@@ -78,6 +79,13 @@ namespace MCCTASGUI
         public float PositionY;
         [MarshalAs(UnmanagedType.R4)]
         public float PositionZ;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public unsafe struct ExecuteCommandRequest
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 256)]
+        public string Command;
     }
 
     public struct TASStatus
@@ -181,6 +189,7 @@ namespace MCCTASGUI
                         catch(Exception e) {
                             var f = e.ToString();
                         }
+
                     }
 
                     status.Connected = false;
