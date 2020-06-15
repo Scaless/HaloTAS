@@ -36,3 +36,4 @@
 # Built binaries
 Debug/
 Release/
+obj/
