@@ -40,12 +40,6 @@
       },
       "frameworks": {
         "netcoreapp3.1": {
-          "dependencies": {
-            "DotNetProjects.Extended.Wpf.Toolkit": {
-              "target": "Package",
-              "version": "[4.6.82, )"
-            }
-          },
           "imports": [
             "net461",
             "net462",

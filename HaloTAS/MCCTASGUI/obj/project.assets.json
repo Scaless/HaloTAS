@@ -1,40 +1,11 @@
 {
   "version": 3,
   "targets": {
-    ".NETCoreApp,Version=v3.1": {
-      "DotNetProjects.Extended.Wpf.Toolkit/4.6.82": {
-        "type": "package",
-        "compile": {
-          "lib/netcoreapp3.0/DotNetProjects.Wpf.Extended.Toolkit.dll": {}
-        },
-        "runtime": {
-          "lib/netcoreapp3.0/DotNetProjects.Wpf.Extended.Toolkit.dll": {}
-        },
-        "frameworkReferences": [
-          "Microsoft.WindowsDesktop.App.WPF"
-        ]
-      }
-    }
+    ".NETCoreApp,Version=v3.1": {}
   },
-  "libraries": {
-    "DotNetProjects.Extended.Wpf.Toolkit/4.6.82": {
-      "sha512": "y4UXWROUd9UPVcd8EsGjabHncDN0UBPOWYi3kprKyc1nIejj1dBuN6zN8G0bLDPbF1fCtnz3NrmzMG5RGIR6AQ==",
-      "type": "package",
-      "path": "dotnetprojects.extended.wpf.toolkit/4.6.82",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "dotnetprojects.extended.wpf.toolkit.4.6.82.nupkg.sha512",
-        "dotnetprojects.extended.wpf.toolkit.nuspec",
-        "lib/net40/DotNetProjects.Wpf.Extended.Toolkit.dll",
-        "lib/netcoreapp3.0/DotNetProjects.Wpf.Extended.Toolkit.dll"
-      ]
-    }
-  },
+  "libraries": {},
   "projectFileDependencyGroups": {
-    ".NETCoreApp,Version=v3.1": [
-      "DotNetProjects.Extended.Wpf.Toolkit >= 4.6.82"
-    ]
+    ".NETCoreApp,Version=v3.1": []
   },
   "packageFolders": {
     "C:\\Users\\Scales\\.nuget\\packages\\": {},
@@ -76,12 +47,6 @@
     },
     "frameworks": {
       "netcoreapp3.1": {
-        "dependencies": {
-          "DotNetProjects.Extended.Wpf.Toolkit": {
-            "target": "Package",
-            "version": "[4.6.82, )"
-          }
-        },
         "imports": [
           "net461",
           "net462",
