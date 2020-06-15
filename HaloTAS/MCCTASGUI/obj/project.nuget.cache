@@ -1,8 +1,21 @@
 {
   "version": 2,
-  "dgSpecHash": "PAiFpId1ICPB+kRHz9lHYZK9XMeknm2uvjrBhLYdwq1IcpptC2gNtpOsQALlMtzoo/TIUGVr0SFT2+PWvmBgjA==",
+  "dgSpecHash": "okNm7++FOzqm5NpcRC3ciYMf2dzXuDWnlvDxi4UAyqWuNo46qrt1/qU64nGR3PNTftG5uM+0iHO/75VxwYKMvQ==",
   "success": true,
   "projectFilePath": "C:\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj",
-  "expectedPackageFiles": [],
-  "logs": []
+  "expectedPackageFiles": [
+    "C:\\Users\\Scales\\.nuget\\packages\\extended.wpf.toolkit\\3.8.1\\extended.wpf.toolkit.3.8.1.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1701",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Package 'Extended.Wpf.Toolkit 3.8.1' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8' instead of the project target framework '.NETCoreApp,Version=v3.1'. This package may not be fully compatible with your project.",
+      "libraryId": "Extended.Wpf.Toolkit",
+      "targetGraphs": [
+        ".NETCoreApp,Version=v3.1"
+      ]
+    }
+  ]
 }
