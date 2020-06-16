@@ -175,6 +175,8 @@
     <ClInclude Include="..\lib\gl3w\GL\glcorearb.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="gui_interop.h" />
+    <ClInclude Include="halo1_engine.h" />
+    <ClInclude Include="halo1_types.h" />
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="kiero.h" />
     <ClInclude Include="tas_hooks.h" />
@@ -197,6 +199,7 @@
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="gui_interop.cpp" />
+    <ClCompile Include="halo1_engine.cpp" />
     <ClCompile Include="kiero.cpp" />
     <ClCompile Include="tas_hooks.cpp" />
     <ClCompile Include="pch.cpp">

@@ -96,7 +96,7 @@ namespace MCCTASGUI
             Inputs = new List<TickInput>();
             Actions = new List<TickAction>();
 
-            /////// TODO: Remove Mockup :)
+            /////// TODO-SCALES: Remove Mockup :)
             if (Tick == 4)
                 Inputs.Add(TickInput.ForwardBegin);
             if (Tick == 10)

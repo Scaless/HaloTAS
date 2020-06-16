@@ -22,6 +22,12 @@
     <Filter Include="Libraries\gl3w">
       <UniqueIdentifier>{96932517-927a-4a3d-8e7d-86c4b53054e1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Engine">
+      <UniqueIdentifier>{b091a938-c4df-49e6-b36d-fd3278ea5e13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{b68b285c-36ea-42fd-be14-76e18fc236e7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -93,6 +99,12 @@
     <ClInclude Include="tas_logger.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="halo1_engine.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="halo1_types.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -151,6 +163,9 @@
     </ClCompile>
     <ClCompile Include="tas_logger.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="halo1_engine.cpp">
+      <Filter>Source Files\Engine</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

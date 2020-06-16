@@ -5,6 +5,7 @@
 #include <string>
 #include <unordered_map>
 #include "windows_utilities.h"
+#include "halo1_engine.h"
 
 enum class InteropRequestType : int32_t {
 	INVALID = -1,
@@ -13,6 +14,7 @@ enum class InteropRequestType : int32_t {
 	SET_CAMERA_DETAILS = 2,
 	EXECUTE_COMMAND = 3,
 	GET_GAME_INFORMATION = 4,
+	SET_HALO1_SKULL_ENABLED = 5,
 };
 std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
 	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
@@ -21,6 +23,7 @@ std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
 	{to_underlying(InteropRequestType::SET_CAMERA_DETAILS), L"SET_CAMERA_DETAILS"},
 	{to_underlying(InteropRequestType::EXECUTE_COMMAND), L"EXECUTE_COMMAND"},
 	{to_underlying(InteropRequestType::GET_GAME_INFORMATION), L"GET_GAME_INFORMATION"},
+	{to_underlying(InteropRequestType::SET_HALO1_SKULL_ENABLED), L"SET_HALO1_SKULL_ENABLED"},
 };
 
 enum class InteropResponseType : int32_t {
@@ -80,10 +83,19 @@ struct SetCameraDetailsRequestPayload {
 	float positionZ;
 };
 
+struct Halo1SetSkullEnabledRequestPayload {
+	int32_t Skull;
+	BOOL Enabled;
+};
+
 struct ExecuteCommandRequestPayload {
 	char command[256];
 };
 
+struct Halo1GameInformation {
+	int32_t Tick;
+	BOOL SkullsEnabled[22];
+};
 struct GetGameInformationResponsePayload {
 	BOOL Halo1Loaded;
 	BOOL Halo2Loaded;
@@ -91,6 +103,19 @@ struct GetGameInformationResponsePayload {
 	BOOL ODSTLoaded;
 	BOOL ReachLoaded;
 	BOOL Halo4Loaded;
+
+	Halo1GameInformation Halo1Information;
+
+	GetGameInformationResponsePayload()
+	{
+		Halo1Loaded = FALSE;
+		Halo2Loaded = FALSE;
+		Halo3Loaded = FALSE;
+		ODSTLoaded = FALSE;
+		ReachLoaded = FALSE;
+		Halo4Loaded = FALSE;
+		Halo1Information = {};
+	}
 };
 
 struct InteropRequest {
@@ -200,6 +225,19 @@ void handle_response_get_game_information(const InteropRequest& request, Interop
 		}
 	}
 
+	gameInfoPayload.Halo1Information.Tick = 999;
+
+	auto& engine = halo1_engine::get();
+
+	if (gameInfoPayload.Halo1Loaded) {
+		halo::halo1_snapshot h1Snapshot = {};
+		engine.get_game_information(h1Snapshot);
+		
+		for (int i = 0; i < 22; i++) {
+			gameInfoPayload.Halo1Information.SkullsEnabled[i] = h1Snapshot.skulls[i];
+		}
+	}
+
 	response.header.type = InteropResponseType::SUCCESS;
 	response.header.payload_size = sizeof(gameInfoPayload);
 
@@ -207,8 +245,22 @@ void handle_response_get_game_information(const InteropRequest& request, Interop
 	memcpy_s(response.payload.data(), response.payload.capacity(), &gameInfoPayload, sizeof(gameInfoPayload));
 }
 
+void handle_response_set_halo1_skull_enabled(const InteropRequest& request, InteropResponse& response) {
+	Halo1SetSkullEnabledRequestPayload skullSetPayload;
+	memcpy_s(&skullSetPayload, sizeof(skullSetPayload), request.payload, sizeof(skullSetPayload));
+
+	auto skull = (halo::Halo1Skull)skullSetPayload.Skull;
+
+	auto& h1engine = halo1_engine::get();
+	h1engine.set_skull_enabled(skull, skullSetPayload.Enabled);
+
+	response.header.type = InteropResponseType::SUCCESS;
+}
+
 void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 {
+	auto request_execution_start_time = std::chrono::steady_clock::now();
+
 	InteropRequest request = { };
 	memcpy_s(&request.header, sizeof(request.header), pipe->chRequest, sizeof(request.header));
 	request.payload = pipe->chRequest + sizeof(request.header);
@@ -217,30 +269,23 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 
 	switch (request.header.type) {
 	case InteropRequestType::PING:
-	{
 		response.header.type = InteropResponseType::SUCCESS;
 		break;
-	}
 	case InteropRequestType::GET_DLL_INFORMATION:
-	{
 		handle_response_dll_information(request, response);
 		break;
-	}
 	case InteropRequestType::SET_CAMERA_DETAILS:
-	{
 		handle_response_set_camera_details(request, response);
 		break;
-	}
 	case InteropRequestType::EXECUTE_COMMAND:
-	{
 		handle_response_execute_command(request, response);
 		break;
-	}
 	case InteropRequestType::GET_GAME_INFORMATION:
-	{
 		handle_response_get_game_information(request, response);
 		break;
-	}
+	case InteropRequestType::SET_HALO1_SKULL_ENABLED:
+		handle_response_set_halo1_skull_enabled(request, response);
+		break;
 	case InteropRequestType::INVALID:
 	default:
 	{
@@ -270,7 +315,10 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 	auto requestStr = InteropRequestTypeString.at(to_underlying(request.header.type));
 	auto responseStr = InteropResponseTypeString.at(to_underlying(response.header.type));
 
-	tas_logger::log(L"Pipe serviced request %s with response %s\r\n", requestStr, responseStr);
+	auto request_execution_stop_time = std::chrono::steady_clock::now();
+	auto diff = request_execution_stop_time - request_execution_start_time;
+	auto execution_time_ms = std::chrono::duration <double, std::milli>(diff).count();
+	tas_logger::log(L"Pipe serviced request %s with response %s in %.3f ms\r\n", requestStr, responseStr, execution_time_ms);
 }
 
 gui_interop::gui_interop()

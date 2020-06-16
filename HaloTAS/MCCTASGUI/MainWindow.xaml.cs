@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MCCTASGUI.Interop;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,12 +20,6 @@ using System.Windows.Threading;
 
 namespace MCCTASGUI
 {
-    public class Halo1Skull
-    {
-        public string Name { get; set; }
-        public bool Enabled { get; set; }
-    }
-
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -35,14 +30,6 @@ namespace MCCTASGUI
         private AboutWindow aboutWindow = null;
         private TASInputEditor inputEditorWindow = null;
         private H1CinematicCameraWindow H1CinematicCameraWindow = null;
-
-        public List<Halo1Skull> Halo1Skulls = new List<Halo1Skull>() {
-            new Halo1Skull(){Name = "Anger", Enabled = false},
-            new Halo1Skull(){Name = "Blind", Enabled = false},
-            new Halo1Skull(){Name = "Black Eye", Enabled = false},
-            new Halo1Skull(){Name = "Catch", Enabled = false},
-            new Halo1Skull(){Name = "Eye Patch", Enabled = false},
-        };
 
         public MainWindow()
         {
@@ -61,40 +48,55 @@ namespace MCCTASGUI
             await UpdatePingTimer();
         }
 
+        private bool PingTimerRunning = false;
+        private int PingRefreshRateMilliseconds = 500;
         private async Task UpdatePingTimer()
         {
+            if (PingTimerRunning)
+                return;
+            PingTimerRunning = true;
+
             while (true)
             {
-                await Task.Delay(1000);
+                await Task.Delay(PingRefreshRateMilliseconds);
+                await GlobalInterop.RefreshStatus();
 
-                await Dispatcher.Invoke(async () =>
+                var Status = GlobalInterop.Status;
+                Dispatcher.Invoke(() =>
                 {
-                    var Status = TASInterop.GetCurrentStatus();
-
-                    InteropRequest request = new InteropRequest();
-                    request.header.RequestType = InteropRequestType.GetGameInformation;
-                    var response = await TASInterop.MakeRequestAsync(request);
-
                     tblkStatusConnected.Text = Status.Connected ? "CONNECTED" : "NOT CONNECTED";
-
-                    if (response.header.ResponseType == InteropResponseType.Success)
-                    {
-                        GetGameInformationResponse responseData = new GetGameInformationResponse();
-                        TASInterop.MarshalArrayToObject(ref responseData, response.responseData);
-                        Status.H1DLLLoaded = responseData.Halo1Loaded;
-                        Status.H2DLLLoaded = responseData.Halo2Loaded;
-                        Status.H3DLLLoaded = responseData.Halo3Loaded;
-                        Status.ODSTDLLLoaded = responseData.ODSTLoaded;
-                        Status.ReachDLLLoaded = responseData.ReachLoaded;
-                        Status.H4DLLLoaded = responseData.Halo4Loaded;
-                    }
-
                     iconHalo1Loaded.Fill = Status.H1DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHalo2Loaded.Fill = Status.H2DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHalo3Loaded.Fill = Status.H3DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHaloReachLoaded.Fill = Status.ReachDLLLoaded ? Brushes.Green : Brushes.Red;
+
+                    panelH1Skulls.Children.Clear();
+                    for(int i = 0; i < 22; i++)
+                    {
+                        CheckBox cb = new CheckBox();
+                        cb.IsChecked = Status.Halo1.SkullsEnabled[i];
+                        cb.Content = Enum.GetName(typeof(Halo1Skull), i).ToString();
+                        cb.Margin = new Thickness(2);
+                        cb.Tag = (Halo1Skull)i;
+                        cb.Checked += cbSkullToggleChecked;
+                        cb.Unchecked += cbSkullToggleChecked;
+                        panelH1Skulls.Children.Add(cb);
+                    }
                 });
             }
+        }
+
+        private async void cbSkullToggleChecked(object sender, RoutedEventArgs e)
+        {
+            var checkbox = sender as CheckBox;
+
+            if (checkbox == null)
+                return;
+
+            Halo1Skull skull = (Halo1Skull)checkbox.Tag;
+            bool newEnabled = checkbox.IsChecked ?? false;
+
+            await H1EngineFunctions.SetSkullEnabled(skull, newEnabled);
         }
 
         private void MenuOpenMapData(object sender, RoutedEventArgs e)
@@ -184,11 +186,6 @@ namespace MCCTASGUI
             DLLInjector.Inject();
         }
 
-        private void btnKillConnection_Click(object sender, RoutedEventArgs e)
-        {
-            TASInterop.KillConnection();
-        }
-
         private async void btnTestRequest_Click(object sender, RoutedEventArgs e)
         {
             //InteropRequest request = new InteropRequest();
@@ -211,33 +208,18 @@ namespace MCCTASGUI
             await Task.Delay(0);
         }
 
-        private async Task ExecuteCommand()
-        {
-            InteropRequest request = new InteropRequest();
-            request.header.RequestType = InteropRequestType.ExecuteCommand;
-            request.header.RequestPayloadSize = Marshal.SizeOf(typeof(ExecuteCommandRequest));
-
-
-            var payload = new ExecuteCommandRequest();
-            payload.Command = tbCommand.Text;
-            request.requestData = TASInterop.MarshalObjectToArray(payload);
-
-            tbCommand.Text = "";
-            
-            var response = await TASInterop.MakeRequestAsync(request);
-        }
-
-        private async void tbCommand_KeyDown(object sender, KeyEventArgs e)
+        private async void tbH1SendCommand_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.Key == Key.Return)
             {
-                await ExecuteCommand();
+                await H1EngineFunctions.ExecuteCommand(tbH1SendCommand.Text);
+                tbH1SendCommand.Text = "";
             }
         }
-
-        private async void btnSendCommand_Click(object sender, RoutedEventArgs e)
+        private async void btnH1SendCommand_Click(object sender, RoutedEventArgs e)
         {
-            await ExecuteCommand();
+            await H1EngineFunctions.ExecuteCommand(tbH1SendCommand.Text);
+            tbH1SendCommand.Text = "";
         }
 
        

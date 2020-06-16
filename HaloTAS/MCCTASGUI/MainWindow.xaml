@@ -28,8 +28,6 @@
         <Grid Grid.Row="1">
             <TextBlock x:Name="tblkStatusConnected" HorizontalAlignment="Left" Margin="10,10,0,0" Text="TextBlock" TextWrapping="Wrap" VerticalAlignment="Top"/>
             <Button x:Name="btnInject" Content="Inject" HorizontalAlignment="Left" Margin="10,31,0,0" VerticalAlignment="Top" Click="btnInject_Click"/>
-            <Button x:Name="btnKillConnection" Content="Kill Connection" HorizontalAlignment="Left" Margin="48,31,0,0" VerticalAlignment="Top" Click="btnKillConnection_Click"/>
-
         </Grid>
         <Grid Grid.Row="2">
 
@@ -42,32 +40,12 @@
                         </StackPanel>
                     </TabItem.Header>
                     <Grid>
-                        <StackPanel HorizontalAlignment="Left">
-                            <Button x:Name="btnSendCommand" Content="Send Command" Margin="2" HorizontalAlignment="Left" Click="btnSendCommand_Click"/>
-                            <TextBox x:Name="tbCommand" HorizontalAlignment="Left" Margin="2" TextWrapping="Wrap" VerticalAlignment="Top" Width="613" KeyDown="tbCommand_KeyDown"/>
+                        <StackPanel HorizontalAlignment="Stretch" >
+                            <Button x:Name="btnH1SendCommand" Content="Send Command" Margin="2" HorizontalAlignment="Left" Click="btnH1SendCommand_Click"/>
+                            <TextBox x:Name="tbH1SendCommand" HorizontalAlignment="Stretch" Margin="2" TextWrapping="Wrap" Width="auto" KeyDown="tbH1SendCommand_KeyDown"/>
                             <TextBlock Text="Skulls: "></TextBlock>
-
-                            <!--<ListBox>
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <ItemsControl ItemsSource="{Binding}">
-                                            <ItemsControl.ItemsPanel>
-                                                <ItemsPanelTemplate>
-                                                    <VirtualizingStackPanel Orientation="Horizontal">
-                                                        
-                                                    </VirtualizingStackPanel>
-                                                </ItemsPanelTemplate>
-                                            </ItemsControl.ItemsPanel>
-                                        </ItemsControl>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                            
-                            <WrapPanel>
-                                    <CheckBox Content="{Binding Path=Name}" IsChecked="{Binding Path=Enabled}" Margin="2"></CheckBox>
-                                
-                            </WrapPanel>-->
-                            
+                            <StackPanel x:Name="panelH1Skulls">
+                            </StackPanel>
                         </StackPanel>
                     </Grid>
                 </TabItem>

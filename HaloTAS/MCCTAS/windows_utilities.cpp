@@ -6,6 +6,8 @@ void fill_loaded_dlls_info(std::vector<loaded_dll_info>& dlls) {
     HANDLE hProcess = GetCurrentProcess();
     DWORD cbNeeded;
 
+    // TODO-SCALES: This is quite slow, taking around 10 milliseconds to enumerate all DLLs.
+    // Caching these and checking less often may be preferable.
     if (EnumProcessModules(hProcess, hMods, sizeof(hMods), &cbNeeded))
     {
         for (int i = 0; i < (cbNeeded / sizeof(HMODULE)); i++)

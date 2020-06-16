@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MCCTASGUI.Interop;
+using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -52,7 +53,7 @@ namespace MCCTASGUI
 
             var response = await TASInterop.MakeRequestAsync(request);
 
-            if(response.header.ResponseType != InteropResponseType.Success)
+            if(response?.header.ResponseType != InteropResponseType.Success)
             {
                 // Something went wrong
             }
