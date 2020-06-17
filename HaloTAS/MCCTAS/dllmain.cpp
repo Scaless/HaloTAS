@@ -9,35 +9,8 @@
 #include "halo_constants.h"
 #include "gui_interop.h"
 
-bool print_dlls() {
-
-    std::vector<loaded_dll_info> dlls = 
-    {
-        loaded_dll_info(L"halo1.dll"),
-        loaded_dll_info(L"haloreach.dll") 
-    };
-
-    fill_loaded_dlls_info(dlls);
-
-    for(auto& dll : dlls) {
-        wprintf(L"%s: \r\n", dll.name.c_str());
-        wprintf(L"\tBase Address = %p\r\n", dll.info.lpBaseOfDll);
-        wprintf(L"\tEntry Point = %p\r\n", dll.info.EntryPoint);
-        wprintf(L"\tImage Size = %d bytes\r\n", dll.info.SizeOfImage);
-    }
-    
-    return true;
-}
-
 // Main Execution Loop
 void RealMain() {
-
-    /*char* halo1DLLAddress = reinterpret_cast<char*>(0x180000000);
-    char** halo1RuntimePtr = reinterpret_cast<char**>(halo1DLLAddress + 0x218E250);
-    char* halo1RuntimeBase = reinterpret_cast<char*>(*halo1RuntimePtr);
-
-    int32_t* tick = reinterpret_cast<int32_t*>(halo1RuntimeBase + 0x2F4);
-    char* InputArray = reinterpret_cast<char*>(halo1DLLAddress + 0x218E2B0);*/
 
     auto interop = std::make_unique<gui_interop>();
     auto consoleWindow = std::make_unique<windows_console>();
@@ -45,10 +18,7 @@ void RealMain() {
     //hooks->attach_all();
 
     while (!consoleWindow->get_exit_status()) {
-        //print_dlls();
-
-        //pipe_shit();
-
+        // Do stuff :)
         Sleep(100);
     }
 

@@ -28,23 +28,32 @@
     <Filter Include="Source Files\Engine">
       <UniqueIdentifier>{b68b285c-36ea-42fd-be14-76e18fc236e7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Hooks">
+      <UniqueIdentifier>{04f925bc-7eb7-4b4b-8fa5-4a824991f8cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Hooks">
+      <UniqueIdentifier>{9120ded1-3f50-4ddd-b17a-299e779fd0dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Windows">
+      <UniqueIdentifier>{3bdc7cc5-1a05-404a-a96b-af8aae7f74c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Windows">
+      <UniqueIdentifier>{e30263f9-ca44-4025-bd6f-147bd11972dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utilities">
+      <UniqueIdentifier>{59070a87-b118-415f-914a-40ab6de8a740}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TAS">
+      <UniqueIdentifier>{b9b5539f-49a6-429f-8576-d33005a66790}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TAS">
+      <UniqueIdentifier>{2bc7ba6d-5522-4915-bcdf-c5ebaac6f816}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{13659a73-3699-44b3-a7dc-74fb3d2094b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows_utilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tas_hooks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="kiero.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\imgui\imconfig.h">
       <Filter>Libraries\imgui</Filter>
     </ClInclude>
@@ -78,48 +87,51 @@
     <ClInclude Include="..\lib\gl3w\GL\glcorearb.h">
       <Filter>Libraries\gl3w</Filter>
     </ClInclude>
-    <ClInclude Include="halo_constants.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows_console.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tas_input.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="gui_interop.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tas_utilities.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows_pipe_server.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="tas_logger.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="halo1_engine.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
     <ClInclude Include="halo1_types.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="tas_hooks.h">
+      <Filter>Header Files\Hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="kiero.h">
+      <Filter>Header Files\Hooks</Filter>
+    </ClInclude>
+    <ClInclude Include="windows_console.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="windows_pipe_server.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="windows_utilities.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
+    <ClInclude Include="tas_utilities.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="tas_logger.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="halo_constants.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="tas_input.h">
+      <Filter>Header Files\TAS</Filter>
+    </ClInclude>
+    <ClInclude Include="gui_interop.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows_utilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tas_hooks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="kiero.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\include\imgui\imgui.cpp">
@@ -146,26 +158,35 @@
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c">
       <Filter>Libraries\gl3w</Filter>
     </ClCompile>
-    <ClCompile Include="windows_console.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tas_input.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="gui_interop.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tas_utilities.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows_pipe_server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="tas_logger.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="halo1_engine.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="tas_hooks.cpp">
+      <Filter>Source Files\Hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="kiero.cpp">
+      <Filter>Source Files\Hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="windows_console.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="windows_pipe_server.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="windows_utilities.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="tas_input.cpp">
+      <Filter>Source Files\TAS</Filter>
+    </ClCompile>
+    <ClCompile Include="tas_logger.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="gui_interop.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

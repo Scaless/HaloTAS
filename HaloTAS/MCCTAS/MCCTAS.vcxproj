@@ -210,7 +210,6 @@
     </ClCompile>
     <ClCompile Include="tas_input.cpp" />
     <ClCompile Include="tas_logger.cpp" />
-    <ClCompile Include="tas_utilities.cpp" />
     <ClCompile Include="windows_console.cpp" />
     <ClCompile Include="windows_pipe_server.cpp" />
     <ClCompile Include="windows_utilities.cpp" />
