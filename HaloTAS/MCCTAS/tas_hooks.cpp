@@ -32,6 +32,32 @@ typedef uint8_t (__fastcall* MCCGetHalo1Input_t)(int64_t, int64_t, char*);
 uint8_t __fastcall hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, char* outValue);
 MCCGetHalo1Input_t originalMCCHalo1Input;
 
+void tas_hooks::ref_halo_dlls()
+{
+	modH1DLL = LoadLibrary(H1DLLPATH);
+	modH2DLL = LoadLibrary(H2DLLPATH);
+	modH3DLL = LoadLibrary(H3DLLPATH);
+	modH4DLL = LoadLibrary(H4DLLPATH);
+	modReachDLL = LoadLibrary(REACHDLLPATH);
+	modODSTDLL = LoadLibrary(ODSTDLLPATH);
+}
+
+void tas_hooks::deref_halo_dlls()
+{
+	if (modH1DLL)
+		FreeLibrary(modH1DLL);
+	if (modH2DLL)
+		FreeLibrary(modH2DLL);
+	if (modH3DLL)
+		FreeLibrary(modH3DLL);
+	if (modH4DLL)
+		FreeLibrary(modH4DLL);
+	if (modReachDLL)
+		FreeLibrary(modReachDLL);
+	if (modODSTDLL)
+		FreeLibrary(modODSTDLL);
+}
+
 void tas_hooks::detours_error(LONG detourResult) {
 	if (detourResult != NO_ERROR) {
 		throw;
@@ -66,6 +92,16 @@ BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
 	}
 
 	return TRUE;
+}
+
+tas_hooks::tas_hooks()
+{
+	ref_halo_dlls();
+}
+
+tas_hooks::~tas_hooks()
+{
+	deref_halo_dlls();
 }
 
 void tas_hooks::attach_all() {
@@ -147,7 +183,6 @@ HRESULT __stdcall hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, U
 
 	return originalD3D11Present(SwapChain, SyncInterval, Flags);
 }
-
 
 uint8_t __fastcall hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, char* vkeyTable) {
 
