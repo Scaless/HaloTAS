@@ -58,7 +58,6 @@ namespace MCCTASGUI
 
             while (true)
             {
-                await Task.Delay(PingRefreshRateMilliseconds);
                 await GlobalInterop.RefreshStatus();
 
                 var Status = GlobalInterop.Status;
@@ -83,6 +82,8 @@ namespace MCCTASGUI
                         panelH1Skulls.Children.Add(cb);
                     }
                 });
+
+                await Task.Delay(PingRefreshRateMilliseconds);
             }
         }
 

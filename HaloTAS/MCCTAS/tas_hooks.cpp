@@ -13,24 +13,29 @@
 #include <imgui/imgui_impl_dx11.h>
 #include <mutex>
 
-static HWND                     g_hWnd = nullptr;
+static HWND                     g_window = nullptr;
 static ID3D11Device* g_pd3dDevice = nullptr;
 static ID3D11DeviceContext* g_pd3dContext = nullptr;
+static ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
 static IDXGISwapChain* g_pSwapChain = nullptr;
+static bool g_ShowMenu = true;
 static std::once_flag           g_isInitialized;
 static bool g_isInitD3D = false;
+static WNDPROC OriginalWndProcHandler = nullptr;
 
-typedef HRESULT (__stdcall* D3D11End_t)(ID3D11DeviceContext* ctx, ID3D11Asynchronous* async);
+typedef HRESULT(__stdcall* D3D11End_t)(ID3D11DeviceContext* ctx, ID3D11Asynchronous* async);
 HRESULT __stdcall hkD3D11End(ID3D11DeviceContext* ctx, ID3D11Asynchronous* async);
 D3D11End_t originalD3D11End;
 
-typedef HRESULT (__stdcall* D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
+typedef HRESULT(__stdcall* D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 HRESULT __stdcall hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 D3D11Present_t originalD3D11Present;
 
-typedef uint8_t (__fastcall* MCCGetHalo1Input_t)(int64_t, int64_t, char*);
+typedef uint8_t(__fastcall* MCCGetHalo1Input_t)(int64_t, int64_t, char*);
 uint8_t __fastcall hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, char* outValue);
 MCCGetHalo1Input_t originalMCCHalo1Input;
+
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 void tas_hooks::ref_halo_dlls()
 {
@@ -80,89 +85,125 @@ void tas_hooks::unhook_function(PVOID* originalFunc, PVOID replacementFunc)
 	DetourTransactionCommit();
 }
 
-BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
-	const DWORD TITLE_SIZE = 1024;
-	TCHAR windowTitle[TITLE_SIZE];
-
-	GetWindowText(hWnd, windowTitle, TITLE_SIZE);
-
-	std::wstring title(&windowTitle[0]);
-	if (title.find(L"Halo: The Master Chief Collection") != std::string::npos) {
-		g_hWnd = hWnd;
-	}
-
-	return TRUE;
-}
+//BOOL CALLBACK EnumWindowsProc(HWND hWnd, LPARAM lParam) {
+//	const DWORD TITLE_SIZE = 1024;
+//	TCHAR windowTitle[TITLE_SIZE];
+//
+//	GetWindowText(hWnd, windowTitle, TITLE_SIZE);
+//
+//	std::wstring title(&windowTitle[0]);
+//	if (title.find(L"Halo: The Master Chief Collection") != std::string::npos) {
+//		g_window = hWnd;
+//	}
+//
+//	return TRUE;
+//}
 
 tas_hooks::tas_hooks()
 {
 	ref_halo_dlls();
+	generate_hooks();
 }
 
 tas_hooks::~tas_hooks()
 {
 	deref_halo_dlls();
-}
 
-void tas_hooks::attach_all() {
-
-	/*
-		// Get hwnd for the main MCC window
-		EnumWindows(EnumWindowsProc, NULL);
-
-		if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
-			auto methods = kiero::getMethodsTable();
-
-			originalD3D11Present = (D3D11Present_t)methods[8];
-			originalD3D11End = (D3D11End_t)methods[89];
-
-			// Load symbols to look for other functions...
-			// IDXGISwapChain::Present = 8
-			// ID3D11DeviceContext::Begin = 88
-			// ID3D11DeviceContext::End = 89
-			//for (int i = 0; i < 200; i++) {
-			//	originalD3D11Present = (D3D11Present_t)methods[i];
-			//	auto e = originalD3D11Present;
-			//}
-
-			hook_function(&(PVOID&)originalD3D11Present, hkD3D11Present);
-			hook_function(&(PVOID&)originalD3D11End, hkD3D11End);
-		}
-	*/
-
-	int64_t** Halo1FuncAddr = (int64_t**)0x18224B620;
-	auto mccvtableptr = (MCCGetHalo1Input_t*)(**Halo1FuncAddr + 0x100);
-	originalMCCHalo1Input = (MCCGetHalo1Input_t)(*mccvtableptr);
-
-	hook_function(&(PVOID&)originalMCCHalo1Input, hkMCCGetHalo1Input);
-
-}
-
-void tas_hooks::detach_all() {
-	//unhook_function(&(PVOID&)originalD3D11Present, hkD3D11Present);
-	//unhook_function(&(PVOID&)originalD3D11End, hkD3D11End);
-
-	unhook_function(&(PVOID&)originalMCCHalo1Input, hkMCCGetHalo1Input);
-}
-
-void CustomPresent(ID3D11Device* device, ID3D11DeviceContext* ctx, IDXGISwapChain* swapChain) {
-
-	if (g_isInitD3D) {
-		// Draw Commands
-		ImGui_ImplDX11_NewFrame();
-		
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
-
-		ImGui::ShowDemoWindow();
-
-		ImGui::Render();
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	if (OriginalWndProcHandler) {
+		SetWindowLongPtr(g_window, GWLP_WNDPROC, (LONG_PTR)OriginalWndProcHandler);
 	}
 }
 
+void tas_hooks::generate_hooks()
+{
+	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
+		// See https://github.com/Rebzzel/kiero/blob/master/METHODSTABLE.txt for available functions
+		auto methods = kiero::getMethodsTable();
+
+		originalD3D11Present = (D3D11Present_t)methods[8];
+		originalD3D11End = (D3D11End_t)methods[89];
+		
+		mHooks.emplace_back(hook(&(PVOID&)originalD3D11Present, hkD3D11Present));
+		mHooks.emplace_back(hook(&(PVOID&)originalD3D11End, hkD3D11End));
+	}
+
+	// Halo 1 Input Function
+	//int64_t** Halo1FuncAddr = (int64_t**)0x18224B620;
+	//auto mccvtableptr = (MCCGetHalo1Input_t*)(**Halo1FuncAddr + 0x100);
+	//originalMCCHalo1Input = (MCCGetHalo1Input_t)(*mccvtableptr);
+	//mHooks.emplace_back(hook(&(PVOID&)originalMCCHalo1Input, hkMCCGetHalo1Input));
+}
+
+void tas_hooks::attach_all() {
+	for (auto& hook : mHooks) {
+		hook_function(hook.original_function, hook.replaced_function);
+	}
+}
+
+void tas_hooks::detach_all() {
+	for (auto& hook : mHooks) {
+		unhook_function(hook.original_function, hook.replaced_function);
+	}
+}
+
+LRESULT CALLBACK hWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	POINT mPos;
+	GetCursorPos(&mPos);
+	ScreenToClient(hWnd, &mPos);
+	ImGui::GetIO().MousePos.x = mPos.x;
+	ImGui::GetIO().MousePos.y = mPos.y;
+
+	io.MouseDrawCursor = g_ShowMenu;
+
+	if (uMsg == WM_KEYUP)
+	{
+		if (wParam == VK_DELETE)
+		{
+			g_ShowMenu = !g_ShowMenu;
+		}
+	}
+
+	if (g_ShowMenu)
+	{
+		switch (uMsg) {
+		case WM_MOUSEMOVE:
+		case WM_LBUTTONDOWN:
+		case WM_LBUTTONUP:
+		case WM_MBUTTONDOWN:
+		case WM_MBUTTONUP:
+		case WM_RBUTTONDOWN:
+		case WM_RBUTTONUP:
+		case WM_MOUSEWHEEL:
+		case WM_INPUT:
+			ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+			return true;
+			break;
+		default:
+			break;
+		}
+	}
+
+	return CallWindowProc(OriginalWndProcHandler, hWnd, uMsg, wParam, lParam);
+}
+
+void CustomPresent(ID3D11Device* device, ID3D11DeviceContext* ctx, IDXGISwapChain* swapChain) {
+	ImGui_ImplDX11_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	if (g_ShowMenu) {
+		ImGui::ShowDemoWindow();
+	}
+
+	ImGui::EndFrame();
+	ImGui::Render();
+	ctx->OMSetRenderTargets(1, &g_pRenderTargetView, NULL);
+	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
 HRESULT __stdcall hkD3D11End(ID3D11DeviceContext* ctx, ID3D11Asynchronous* async) {
-	CustomPresent(g_pd3dDevice, g_pd3dContext, nullptr);
 	return originalD3D11End(ctx, async);
 }
 
@@ -171,15 +212,36 @@ HRESULT __stdcall hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, U
 	std::call_once(g_isInitialized, [&]() {
 		ImGui::CreateContext();
 		ImGuiIO& io = ImGui::GetIO(); (void)io;
+		io.WantCaptureMouse = true;
 		ImGui::StyleColorsDark();
 
-		SwapChain->GetDevice(__uuidof(g_pd3dDevice), reinterpret_cast<void**>(&g_pd3dDevice));
-		g_pd3dDevice->GetImmediateContext(&g_pd3dContext);
+		HRESULT ret = SwapChain->GetDevice(__uuidof(ID3D11Device), (PVOID*)&g_pd3dDevice);
+		if (SUCCEEDED(ret)) {
+			g_pd3dDevice->GetImmediateContext(&g_pd3dContext);
+			g_pSwapChain = SwapChain;
+		}
+		else {
+			return originalD3D11Present(SwapChain, SyncInterval, Flags);
+		}
 
-		ImGui_ImplWin32_Init(g_hWnd);
+		DXGI_SWAP_CHAIN_DESC sd;
+		g_pSwapChain->GetDesc(&sd);
+		g_window = sd.OutputWindow;
+		OriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(g_window, GWLP_WNDPROC, (LONG_PTR)hWndProc);
+
+		ImGui_ImplWin32_Init(g_window);
 		ImGui_ImplDX11_Init(g_pd3dDevice, g_pd3dContext);
+
+		ID3D11Texture2D* pBackBuffer;
+		SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+		g_pd3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &g_pRenderTargetView);
+		pBackBuffer->Release();
+
 		g_isInitD3D = true;
-	});
+		});
+
+	if(g_isInitD3D)
+		CustomPresent(g_pd3dDevice, g_pd3dContext, nullptr);
 
 	return originalD3D11Present(SwapChain, SyncInterval, Flags);
 }
@@ -189,12 +251,12 @@ uint8_t __fastcall hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, cha
 	// Pre-Input
 	auto MCCReturn = originalMCCHalo1Input(functionAddr, unknown, vkeyTable);
 	// Post-Input
-	
+
 	// This is where we set our own inputs
-	
-	static bool flipflop = false;
-	flipflop = !flipflop;
-	vkeyTable[4 + VK_TAB] = flipflop ? 1 : 0;
+
+	//static bool flipflop = false;
+	//flipflop = !flipflop;
+	//vkeyTable[4 + VK_TAB] = flipflop ? 1 : 0;
 
 	return MCCReturn;
 }

@@ -1,11 +1,21 @@
 #pragma once
 
 #include "pch.h"
+#include <vector>
+
+struct hook {
+	PVOID* original_function;
+	PVOID replaced_function;
+
+	hook(PVOID* old_func, PVOID new_func) : original_function(old_func), replaced_function(new_func)
+	{
+	}
+};
 
 class tas_hooks
 {
 private:
-	bool mD3D9HooksInstalled = false;
+	std::vector<hook> mHooks;
 
 	const LPCWSTR H1DLLPATH = TEXT("../../../halo1/halo1.dll");
 	HMODULE modH1DLL;
@@ -26,6 +36,7 @@ public:
 	tas_hooks();
 	~tas_hooks();
 
+	void generate_hooks();
 	void attach_all();
 	void detach_all();
 

@@ -75,7 +75,15 @@ namespace MCCTASGUI.Interop
 
         public static unsafe void MarshalArrayToObject<T>(ref T obj, byte[] rawObjectData)
         {
+            if (rawObjectData == null)
+                return;
+
             int size = Marshal.SizeOf(obj);
+
+            // Size of given data does not match type size
+            if (rawObjectData.Length != size)
+                return;
+
             IntPtr ptr = Marshal.AllocHGlobal(size);
             Marshal.Copy(rawObjectData, 0, ptr, size);
             obj = (T)Marshal.PtrToStructure(ptr, obj.GetType());

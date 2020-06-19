@@ -15,14 +15,14 @@ void RealMain() {
     auto interop = std::make_unique<gui_interop>();
     auto consoleWindow = std::make_unique<windows_console>();
     auto hooks = std::make_unique<tas_hooks>();
-    //hooks->attach_all();
+    hooks->attach_all();
 
     while (!consoleWindow->get_exit_status()) {
         // Do stuff :)
         Sleep(100);
     }
 
-    //hooks->detach_all();
+    hooks->detach_all();
 }
 
 // This thread is created by the dll when loaded into the process, see RealMain() for the actual event loop.
