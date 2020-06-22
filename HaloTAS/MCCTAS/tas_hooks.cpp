@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "tas_hooks.h"
+#include "windows_utilities.h"
 
 #include "kiero.h"
 #include <D3D11.h>
@@ -18,7 +19,7 @@ static ID3D11Device* g_pd3dDevice = nullptr;
 static ID3D11DeviceContext* g_pd3dContext = nullptr;
 static ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
 static IDXGISwapChain* g_pSwapChain = nullptr;
-static bool g_ShowMenu = true;
+static bool g_ShowMenu = false;
 static std::once_flag           g_isInitialized;
 static bool g_isInitD3D = false;
 static WNDPROC OriginalWndProcHandler = nullptr;
@@ -63,6 +64,35 @@ void tas_hooks::deref_halo_dlls()
 		FreeLibrary(modODSTDLL);
 }
 
+void tas_hooks::apply_patch(patch& p)
+{
+	if (p.address == nullptr)
+		return;
+	if (p.applied)
+		return;
+
+	size_t patchSize = p.patch_data.size();
+
+	// Get copy of original data
+	p.original_data.resize(patchSize);
+	memcpy_s(p.original_data.data(), p.original_data.capacity(), p.address, patchSize);
+
+	// Overwrite original with patch
+	patch_memory(p.address, p.patch_data.data(), patchSize);
+
+	p.applied = true;
+}
+
+void tas_hooks::restore_patch(patch& p)
+{
+	if (p.applied && p.address != nullptr) {
+		// Restore original data
+		patch_memory(p.address, p.original_data.data(), p.original_data.size());
+		p.original_data.clear();
+		p.applied = false;
+	}
+}
+
 void tas_hooks::detours_error(LONG detourResult) {
 	if (detourResult != NO_ERROR) {
 		throw;
@@ -103,6 +133,7 @@ tas_hooks::tas_hooks()
 {
 	ref_halo_dlls();
 	generate_hooks();
+	generate_patches();
 }
 
 tas_hooks::~tas_hooks()
@@ -134,15 +165,29 @@ void tas_hooks::generate_hooks()
 	//mHooks.emplace_back(hook(&(PVOID&)originalMCCHalo1Input, hkMCCGetHalo1Input));
 }
 
+void tas_hooks::generate_patches()
+{
+	patch devmode_patch;
+	devmode_patch.patch_data = {0xB0, 0x01};
+	devmode_patch.address = reinterpret_cast<uint8_t*>(0x18077FD2F);
+	mPatches.push_back(devmode_patch);
+}
+
 void tas_hooks::attach_all() {
 	for (auto& hook : mHooks) {
 		hook_function(hook.original_function, hook.replaced_function);
+	}
+	for (auto& patch : mPatches) {
+		apply_patch(patch);
 	}
 }
 
 void tas_hooks::detach_all() {
 	for (auto& hook : mHooks) {
 		unhook_function(hook.original_function, hook.replaced_function);
+	}
+	for (auto& patch : mPatches) {
+		restore_patch(patch);
 	}
 }
 

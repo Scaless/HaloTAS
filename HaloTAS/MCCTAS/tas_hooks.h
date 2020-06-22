@@ -3,6 +3,13 @@
 #include "pch.h"
 #include <vector>
 
+struct patch {
+	bool applied = false;
+	void* address = nullptr;
+	std::vector<uint8_t> patch_data;
+	std::vector<uint8_t> original_data;
+};
+
 struct hook {
 	PVOID* original_function;
 	PVOID replaced_function;
@@ -16,6 +23,7 @@ class tas_hooks
 {
 private:
 	std::vector<hook> mHooks;
+	std::vector<patch> mPatches;
 
 	const LPCWSTR H1DLLPATH = TEXT("../../../halo1/halo1.dll");
 	HMODULE modH1DLL;
@@ -37,6 +45,7 @@ public:
 	~tas_hooks();
 
 	void generate_hooks();
+	void generate_patches();
 	void attach_all();
 	void detach_all();
 
@@ -48,6 +57,10 @@ private:
 	// DLLs are loaded and unloaded.
 	void ref_halo_dlls();
 	void deref_halo_dlls();
+
+	// Patching Functions
+	void apply_patch(patch& p);
+	void restore_patch(patch& p);
 
 	// Hooking Functions
 	void detours_error(LONG detourResult);
