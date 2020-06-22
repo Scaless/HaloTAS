@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows;
 
 namespace MCCTASGUI
 {
@@ -44,13 +45,24 @@ namespace MCCTASGUI
 
         public static void Inject()
         {
+            Process eacProcess = Process.GetProcessesByName("EasyAntiCheat.exe").FirstOrDefault();
+            if(eacProcess != null)
+            {
+                string caption = "Injection Failed - EAC is running";
+                string message = "The EasyAntiCheat process is running. MCCTAS will not work with anti-cheat enabled, please re-launch the game with EAC disabled.";
+                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                return;
+            }
+
             // the target process - I'm using a dummy process for this
             // if you don't have one, open Task Manager and choose wisely
             Process targetProcess = Process.GetProcessesByName("MCC-Win64-Shipping").FirstOrDefault();
 
             if(targetProcess == null)
             {
-                // Error: Process not found
+                string caption = "Injection Failed - MCC not running";
+                string message = "Couldn't find MCC-Win64-Shipping.exe. Are you sure the game is running?";
+                MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }
 
@@ -65,7 +77,9 @@ namespace MCCTASGUI
 
             if (string.IsNullOrWhiteSpace(dllFullPath))
             {
-                // Error: TAS dll not found
+                string caption = "Injection Failed - MCCTAS.dll Not Found";
+                string message = "Couldn't find MCCTAS.dll. It should be in the folder alongside this program.";
+                MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }
 
