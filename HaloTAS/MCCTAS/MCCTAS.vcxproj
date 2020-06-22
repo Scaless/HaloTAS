@@ -178,7 +178,9 @@
     <ClInclude Include="halo1_engine.h" />
     <ClInclude Include="halo1_types.h" />
     <ClInclude Include="halo_constants.h" />
+    <ClInclude Include="hook.h" />
     <ClInclude Include="kiero.h" />
+    <ClInclude Include="patch.h" />
     <ClInclude Include="tas_hooks.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="tas_input.h" />
@@ -200,7 +202,9 @@
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="gui_interop.cpp" />
     <ClCompile Include="halo1_engine.cpp" />
+    <ClCompile Include="hook.cpp" />
     <ClCompile Include="kiero.cpp" />
+    <ClCompile Include="patch.cpp" />
     <ClCompile Include="tas_hooks.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
