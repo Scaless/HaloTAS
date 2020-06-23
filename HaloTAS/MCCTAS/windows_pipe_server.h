@@ -34,11 +34,11 @@ public:
 	} PIPEINST, * LPPIPEINST;
 
 private:
-	PIPEINST Pipe;
-	HANDLE Event;
+	PIPEINST Pipe = {};
+	HANDLE Event = {};
 	std::atomic_bool KillServer = false;
 
-	void (*HandleRequestCallback)(LPPIPEINST); // HandleRequestCallback;
+	void (*HandleRequestCallback)(LPPIPEINST) = nullptr;
 
 public:
 

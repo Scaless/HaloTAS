@@ -52,6 +52,12 @@
     <Filter Include="Source Files\Utilities">
       <UniqueIdentifier>{13659a73-3699-44b3-a7dc-74fb3d2094b3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Overlay">
+      <UniqueIdentifier>{75fdcc45-4690-41b7-8d5c-d57790053b2e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Overlay">
+      <UniqueIdentifier>{46a42251-f24a-4965-bb31-8741baebec4d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\imgui\imconfig.h">
@@ -135,6 +141,9 @@
     <ClInclude Include="hook.h">
       <Filter>Header Files\Hooks</Filter>
     </ClInclude>
+    <ClInclude Include="tas_overlay.h">
+      <Filter>Header Files\Overlay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -199,6 +208,9 @@
     </ClCompile>
     <ClCompile Include="hook.cpp">
       <Filter>Source Files\Hooks</Filter>
+    </ClCompile>
+    <ClCompile Include="tas_overlay.cpp">
+      <Filter>Source Files\Overlay</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

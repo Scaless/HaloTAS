@@ -74,7 +74,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(SolutionDir)lib\gl3w;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)lib\gl3w;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
@@ -82,7 +82,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
-    <IncludePath>$(SolutionDir)include;C:\Program Files (x86)\Microsoft DirectX SDK (June 2010)\Include;$(SolutionDir)lib\gl3w;$(IncludePath)</IncludePath>
+    <IncludePath>$(SolutionDir)include;$(SolutionDir)lib\gl3w;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -185,6 +185,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="tas_input.h" />
     <ClInclude Include="tas_logger.h" />
+    <ClInclude Include="tas_overlay.h" />
     <ClInclude Include="tas_utilities.h" />
     <ClInclude Include="windows_console.h" />
     <ClInclude Include="windows_pipe_server.h" />
@@ -214,6 +215,7 @@
     </ClCompile>
     <ClCompile Include="tas_input.cpp" />
     <ClCompile Include="tas_logger.cpp" />
+    <ClCompile Include="tas_overlay.cpp" />
     <ClCompile Include="windows_console.cpp" />
     <ClCompile Include="windows_pipe_server.cpp" />
     <ClCompile Include="windows_utilities.cpp" />
