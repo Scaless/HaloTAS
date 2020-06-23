@@ -51,9 +51,9 @@ typedef HMODULE(*LoadLibraryExW_t)(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dw
 HMODULE hkLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags);
 LoadLibraryExW_t originalLoadLibraryExW;
 
-typedef HRESULT(*D3D11End_t)(ID3D11DeviceContext* ctx, ID3D11Asynchronous* async);
-HRESULT hkD3D11End(ID3D11DeviceContext* ctx, ID3D11Asynchronous* async);
-D3D11End_t originalD3D11End;
+typedef BOOL(*FreeLibrary_t)(HMODULE hLibModule);
+BOOL hkFreeLibrary(HMODULE hLibModule);
+FreeLibrary_t originalFreeLibrary;
 
 typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
@@ -77,17 +77,16 @@ tas_hooks::~tas_hooks()
 }
 
 void attach_global_hooks() {
+	// D3D11 Hooking
 	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
 		// See https://github.com/Rebzzel/kiero/blob/master/METHODSTABLE.txt for available functions
 		auto methods = kiero::getMethodsTable();
 
 		originalD3D11Present = (D3D11Present_t)methods[8];
-		originalD3D11End = (D3D11End_t)methods[89];
-
 		gGlobalHooks.emplace_back(&(PVOID&)originalD3D11Present, hkD3D11Present);
-		gGlobalHooks.emplace_back(&(PVOID&)originalD3D11End, hkD3D11End);
 	}
 
+	// Windows API Hooking
 	originalLoadLibraryA = LoadLibraryA;
 	gGlobalHooks.emplace_back(&(PVOID&)originalLoadLibraryA, hkLoadLibraryA);
 	originalLoadLibraryW = LoadLibraryW;
@@ -96,7 +95,10 @@ void attach_global_hooks() {
 	gGlobalHooks.emplace_back(&(PVOID&)originalLoadLibraryExA, hkLoadLibraryExA);
 	originalLoadLibraryExW = LoadLibraryExW;
 	gGlobalHooks.emplace_back(&(PVOID&)originalLoadLibraryExW, hkLoadLibraryExW);
-	
+	originalFreeLibrary = FreeLibrary;
+	gGlobalHooks.emplace_back(&(PVOID&)originalFreeLibrary, hkFreeLibrary);
+
+	// Attach the hooks
 	for (auto& hk : gGlobalHooks) {
 		hk.attach();
 	}
@@ -240,8 +242,12 @@ HMODULE hkLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 	return result;
 }
 
-HRESULT hkD3D11End(ID3D11DeviceContext* ctx, ID3D11Asynchronous* async) {
-	return originalD3D11End(ctx, async);
+BOOL hkFreeLibrary(HMODULE hLibModule) {
+	wchar_t buffer[MAX_PATH];
+	GetModuleFileName(hLibModule, buffer, sizeof(buffer) / sizeof(TCHAR));
+	tas_logger::log(L"FreeLibrary: %s\r\n", buffer);
+
+	return originalFreeLibrary(hLibModule);
 }
 
 void initialize_d3d_imgui(IDXGISwapChain* SwapChain) {
