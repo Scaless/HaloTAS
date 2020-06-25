@@ -24,11 +24,24 @@ windows_console::windows_console()
     init();
 }
 
+windows_console::~windows_console()
+{
+    free_console();
+}
+
 void windows_console::init()
 {
     AllocConsole();
     freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
     SetConsoleCtrlHandler((PHANDLER_ROUTINE)console_event_handler, TRUE);
+}
+
+void windows_console::free_console()
+{
+    if (stdout) {
+        fclose(stdout);
+    }
+    FreeConsole();
 }
 
 void windows_console::clear()

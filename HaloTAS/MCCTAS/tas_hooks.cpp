@@ -127,7 +127,7 @@ HMODULE hkLoadLibraryA(LPCSTR lpLibFileName) {
 	wchar_t* wstr = new wchar_t[wchars_num];
 	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wstr, wchars_num);
 
-	tas_logger::log(L"LoadLibraryA: %s\r\n", wstr);
+	tas_logger::trace(L"LoadLibraryA: {}", wstr);
 
 	return result;
 }
@@ -135,7 +135,7 @@ HMODULE hkLoadLibraryA(LPCSTR lpLibFileName) {
 HMODULE hkLoadLibraryW(LPCWSTR lpLibFileName) {
 	auto result = originalLoadLibraryW(lpLibFileName);
 
-	tas_logger::log(L"LoadLibraryW: %s\r\n", lpLibFileName);
+	tas_logger::trace(L"LoadLibraryW: {}", lpLibFileName);
 
 	return result;
 }
@@ -147,7 +147,7 @@ HMODULE hkLoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 	wchar_t* wstr = new wchar_t[wchars_num];
 	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wstr, wchars_num);
 
-	tas_logger::log(L"LoadLibraryExA: %s\r\n", wstr);
+	tas_logger::trace(L"LoadLibraryExA: {}", wstr);
 
 	return result;
 }
@@ -156,11 +156,11 @@ HMODULE hkLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 	auto result = originalLoadLibraryExW(lpLibFileName, hFile, dwFlags);
 
 	std::wstring libName(lpLibFileName);
-	tas_logger::log(L"LoadLibraryExW: %s\r\n", lpLibFileName);
+	tas_logger::trace(L"LoadLibraryExW: {}", lpLibFileName);
 
 	// TODO-SCALES: apply to all loadlibrary calls
 	if (libName == L"halo1.dll") {
-		tas_logger::log(L"Installing Hooks & Patches For %s\r\n", libName.c_str());
+		tas_logger::trace(L"Installing Hooks & Patches For {}", libName.c_str());
 		attach_game_hooks();
 	}
 
@@ -170,7 +170,7 @@ HMODULE hkLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 BOOL hkFreeLibrary(HMODULE hLibModule) {
 	wchar_t buffer[MAX_PATH];
 	GetModuleFileName(hLibModule, buffer, sizeof(buffer) / sizeof(TCHAR));
-	tas_logger::log(L"FreeLibrary: %s\r\n", buffer);
+	tas_logger::trace(L"FreeLibrary: {}", buffer);
 
 	return originalFreeLibrary(hLibModule);
 }

@@ -11,9 +11,10 @@
 
 // Main Execution Loop
 void RealMain() {
+    auto consoleWindow = std::make_unique<windows_console>();
+    tas_logger::info("MCCTAS Started!");
 
     auto interop = std::make_unique<gui_interop>();
-    auto consoleWindow = std::make_unique<windows_console>();
     auto hooks = std::make_unique<tas_hooks>();
     hooks->attach_all();
 
@@ -23,6 +24,9 @@ void RealMain() {
     }
 
     hooks->detach_all();
+
+    tas_logger::info("MCCTAS Stopped!");
+    tas_logger::flush_and_exit();
 }
 
 // This thread is created by the dll when loaded into the process, see RealMain() for the actual event loop.
@@ -32,7 +36,7 @@ void RealMain() {
 DWORD WINAPI MainThread(HMODULE hDLL) {
     RealMain();
 
-    Sleep(1000);
+    Sleep(200);
     FreeLibraryAndExitThread(hDLL, NULL);
 }
 

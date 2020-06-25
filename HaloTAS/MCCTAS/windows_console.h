@@ -9,9 +9,10 @@ private:
 
 public:
 	windows_console();
-	~windows_console() = default;
+	~windows_console();
 
 	void init();
+	void free_console();
 	void clear();
 	static bool get_exit_status();
 	static void set_exit_status(bool newStatus);

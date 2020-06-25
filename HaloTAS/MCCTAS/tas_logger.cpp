@@ -1,13 +1,30 @@
 #include "tas_logger.h"
 
-void tas_logger::log(const wchar_t* format, ...)
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
+tas_logger::tas_logger()
 {
-	va_list args;
-	va_start(args, format);
-	wchar_t buffer[2048];
-	vswprintf_s(buffer, format, args);
-	wprintf(buffer);
-	va_end(args);
+	using namespace tas::literals;
+
+	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+	console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
+	console_sink->set_level(spdlog::level::info);
+
+	auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>("MCCTAS/MCCTAS_debug_log.txt", 5_MiB, 4, false);
+	file_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
+	file_sink->set_level(spdlog::level::trace);
+
+	multi_logger = std::make_shared<spdlog::logger>("multi_sink", spdlog::sinks_init_list{ console_sink, file_sink });
+	multi_logger->set_level(spdlog::level::trace);
+
+	spdlog::set_level(spdlog::level::trace);
+	spdlog::flush_on(spdlog::level::trace);
 }
 
-
+void tas_logger::flush_and_exit()
+{
+	spdlog::drop_all();
+	spdlog::shutdown();
+}
