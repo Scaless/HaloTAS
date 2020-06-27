@@ -18,5 +18,7 @@ public:
 
 	void apply();
 	void restore();
+
+	std::wstring_view module_name();
 };
 

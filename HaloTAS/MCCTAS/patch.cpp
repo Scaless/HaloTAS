@@ -28,3 +28,8 @@ void patch::restore()
 	uint8_t* patchAddr = (uint8_t*)moduleBase + mOffset;
 	patch_memory(patchAddr, mOriginalData.data(), mOriginalData.size());
 }
+
+std::wstring_view patch::module_name()
+{
+	return mModuleName;
+}

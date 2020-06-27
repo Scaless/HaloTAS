@@ -11,4 +11,3 @@ public:
 	void attach_all();
 	void detach_all();
 };
-

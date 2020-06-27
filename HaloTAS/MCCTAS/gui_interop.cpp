@@ -181,10 +181,9 @@ void handle_response_execute_command(const InteropRequest& request, InteropRespo
 	ExecuteCommandRequestPayload commandPayload;
 	memcpy_s(&commandPayload, sizeof(commandPayload), request.payload, sizeof(commandPayload));
 
-	std::string x = commandPayload.command;
+	Exec(commandPayload.command, 0);
+	tas_logger::info("Executed Halo1 Command: {}", commandPayload.command);
 
-	Exec(x.data(), 0);
-	
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
