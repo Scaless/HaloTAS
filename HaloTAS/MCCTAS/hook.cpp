@@ -75,6 +75,7 @@ void hook::attach()
 	}
 	}
 
+	tas_logger::debug(L"Installed hook: {}", mHookName);
 	mInstalled = true;
 }
 
@@ -92,15 +93,21 @@ void hook::detach()
 	DetourDetach(&(PVOID&)*mOriginalFunction, mReplacedFunction);
 	DetourTransactionCommit();
 
+	tas_logger::debug(L"Uninstalled hook: {}", mHookName);
 	mInstalled = false;
 }
 
-std::wstring_view hook::module_name()
+const std::wstring& hook::hook_name()
+{
+	return mHookName;
+}
+
+const std::wstring& hook::module_name()
 {
 	return mModuleName;
 }
 
-std::string_view hook::function_name()
+const std::string& hook::function_name()
 {
 	return mFunctionName;
 }

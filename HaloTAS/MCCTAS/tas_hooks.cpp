@@ -18,11 +18,6 @@ static std::vector<hook> gGlobalHooks;
 static std::vector<hook> gRuntimeHooks;
 static std::vector<patch> gRuntimePatches;
 
-// TODO-SCALES: Refactor this stuff out into respective classes
-void attach_global_hooks();
-void detach_global_hooks();
-///////////////////////////////////////////////////////////////
-
 typedef HMODULE(*LoadLibraryA_t)(LPCSTR lpLibFileName);
 HMODULE hkLoadLibraryA(LPCSTR lpLibFileName);
 LoadLibraryA_t originalLoadLibraryA;
@@ -55,49 +50,45 @@ typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, U
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 D3D11Present_t originalD3D11Present;
 
+const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", L"halo1.dll", 0x077FD2F, std::vector<uint8_t>{ 0xB0, 0x01 });
+
+const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", L"halo1.dll", 0x70E430, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
+
+const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
+const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
+const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibraryW, hkLoadLibraryW);
+const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
+const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
+const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
+const hook GlobalHook_MCCGetHalo1Input(L"hkMCCGetHalo1Input", L"MCC-Win64-Shipping.exe", 0x18C5A44, (PVOID**)&originalMCCHalo1Input, hkMCCGetHalo1Input);
+
 tas_hooks::tas_hooks()
 {
-	gRuntimePatches.emplace_back(L"halo1.dll", 0x077FD2F, std::vector<uint8_t>{ 0xB0, 0x01 });
-	gRuntimeHooks.emplace_back(L"halo1.dll", 0x70E430, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
+	gRuntimePatches.push_back(RuntimePatch_EnableH1DevConsole);
+	gRuntimeHooks.push_back(RuntimeHook_Halo1HandleInput);
+
+	gGlobalHooks.push_back(GlobalHook_D3D11Present);
+	gGlobalHooks.push_back(GlobalHook_LoadLibraryA);
+	gGlobalHooks.push_back(GlobalHook_LoadLibraryW);
+	gGlobalHooks.push_back(GlobalHook_LoadLibraryExA);
+	gGlobalHooks.push_back(GlobalHook_LoadLibraryExW);
+	gGlobalHooks.push_back(GlobalHook_FreeLibrary);
+	gGlobalHooks.push_back(GlobalHook_MCCGetHalo1Input);
+
+	init_global_hooks();
 }
 tas_hooks::~tas_hooks()
 {
 	tas::overlay::shutdown();
 }
 
-void attach_global_hooks() {
-	// D3D11 Hooking
-	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
-		// See https://github.com/Rebzzel/kiero/blob/master/METHODSTABLE.txt for available functions
-		auto methods = kiero::getMethodsTable();
-
-		originalD3D11Present = (D3D11Present_t)methods[8];
-		gGlobalHooks.emplace_back((PVOID**)&originalD3D11Present, hkD3D11Present);
-	}
-
-	// Windows API Hooking
-	originalLoadLibraryA = LoadLibraryA;
-	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
-	originalLoadLibraryW = LoadLibraryW;
-	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryW, hkLoadLibraryW);
-	originalLoadLibraryExA = LoadLibraryExA;
-	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
-	originalLoadLibraryExW = LoadLibraryExW;
-	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
-	originalFreeLibrary = FreeLibrary;
-	gGlobalHooks.emplace_back((PVOID**)&originalFreeLibrary, hkFreeLibrary);
-
-	HMODULE mccModule = GetModuleHandle(L"MCC-Win64-Shipping.exe");
-	originalMCCHalo1Input = (MCCGetHalo1Input_t)((uint8_t*)mccModule + 0x18C5A44);
-	gGlobalHooks.emplace_back((PVOID**)&originalMCCHalo1Input, hkMCCGetHalo1Input);
-
-	// Attach the hooks
+void tas_hooks::attach_global_hooks() {
 	for (auto& hk : gGlobalHooks) {
 		hk.attach();
 	}
 }
 
-void detach_global_hooks() {
+void tas_hooks::detach_global_hooks() {
 	for (auto& hk : gGlobalHooks) {
 		hk.detach();
 	}
@@ -123,6 +114,23 @@ void tas_hooks::detach_all() {
 	detach_global_hooks();
 }
 
+void tas_hooks::init_global_hooks()
+{
+	// D3D11 Hooking
+	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
+		// See https://github.com/Rebzzel/kiero/blob/master/METHODSTABLE.txt for available functions
+		auto methods = kiero::getMethodsTable();
+		originalD3D11Present = (D3D11Present_t)methods[8];
+	}
+
+	// Windows API Hooking
+	originalLoadLibraryA = LoadLibraryA;
+	originalLoadLibraryW = LoadLibraryW;
+	originalLoadLibraryExA = LoadLibraryExA;
+	originalLoadLibraryExW = LoadLibraryExW;
+	originalFreeLibrary = FreeLibrary;
+}
+
 void post_lib_load_hooks_patches(std::wstring_view libPath) {
 	std::filesystem::path path = libPath;
 	auto filename = path.filename().generic_wstring();
@@ -130,13 +138,11 @@ void post_lib_load_hooks_patches(std::wstring_view libPath) {
 	for (auto& hook : gRuntimeHooks) {
 		if (hook.module_name() == filename) {
 			hook.attach();
-			tas_logger::info(L"Installed Hook For {}", filename);
 		}
 	}
 	for (auto& patch : gRuntimePatches) {
 		if (patch.module_name() == filename) {
 			patch.apply();
-			tas_logger::info(L"Installed Patch For {}", filename);
 		}
 	}
 }
@@ -148,13 +154,11 @@ void pre_lib_unload_hooks_patches(std::wstring_view libPath) {
 	for (auto& hook : gRuntimeHooks) {
 		if (hook.module_name() == filename) {
 			hook.detach();
-			tas_logger::info(L"Uninstalled Hook For {}", filename);
 		}
 	}
 	for (auto& patch : gRuntimePatches) {
 		if (patch.module_name() == filename) {
 			patch.restore();
-			tas_logger::info(L"Uninstalled Patch For {}", filename);
 		}
 	}
 }
