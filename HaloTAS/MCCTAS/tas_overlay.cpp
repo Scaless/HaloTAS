@@ -76,6 +76,7 @@ namespace tas::overlay {
 		ImGui::StyleColorsDark();
 
 		if (FAILED(SwapChain->GetDevice(__uuidof(ID3D11Device), (PVOID*)&gD3DDevice))) {
+			tas_logger::error(L"SwapChain->GetDevice failed");
 			return;
 		}
 		gD3DDevice->GetImmediateContext(&gD3DContext);
@@ -87,19 +88,23 @@ namespace tas::overlay {
 		gOriginalWndProcHandler = (WNDPROC)SetWindowLongPtr(gWindow, GWLP_WNDPROC, (LONG_PTR)imgui_wndproc);
 
 		if (!ImGui_ImplWin32_Init(gWindow)) {
+			tas_logger::error(L"ImGui_ImplWin32_Init failed");
 			return;
 		}
 		if (!ImGui_ImplDX11_Init(gD3DDevice, gD3DContext)) {
+			tas_logger::error(L"ImGui_ImplDX11_Init failed");
 			return;
 		}
 
 		ID3D11Texture2D* pBackBuffer;
 		if (FAILED(SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer))) {
 			pBackBuffer->Release();
+			tas_logger::error(L"SwapChain->GetBuffer failed");
 			return;
 		}
 		if (FAILED(gD3DDevice->CreateRenderTargetView(pBackBuffer, NULL, &gRenderTargetView))) {
 			pBackBuffer->Release();
+			tas_logger::error(L"gD3DDevice->CreateRenderTargetView failed");
 			return;
 		}
 		pBackBuffer->Release();

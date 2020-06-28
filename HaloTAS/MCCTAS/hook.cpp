@@ -35,11 +35,6 @@ PVOID* hook::get_address_from_function_name()
 	return (PVOID*)GetProcAddress(moduleBase, mFunctionName.c_str());
 }
 
-void* hook::original_func_ptr()
-{
-	return (void*)mOriginalFunction;
-}
-
 void hook::attach()
 {
 	if (mInstalled) {
@@ -52,25 +47,25 @@ void hook::attach()
 	switch (mInstallType) {
 	case hook_type::DIRECT:
 	{
-		detour_install(mOriginalFunction, mReplacedFunction);
+		detour_install(&(PVOID&)*mOriginalFunction, mReplacedFunction);
 		break;
 	}
 	case hook_type::MODULE_OFFSET:
 	{
-		mOriginalFunction = get_address_from_offset();
-		if (!mOriginalFunction) {
+		*mOriginalFunction = get_address_from_offset();
+		if (!*mOriginalFunction) {
 			return;
 		}
-		detour_install(mOriginalFunction, mReplacedFunction);
+		detour_install(&(PVOID&)*mOriginalFunction, mReplacedFunction);
 		break;
 	}
 	case hook_type::MODULE_FUNCTION:
 	{
-		mOriginalFunction = get_address_from_function_name();
-		if (!mOriginalFunction) {
+		*mOriginalFunction = get_address_from_function_name();
+		if (!*mOriginalFunction) {
 			return;
 		}
-		detour_install((PVOID*)&mOriginalFunction, mReplacedFunction);
+		detour_install(&(PVOID&)*mOriginalFunction, mReplacedFunction);
 		break;
 	}
 	default:
@@ -85,20 +80,19 @@ void hook::attach()
 
 void hook::detach()
 {
-	// Don't try to detach when we know it's not installed
 	if (!mInstalled) {
 		return;
 	}
-
-	PVOID* original_func = mOriginalFunction ? mOriginalFunction : get_address_from_offset();
-	if (!original_func || !mReplacedFunction) {
+	if (!*mOriginalFunction || !mReplacedFunction) {
 		return;
 	}
 
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
-	DetourDetach(original_func, mReplacedFunction);
+	DetourDetach(&(PVOID&)*mOriginalFunction, mReplacedFunction);
 	DetourTransactionCommit();
+
+	mInstalled = false;
 }
 
 std::wstring_view hook::module_name()

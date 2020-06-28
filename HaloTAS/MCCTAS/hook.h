@@ -9,21 +9,21 @@ private:
 	std::wstring mModuleName;
 	std::string mFunctionName;
 	int64_t mOffset = 0;
-	PVOID* mOriginalFunction = nullptr;
+	PVOID** mOriginalFunction = nullptr;
 	PVOID mReplacedFunction = nullptr;
 	hook_type mInstallType;
 
 public:
-	hook(PVOID* old_func, PVOID new_func) 
-		: mOriginalFunction(old_func), mReplacedFunction(new_func), mInstallType(hook_type::DIRECT)
+	hook(PVOID** original_func, PVOID new_func)
+		: mOriginalFunction(original_func), mReplacedFunction(new_func), mInstallType(hook_type::DIRECT)
 	{
 	}
-	hook(const std::wstring& moduleName, int64_t offset, PVOID new_func) 
-		: mOffset(offset), mModuleName(moduleName), mReplacedFunction(new_func), mInstallType(hook_type::MODULE_OFFSET)
+	hook(const std::wstring& moduleName, int64_t offset, PVOID** original_func, PVOID new_func) 
+		: mOffset(offset), mModuleName(moduleName), mOriginalFunction(original_func), mReplacedFunction(new_func), mInstallType(hook_type::MODULE_OFFSET)
 	{
 	}
-	hook(const std::wstring& moduleName, const std::string& functionName, PVOID new_func)
-		: mModuleName(moduleName), mFunctionName(functionName), mReplacedFunction(new_func), mInstallType(hook_type::MODULE_FUNCTION)
+	hook(const std::wstring& moduleName, const std::string& functionName, PVOID** original_func, PVOID new_func)
+		: mModuleName(moduleName), mFunctionName(functionName), mOriginalFunction(original_func), mReplacedFunction(new_func), mInstallType(hook_type::MODULE_FUNCTION)
 	{
 	}
 	~hook() = default;
@@ -33,7 +33,6 @@ public:
 
 	std::wstring_view module_name();
 	std::string_view function_name();
-	void* original_func_ptr();
 
 private:
 	void detour_install(PVOID* old_func, PVOID new_func);

@@ -9,6 +9,7 @@
 #include <string>
 #include <mutex>
 #include <unordered_map>
+#include <filesystem>
 
 static std::once_flag gOverlayInitialized;
 // Global hooks should only apply to areas that will never be unloaded
@@ -57,6 +58,7 @@ D3D11Present_t originalD3D11Present;
 tas_hooks::tas_hooks()
 {
 	gRuntimePatches.emplace_back(L"halo1.dll", 0x077FD2F, std::vector<uint8_t>{ 0xB0, 0x01 });
+	gRuntimeHooks.emplace_back(L"halo1.dll", 0x70E430, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
 }
 tas_hooks::~tas_hooks()
 {
@@ -70,28 +72,24 @@ void attach_global_hooks() {
 		auto methods = kiero::getMethodsTable();
 
 		originalD3D11Present = (D3D11Present_t)methods[8];
-		gGlobalHooks.emplace_back(&(PVOID&)originalD3D11Present, hkD3D11Present);
+		gGlobalHooks.emplace_back((PVOID**)&originalD3D11Present, hkD3D11Present);
 	}
 
 	// Windows API Hooking
 	originalLoadLibraryA = LoadLibraryA;
-	gGlobalHooks.emplace_back(&(PVOID&)originalLoadLibraryA, hkLoadLibraryA);
+	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
 	originalLoadLibraryW = LoadLibraryW;
-	gGlobalHooks.emplace_back(&(PVOID&)originalLoadLibraryW, hkLoadLibraryW);
+	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryW, hkLoadLibraryW);
 	originalLoadLibraryExA = LoadLibraryExA;
-	gGlobalHooks.emplace_back(&(PVOID&)originalLoadLibraryExA, hkLoadLibraryExA);
+	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
 	originalLoadLibraryExW = LoadLibraryExW;
-	gGlobalHooks.emplace_back(&(PVOID&)originalLoadLibraryExW, hkLoadLibraryExW);
+	gGlobalHooks.emplace_back((PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 	originalFreeLibrary = FreeLibrary;
-	gGlobalHooks.emplace_back(&(PVOID&)originalFreeLibrary, hkFreeLibrary);
+	gGlobalHooks.emplace_back((PVOID**)&originalFreeLibrary, hkFreeLibrary);
 
 	HMODULE mccModule = GetModuleHandle(L"MCC-Win64-Shipping.exe");
 	originalMCCHalo1Input = (MCCGetHalo1Input_t)((uint8_t*)mccModule + 0x18C5A44);
-	gGlobalHooks.emplace_back(&(PVOID&)originalMCCHalo1Input, hkMCCGetHalo1Input);
-
-	HMODULE h1Module = GetModuleHandle(L"halo1.dll");
-	originalHalo1HandleInput = (Halo1HandleInput_t)((uint8_t*)h1Module + 0x70E430);
-	gGlobalHooks.emplace_back(&(PVOID&)originalHalo1HandleInput, hkHalo1HandleInput);
+	gGlobalHooks.emplace_back((PVOID**)&originalMCCHalo1Input, hkMCCGetHalo1Input);
 
 	// Attach the hooks
 	for (auto& hk : gGlobalHooks) {
@@ -125,18 +123,38 @@ void tas_hooks::detach_all() {
 	detach_global_hooks();
 }
 
-void post_lib_load_install_hooks(std::wstring_view libName) {
+void post_lib_load_hooks_patches(std::wstring_view libPath) {
+	std::filesystem::path path = libPath;
+	auto filename = path.filename().generic_wstring();
 
 	for (auto& hook : gRuntimeHooks) {
-		if (hook.module_name() == libName) {
+		if (hook.module_name() == filename) {
 			hook.attach();
-			tas_logger::info(L"Installed Hook For {}", libName);
+			tas_logger::info(L"Installed Hook For {}", filename);
 		}
 	}
 	for (auto& patch : gRuntimePatches) {
-		if (patch.module_name() == libName) {
+		if (patch.module_name() == filename) {
 			patch.apply();
-			tas_logger::info(L"Installed Patch For {}", libName);
+			tas_logger::info(L"Installed Patch For {}", filename);
+		}
+	}
+}
+
+void pre_lib_unload_hooks_patches(std::wstring_view libPath) {
+	std::filesystem::path path = libPath;
+	auto filename = path.filename().generic_wstring();
+
+	for (auto& hook : gRuntimeHooks) {
+		if (hook.module_name() == filename) {
+			hook.detach();
+			tas_logger::info(L"Uninstalled Hook For {}", filename);
+		}
+	}
+	for (auto& patch : gRuntimePatches) {
+		if (patch.module_name() == filename) {
+			patch.restore();
+			tas_logger::info(L"Uninstalled Patch For {}", filename);
 		}
 	}
 }
@@ -145,10 +163,12 @@ HMODULE hkLoadLibraryA(LPCSTR lpLibFileName) {
 	auto result = originalLoadLibraryA(lpLibFileName);
 
 	int wchars_num = MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[wchars_num];
-	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wstr, wchars_num);
+	wchar_t* wLibFileName = new wchar_t[wchars_num];
+	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wLibFileName, wchars_num);
 
-	tas_logger::trace(L"LoadLibraryA: {}", wstr);
+	tas_logger::trace(L"LoadLibraryA: {}", wLibFileName);
+
+	post_lib_load_hooks_patches(wLibFileName);
 
 	return result;
 }
@@ -158,6 +178,8 @@ HMODULE hkLoadLibraryW(LPCWSTR lpLibFileName) {
 
 	tas_logger::trace(L"LoadLibraryW: {}", lpLibFileName);
 
+	post_lib_load_hooks_patches(lpLibFileName);
+
 	return result;
 }
 
@@ -165,10 +187,12 @@ HMODULE hkLoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 	auto result = originalLoadLibraryExA(lpLibFileName, hFile, dwFlags);
 
 	int wchars_num = MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[wchars_num];
-	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wstr, wchars_num);
+	wchar_t* wLibFileName = new wchar_t[wchars_num];
+	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wLibFileName, wchars_num);
 
-	tas_logger::trace(L"LoadLibraryExA: {}", wstr);
+	tas_logger::trace(L"LoadLibraryExA: {}", wLibFileName);
+
+	post_lib_load_hooks_patches(wLibFileName);
 
 	return result;
 }
@@ -178,27 +202,17 @@ HMODULE hkLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 
 	tas_logger::trace(L"LoadLibraryExW: {}", lpLibFileName);
 
-	post_lib_load_install_hooks(lpLibFileName);
+	post_lib_load_hooks_patches(lpLibFileName);
 
 	return result;
 }
 
 BOOL hkFreeLibrary(HMODULE hLibModule) {
-	wchar_t buffer[MAX_PATH];
-	GetModuleFileName(hLibModule, buffer, sizeof(buffer) / sizeof(TCHAR));
-	tas_logger::trace(L"FreeLibrary: {}", buffer);
+	wchar_t moduleFilePath[MAX_PATH];
+	GetModuleFileName(hLibModule, moduleFilePath, sizeof(moduleFilePath) / sizeof(TCHAR));
+	tas_logger::trace(L"FreeLibrary: {}", moduleFilePath);
 
-	// Detach hooks before unload
-	for (auto& hook : gRuntimeHooks) {
-		if (hook.module_name() == buffer) {
-			hook.detach();
-		}
-	}
-	for (auto& patch : gRuntimePatches) {
-		if (patch.module_name() == buffer) {
-			patch.restore();
-		}
-	}
+	pre_lib_unload_hooks_patches(moduleFilePath);
 
 	return originalFreeLibrary(hLibModule);
 }

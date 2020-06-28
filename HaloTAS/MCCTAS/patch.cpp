@@ -14,7 +14,7 @@ void patch::apply()
 	// Get copy of original data
 	mOriginalData.resize(patchSize);
 	memcpy_s(mOriginalData.data(), mOriginalData.capacity(), patchAddr, patchSize);
-
+	
 	// Overwrite original with patch
 	patch_memory(patchAddr, mPatchData.data(), patchSize);
 }
