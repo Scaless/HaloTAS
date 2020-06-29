@@ -18,5 +18,7 @@ void fill_loaded_dlls_info(std::vector<loaded_dll_info>& dlls);
 
 void patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size);
 
+std::wstring str_to_wstr(const std::string str);
+
 //std::vector<char> dll_create_snapshot(std::wstring dllName);
 //void dll_restore_snapshot(std::wstring, const std::vector<char>& data);

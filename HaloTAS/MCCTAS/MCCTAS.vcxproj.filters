@@ -408,6 +408,12 @@
     <ClInclude Include="..\include\spdlog\details\windows_include.h">
       <Filter>Libraries\spdlog</Filter>
     </ClInclude>
+    <ClInclude Include="tas_console.h">
+      <Filter>Header Files\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="console_parser.h">
+      <Filter>Header Files\Overlay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -474,6 +480,12 @@
       <Filter>Source Files\Hooks</Filter>
     </ClCompile>
     <ClCompile Include="tas_overlay.cpp">
+      <Filter>Source Files\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="tas_console.cpp">
+      <Filter>Source Files\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="console_parser.cpp">
       <Filter>Source Files\Overlay</Filter>
     </ClCompile>
   </ItemGroup>

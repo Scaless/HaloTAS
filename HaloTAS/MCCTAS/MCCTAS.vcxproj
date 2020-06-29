@@ -260,6 +260,7 @@
     <ClInclude Include="..\include\spdlog\version.h" />
     <ClInclude Include="..\lib\gl3w\GL\gl3w.h" />
     <ClInclude Include="..\lib\gl3w\GL\glcorearb.h" />
+    <ClInclude Include="console_parser.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="gui_interop.h" />
     <ClInclude Include="halo1_engine.h" />
@@ -268,6 +269,7 @@
     <ClInclude Include="hook.h" />
     <ClInclude Include="kiero.h" />
     <ClInclude Include="patch.h" />
+    <ClInclude Include="tas_console.h" />
     <ClInclude Include="tas_hooks.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="tas_input.h" />
@@ -287,12 +289,14 @@
     <ClCompile Include="..\include\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\include\imgui\imgui_widgets.cpp" />
     <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
+    <ClCompile Include="console_parser.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="gui_interop.cpp" />
     <ClCompile Include="halo1_engine.cpp" />
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="kiero.cpp" />
     <ClCompile Include="patch.cpp" />
+    <ClCompile Include="tas_console.cpp" />
     <ClCompile Include="tas_hooks.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>

@@ -1,4 +1,5 @@
 #include "halo1_engine.h"
+#include "windows_utilities.h"
 
 using namespace halo;
 
@@ -98,4 +99,13 @@ void halo1_engine::set_skull_enabled(halo::Halo1Skull skull, bool enabled)
 		*HALO1_SKULL_SPUTNIK = enabled;
 		break;
 	}
+}
+
+typedef char __fastcall ExecuteCommand(const char* src, uint16_t a2);
+ExecuteCommand* Exec = (ExecuteCommand*)(0x1807ED5A0); // halo1.dll+7ED5A0
+
+void halo1_engine::execute_command(const char* command)
+{
+	// TODO-SCALES: Validate that dll is loaded and address is valid before executing
+	Exec(command, 0);
 }

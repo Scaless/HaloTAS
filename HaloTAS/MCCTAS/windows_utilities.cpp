@@ -36,3 +36,11 @@ void patch_memory(LPVOID dest_address, uint8_t* src_address, size_t patch_size)
     //reset the permissions of the address back to oldProtection after writting memory
     VirtualProtect(dest_address, patch_size, old_protection, &unused);
 }
+
+std::wstring str_to_wstr(const std::string str)
+{
+    int wchars_num = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+    wchar_t* wStr = new wchar_t[wchars_num];
+    MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wStr, wchars_num);
+    return std::wstring(wStr);
+}

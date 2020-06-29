@@ -166,12 +166,8 @@ void pre_lib_unload_hooks_patches(std::wstring_view libPath) {
 HMODULE hkLoadLibraryA(LPCSTR lpLibFileName) {
 	auto result = originalLoadLibraryA(lpLibFileName);
 
-	int wchars_num = MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, NULL, 0);
-	wchar_t* wLibFileName = new wchar_t[wchars_num];
-	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wLibFileName, wchars_num);
-
+	auto wLibFileName = str_to_wstr(lpLibFileName);
 	tas_logger::trace(L"LoadLibraryA: {}", wLibFileName);
-
 	post_lib_load_hooks_patches(wLibFileName);
 
 	return result;
@@ -181,7 +177,6 @@ HMODULE hkLoadLibraryW(LPCWSTR lpLibFileName) {
 	auto result = originalLoadLibraryW(lpLibFileName);
 
 	tas_logger::trace(L"LoadLibraryW: {}", lpLibFileName);
-
 	post_lib_load_hooks_patches(lpLibFileName);
 
 	return result;
@@ -190,12 +185,8 @@ HMODULE hkLoadLibraryW(LPCWSTR lpLibFileName) {
 HMODULE hkLoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 	auto result = originalLoadLibraryExA(lpLibFileName, hFile, dwFlags);
 
-	int wchars_num = MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, NULL, 0);
-	wchar_t* wLibFileName = new wchar_t[wchars_num];
-	MultiByteToWideChar(CP_UTF8, 0, lpLibFileName, -1, wLibFileName, wchars_num);
-
+	auto wLibFileName = str_to_wstr(lpLibFileName);
 	tas_logger::trace(L"LoadLibraryExA: {}", wLibFileName);
-
 	post_lib_load_hooks_patches(wLibFileName);
 
 	return result;
@@ -205,7 +196,6 @@ HMODULE hkLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 	auto result = originalLoadLibraryExW(lpLibFileName, hFile, dwFlags);
 
 	tas_logger::trace(L"LoadLibraryExW: {}", lpLibFileName);
-
 	post_lib_load_hooks_patches(lpLibFileName);
 
 	return result;

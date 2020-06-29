@@ -173,15 +173,14 @@ void handle_response_set_camera_details(const InteropRequest& request, InteropRe
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
-typedef char __fastcall ExecuteCommand(char* src, uint16_t a2);
-ExecuteCommand* Exec = (ExecuteCommand*)(0x1807ED5A0); // halo1.dll+7ED5A0
-
 void handle_response_execute_command(const InteropRequest& request, InteropResponse& response) {
 	
 	ExecuteCommandRequestPayload commandPayload;
 	memcpy_s(&commandPayload, sizeof(commandPayload), request.payload, sizeof(commandPayload));
 
-	Exec(commandPayload.command, 0);
+	auto& h1Engine = halo1_engine::get();
+	h1Engine.execute_command(commandPayload.command);
+
 	tas_logger::info("Executed Halo1 Command: {}", commandPayload.command);
 
 	response.header.type = InteropResponseType::SUCCESS;
