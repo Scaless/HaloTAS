@@ -1,6 +1,5 @@
 #include "tas_console.h"
 #include "halo1_engine.h"
-#include "console_parser.h"
 
 void tas_console::clear_buffer()
 {
@@ -42,25 +41,20 @@ void tas_console::execute()
 
 	mCommandHistory.push_back(command);
 
-	switch (mMode)
-	{
-	case tas_console::console_mode::MCCTAS:
-	{
-		tas_logger::info("Executed MCCTAS command: {}", command);
-		break;
+	auto parsed_command = parse_command_string(command);
+
+	if (mMode == tas_console::console_mode::MCCTAS) {
+		if (parsed_command.has_value() && parsed_command.value().is_global()) {
+			execute_global(parsed_command.value());
+		}
 	}
-	case tas_console::console_mode::HALO1DEV:
-	{
-		auto& engine = halo1_engine::get();
-		engine.execute_command(command.c_str());
-		tas_logger::info("Executed HALO1DEV command: {}", command);
-		break;
-	}
-	default:
-	{
-		tas_logger::warning("Invalid console mode, command not executed");
-		break;
-	}
+	if (mMode == tas_console::console_mode::HALO1DEV) {
+		if (parsed_command.has_value() && parsed_command.value().is_global()) {
+			execute_global(parsed_command.value());
+		}
+		else {
+			execute_h1dev(command);
+		}
 	}
 
 	mCurrentIndex = 0;
@@ -157,4 +151,32 @@ void tas_console::render_history()
 	ImGui::SetScrollHereY(1.0f);
 
 	ImGui::EndChild();
+}
+
+void tas_console::execute_global(const ParsedCommand& command)
+{
+	tas_logger::info("Executed MCCTAS command: {}", command.mCommand);
+
+	switch (command.mCommand)
+	{
+	case ConsoleCommand::MODE_SWITCH:
+	{
+		auto newModeString = std::get<std::string>(command.mParameters[0]);
+		if (newModeString == "h1dev") {
+			mMode = console_mode::HALO1DEV;
+		}
+		if (newModeString == "tas") {
+			mMode = console_mode::MCCTAS;
+		}
+	}
+	default:
+		break;
+	}
+}
+
+void tas_console::execute_h1dev(const std::string& command)
+{
+	auto& engine = halo1_engine::get();
+	engine.execute_command(command.c_str());
+	tas_logger::info("Executed HALO1DEV command: {}", command);
 }

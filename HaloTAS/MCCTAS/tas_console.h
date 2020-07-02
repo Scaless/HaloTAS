@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <imgui/imgui.h>
+#include "console_parser.h"
 
 class tas_console
 {
@@ -30,4 +31,8 @@ public:
 	void render(int windowWidth);
 	void render_console();
 	void render_history();
+
+private:
+	void execute_global(const ParsedCommand& command);
+	void execute_h1dev(const std::string& command);
 };
