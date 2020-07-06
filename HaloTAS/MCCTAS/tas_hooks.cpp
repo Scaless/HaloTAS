@@ -40,9 +40,9 @@ typedef BOOL(*FreeLibrary_t)(HMODULE hLibModule);
 BOOL hkFreeLibrary(HMODULE hLibModule);
 FreeLibrary_t originalFreeLibrary;
 
-typedef uint8_t(*MCCGetHalo1Input_t)(int64_t, int64_t, MCCInput*);
-uint8_t hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, MCCInput* inputTable);
-MCCGetHalo1Input_t originalMCCHalo1Input;
+typedef uint8_t(*MCCGetInput_t)(int64_t, int64_t, MCCInput*);
+uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTable);
+MCCGetInput_t originalMCCInput;
 
 typedef int64_t(*H1GetNumberOfTicksToTick)(float a1, uint8_t a2);
 int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2);
@@ -67,7 +67,7 @@ const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibr
 const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
 const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
-const hook GlobalHook_MCCGetHalo1Input(L"hkMCCGetHalo1Input", L"MCC-Win64-Shipping.exe", 0x18C5A44, (PVOID**)&originalMCCHalo1Input, hkMCCGetHalo1Input);
+const hook GlobalHook_MCCGetHalo1Input(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", 0x18C5A44, (PVOID**)&originalMCCInput, hkMCCGetInput);
 
 tas_hooks::tas_hooks()
 {
@@ -320,37 +320,36 @@ char hkHalo1HandleInput() {
 	return result;
 }
 
-uint8_t hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, MCCInput* inputTable) {
+// The MCCGetInput function is used to pass input from the MCC parent process to
+// each individual game DLL. Do not do anything game-specific in here unless doing the proper checks!
+uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTable) {
 
 	// Get input from MCC
-	auto OriginalReturn = originalMCCHalo1Input(functionAddr, unknown, inputTable);
+	auto OriginalReturn = originalMCCInput(functionAddr, unknown, inputTable);
 
 	// This is where we set our own inputs
-	// Buffered: Space, CTRL, Tab (possibly others), Mouse
-	//  are buffered in the engine, multiple presses will be
-	// evaluated on the next tick. Ex: Pressing tab twice will be processed on the next tick,
-	// resulting in no weapon swap because you would end up on the original weapon.
+	// Buffered: Space, CTRL, Tab , Mouse (& more) are buffered in the engine, multiple presses will be evaluated on the next tick.
+	// Ex: Pressing tab twice will be processed on the next tick, resulting in no weapon swap because you would end up on the original weapon.
 	// Other keys are immediate on the tick that they are needed, for example movement.
 
-	int32_t** tick_base = (int32_t**)0x18115C640;
-	if (*tick_base == nullptr) {
-		return OriginalReturn;
-	}
+	// TODO-SCALES: This is specific to halo 1, need to add support to check which engine is running before this can be refined without crashing.
+	//int32_t** tick_base = (int32_t**)0x18115C640;
+	//if (*tick_base == nullptr) {
+	//	return OriginalReturn;
+	//}
 
-	int32_t tick = *(*tick_base + 3);
-	static int32_t lasttick = tick;
+	//int32_t tick = *(*tick_base + 3);
+	//static int32_t lasttick = tick;
 
-	MCCInput* Input = (MCCInput*)inputTable;
+	//MCCInput* Input = (MCCInput*)inputTable;
 
-	if (lasttick != tick) {
-		lasttick = tick;
-		
-		// Set these once when the tick value changes
-		//Input->VKeyTable[VK_TAB] = 1;
-		//Input->VKeyTable[0x31] = 1;
-	}
-
-	uint32_t LMB = Input->MouseButtonFlags & MOUSE_BUTTON_LEFT;
+	//if (lasttick != tick) {
+	//	lasttick = tick;
+	//	
+	//	// Set these once when the tick value changes
+	//	//Input->VKeyTable[VK_TAB] = 1;
+	//	//Input->VKeyTable[0x31] = 1;
+	//}
 
 	return OriginalReturn;
 }
