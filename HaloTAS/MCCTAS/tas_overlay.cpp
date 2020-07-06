@@ -5,6 +5,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_dx11.h>
+#include <boost/circular_buffer.hpp>
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -23,7 +24,8 @@ static WNDPROC gOriginalWndProcHandler = nullptr;
 static int gWndWidth = 0, gWndHeight = 0;
 static tas_console gConsole;
 
-static std::vector<float> speeds;
+const size_t MAX_SPEEDS = 5 * 30; // 5 seconds
+static boost::circular_buffer<float> speeds(MAX_SPEEDS);
 
 LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -121,27 +123,22 @@ void reset_wndproc_handler()
 	}
 }
 
-void speedometer_bullshit_render() {
+void speedometer_render() {
 	ImGui::SetNextWindowPos(ImVec2(0, 0));
 	ImGui::SetNextWindowSize(ImVec2(1080, 540));
 	ImGui::Begin("Speedometer");
 
-	int maxPoints = 5 * 30;
-
-	std::vector<float> heck = speeds;
-	if (heck.size() > maxPoints) {
-		heck.erase(heck.begin(), heck.begin() + heck.size() - maxPoints);
-	}
-
+	std::vector<float> display(speeds.begin(), speeds.end());
+	
 	float maxValue = 0;
-	for (auto& h : heck) {
+	for (auto& h : display) {
 		if (h > maxValue) {
 			maxValue = h;
 		}
 	}
-	maxValue = std::clamp<float>(maxValue + .05f, .1f, 50.0f);
+	maxValue = std::clamp<float>(maxValue + .05f, .1f, 5.0f);
 
-	ImGui::PlotHistogram("SPEED", heck.data(), heck.size(), 0, "OK", 0.0f, maxValue, ImVec2(1000.0f, 480.0f));
+	ImGui::PlotHistogram("SPEED", display.data(), display.size(), 0, "OK", 0.0f, maxValue, ImVec2(1000.0f, 480.0f));
 
 	ImGui::End();
 }
@@ -212,9 +209,8 @@ namespace tas::overlay {
 			gConsole.render(gWndWidth);
 		}
 		if (gShowSpeedometer) {
-			speedometer_bullshit_render();
+			speedometer_render();
 		}
-
 
 		ImGui::EndFrame();
 		ImGui::Render();
@@ -226,7 +222,8 @@ namespace tas::overlay {
 	{
 		reset_wndproc_handler();
 	}
-	void bullshit(float speed)
+	
+	void add_speed_value(float speed)
 	{
 		speeds.push_back(speed);
 	}

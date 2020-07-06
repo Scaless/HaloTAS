@@ -364,7 +364,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 
 		float distance = glm::distance(previousCameraPosition, currentCameraPosition);
 		previousCameraPosition = currentCameraPosition;
-		tas::overlay::bullshit(distance);
+		tas::overlay::add_speed_value(distance);
 		
 		// Set these once when the tick value changes
 		//Input->VKeyTable[VK_TAB] = 1;

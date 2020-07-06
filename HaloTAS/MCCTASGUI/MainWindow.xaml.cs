@@ -38,6 +38,8 @@ namespace MCCTASGUI
             Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
             tblkStatusConnected.Text = Directory.GetCurrentDirectory();
+
+            btnInject.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
 
         private async void Window_Loaded(object sender, RoutedEventArgs e)

@@ -1,10 +1,16 @@
 #include "halo1_engine.h"
 #include "windows_utilities.h"
+#include "dll_cache.h"
 
 using namespace halo;
 
 void halo1_engine::get_game_information(halo::halo1_snapshot& snapshot)
 {
+	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+	if (!H1DLL.has_value()) {
+		return;
+	}
+
 	snapshot.skulls[to_underlying(Halo1Skull::ANGER)] = *HALO1_SKULL_ANGER;
 	snapshot.skulls[to_underlying(Halo1Skull::BLIND)] = *HALO1_SKULL_BLIND;
 	snapshot.skulls[to_underlying(Halo1Skull::BLACK_EYE)] = *HALO1_SKULL_BLACK_EYE;
@@ -31,6 +37,11 @@ void halo1_engine::get_game_information(halo::halo1_snapshot& snapshot)
 
 void halo1_engine::set_skull_enabled(halo::Halo1Skull skull, bool enabled)
 {
+	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+	if (!H1DLL.has_value()) {
+		return;
+	}
+
 	switch (skull) {
 	case Halo1Skull::ANGER:
 		*HALO1_SKULL_ANGER = enabled;
@@ -102,10 +113,12 @@ void halo1_engine::set_skull_enabled(halo::Halo1Skull skull, bool enabled)
 }
 
 typedef char __fastcall ExecuteCommand(const char* src, uint16_t a2);
-ExecuteCommand* Exec = (ExecuteCommand*)(0x1807ED5A0); // halo1.dll+7ED5A0
-
 void halo1_engine::execute_command(const char* command)
 {
-	// TODO-SCALES: Validate that dll is loaded and address is valid before executing
-	Exec(command, 0);
+	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+	
+	if (H1DLL.has_value()) {
+		ExecuteCommand* Exec = (ExecuteCommand*)((uint8_t*)H1DLL.value() + 0x7ED5A0);
+		Exec(command, 0);
+	}
 }

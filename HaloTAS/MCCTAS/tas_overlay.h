@@ -7,5 +7,5 @@ namespace tas::overlay {
 	void render();
 	void shutdown();
 
-	void bullshit(float speed);
+	void add_speed_value(float speed);
 }
