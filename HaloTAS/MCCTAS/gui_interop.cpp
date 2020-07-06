@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "windows_utilities.h"
 #include "halo1_engine.h"
+#include "dll_cache.h"
 
 enum class InteropRequestType : int32_t {
 	INVALID = -1,
@@ -133,24 +134,20 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 	memcpy_s(&requestPayload, sizeof(requestPayload), request.payload, sizeof(requestPayload));
 	std::wstring dllName(requestPayload.dll_name);
 
-	std::vector<loaded_dll_info> dlls =
-	{
-		loaded_dll_info(dllName),
-	};
+	auto dll = dll_cache::get_info(dllName);
 
-	fill_loaded_dlls_info(dlls);
-
-	if (dlls[0].info.SizeOfImage == 0) {
+	if (!dll.has_value()) {
 		response.header.type = InteropResponseType::FAILURE;
 		return;
 	}
 
 	DLLInformationResponsePayload payloadOut;
 
-	dlls[0].name.copy(payloadOut.dll_name, dlls[0].name.size(), 0);
-	payloadOut.base_address = (uint64_t)dlls[0].info.lpBaseOfDll;
-	payloadOut.entry_point = (uint64_t)dlls[0].info.EntryPoint;
-	payloadOut.image_size = (uint64_t)dlls[0].info.SizeOfImage;
+	dllName.copy(payloadOut.dll_name, dllName.size(), 0);
+	payloadOut.base_address = (uint64_t)dll.value();
+	// TODO-SCALES: Remove these values from propagation since they are not used
+	payloadOut.entry_point = 0; 
+	payloadOut.image_size = 0;
 
 	response.header.type = InteropResponseType::SUCCESS;
 	response.header.payload_size = sizeof(payloadOut);
@@ -187,41 +184,23 @@ void handle_response_execute_command(const InteropRequest& request, InteropRespo
 
 void handle_response_get_game_information(const InteropRequest& request, InteropResponse& response) {
 
-	std::vector<loaded_dll_info> dlls =
-	{
-		loaded_dll_info(L"halo1.dll"),
-		loaded_dll_info(L"halo2.dll"),
-		loaded_dll_info(L"halo3.dll"),
-		loaded_dll_info(L"halo3odst.dll"),
-		loaded_dll_info(L"haloreach.dll"),
-		loaded_dll_info(L"halo4.dll"),
-	};
-
-	fill_loaded_dlls_info(dlls);
+	auto h1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+	auto h2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
+	auto h3DLL = dll_cache::get_info(HALO3_DLL_WSTR);
+	auto hodstDLL = dll_cache::get_info(HALOODST_DLL_WSTR);
+	auto hreachDLL = dll_cache::get_info(HALOREACH_DLL_WSTR);
+	auto h4DLL = dll_cache::get_info(HALO4_DLL_WSTR);
 
 	GetGameInformationResponsePayload gameInfoPayload = {};
 
-	for (auto& dll : dlls) {
-		if (dll.name == L"halo1.dll") {
-			gameInfoPayload.Halo1Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
-		}
-		if (dll.name == L"halo2.dll") {
-			gameInfoPayload.Halo2Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
-		}
-		if (dll.name == L"halo3.dll") {
-			gameInfoPayload.Halo3Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
-		}
-		if (dll.name == L"halo3odst.dll") {
-			gameInfoPayload.ODSTLoaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
-		}
-		if (dll.name == L"haloreach.dll") {
-			gameInfoPayload.ReachLoaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
-		}
-		if (dll.name == L"halo4.dll") {
-			gameInfoPayload.Halo4Loaded = (dll.info.SizeOfImage != 0) ? TRUE : FALSE;
-		}
-	}
+	gameInfoPayload.Halo1Loaded = h1DLL.has_value() ? TRUE : FALSE;
+	gameInfoPayload.Halo2Loaded = h2DLL.has_value() ? TRUE : FALSE;
+	gameInfoPayload.Halo3Loaded = h3DLL.has_value() ? TRUE : FALSE;
+	gameInfoPayload.ODSTLoaded = hodstDLL.has_value() ? TRUE : FALSE;
+	gameInfoPayload.ReachLoaded = hreachDLL.has_value() ? TRUE : FALSE;
+	gameInfoPayload.Halo4Loaded = h4DLL.has_value() ? TRUE : FALSE;
 
+	// TODO-SCALES: ???
 	gameInfoPayload.Halo1Information.Tick = 999;
 
 	if (gameInfoPayload.Halo1Loaded) {

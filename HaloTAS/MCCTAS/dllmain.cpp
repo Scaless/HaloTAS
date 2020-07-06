@@ -8,6 +8,7 @@
 #include "tas_hooks.h"
 #include "halo_constants.h"
 #include "gui_interop.h"
+#include "dll_cache.h"
 
 // Main Execution Loop
 void RealMain() {
@@ -15,6 +16,8 @@ void RealMain() {
     tas_logger::info("MCCTAS Started!");
     tas_logger::warning("To close MCCTAS, press CTRL + C while this window is focused.");
     tas_logger::warning("Pressing X on this window will close the game as well!");
+
+    dll_cache::initialize();
 
     auto interop = std::make_unique<gui_interop>();
     auto hooks = std::make_unique<tas_hooks>();

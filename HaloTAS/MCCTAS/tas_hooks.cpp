@@ -5,6 +5,7 @@
 #include "tas_overlay.h"
 #include "tas_input.h"
 #include "kiero.h"
+#include "dll_cache.h"
 
 #include <winternl.h>
 #include <string>
@@ -56,10 +57,10 @@ typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, U
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 D3D11Present_t originalD3D11Present;
 
-const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", L"halo1.dll", 0x077FD2F, std::vector<uint8_t>{ 0xB0, 0x01 });
+const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", HALO1_DLL_WSTR, 0x077FD2F, std::vector<uint8_t>{ 0xB0, 0x01 });
 
-const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", L"halo1.dll", 0x70E430, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
-const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", L"halo1.dll", 0x6F5450, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
+const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, 0x70E430, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
+const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, 0x6F5450, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
 
 const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
 const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
@@ -155,17 +156,14 @@ void post_lib_load_hooks_patches(std::wstring_view libPath) {
 	}
 }
 
-void pre_lib_unload_hooks_patches(std::wstring_view libPath) {
-	std::filesystem::path path = libPath;
-	auto filename = path.filename().generic_wstring();
-
+void pre_lib_unload_hooks_patches(std::wstring_view libFilename) {
 	for (auto& hook : gRuntimeHooks) {
-		if (hook.module_name() == filename) {
+		if (hook.module_name() == libFilename) {
 			hook.detach();
 		}
 	}
 	for (auto& patch : gRuntimePatches) {
-		if (patch.module_name() == filename) {
+		if (patch.module_name() == libFilename) {
 			patch.restore();
 		}
 	}
@@ -176,6 +174,7 @@ HMODULE hkLoadLibraryA(LPCSTR lpLibFileName) {
 
 	auto wLibFileName = str_to_wstr(lpLibFileName);
 	tas_logger::trace(L"LoadLibraryA: {}", wLibFileName);
+	dll_cache::add_to_cache(wLibFileName, result);
 	post_lib_load_hooks_patches(wLibFileName);
 
 	return result;
@@ -185,6 +184,7 @@ HMODULE hkLoadLibraryW(LPCWSTR lpLibFileName) {
 	auto result = originalLoadLibraryW(lpLibFileName);
 
 	tas_logger::trace(L"LoadLibraryW: {}", lpLibFileName);
+	dll_cache::add_to_cache(lpLibFileName, result);
 	post_lib_load_hooks_patches(lpLibFileName);
 
 	return result;
@@ -195,6 +195,7 @@ HMODULE hkLoadLibraryExA(LPCSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 
 	auto wLibFileName = str_to_wstr(lpLibFileName);
 	tas_logger::trace(L"LoadLibraryExA: {}", wLibFileName);
+	dll_cache::add_to_cache(wLibFileName, result);
 	post_lib_load_hooks_patches(wLibFileName);
 
 	return result;
@@ -204,6 +205,7 @@ HMODULE hkLoadLibraryExW(LPCWSTR lpLibFileName, HANDLE hFile, DWORD dwFlags) {
 	auto result = originalLoadLibraryExW(lpLibFileName, hFile, dwFlags);
 
 	tas_logger::trace(L"LoadLibraryExW: {}", lpLibFileName);
+	dll_cache::add_to_cache(lpLibFileName, result);
 	post_lib_load_hooks_patches(lpLibFileName);
 
 	return result;
@@ -214,7 +216,11 @@ BOOL hkFreeLibrary(HMODULE hLibModule) {
 	GetModuleFileName(hLibModule, moduleFilePath, sizeof(moduleFilePath) / sizeof(TCHAR));
 	tas_logger::trace(L"FreeLibrary: {}", moduleFilePath);
 
-	pre_lib_unload_hooks_patches(moduleFilePath);
+	std::filesystem::path path = moduleFilePath;
+	auto filename = path.filename().generic_wstring();
+
+	pre_lib_unload_hooks_patches(filename);
+	dll_cache::remove_from_cache(filename);
 
 	return originalFreeLibrary(hLibModule);
 }

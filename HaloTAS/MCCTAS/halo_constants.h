@@ -8,6 +8,15 @@
 
 #include "tas_utilities.h"
 
+namespace {
+	const std::wstring HALO1_DLL_WSTR = L"halo1.dll";
+	const std::wstring HALO2_DLL_WSTR = L"halo2.dll";
+	const std::wstring HALO3_DLL_WSTR = L"halo3.dll";
+	const std::wstring HALOODST_DLL_WSTR = L"halo3odst.dll";
+	const std::wstring HALOREACH_DLL_WSTR = L"haloreach.dll";
+	const std::wstring HALO4_DLL_WSTR = L"halo4.dll";
+}
+
 namespace halo1 {
 
 	namespace constants {

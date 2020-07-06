@@ -414,6 +414,9 @@
     <ClInclude Include="console_parser.h">
       <Filter>Header Files\Overlay</Filter>
     </ClInclude>
+    <ClInclude Include="dll_cache.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -487,6 +490,9 @@
     </ClCompile>
     <ClCompile Include="console_parser.cpp">
       <Filter>Source Files\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="dll_cache.cpp">
+      <Filter>Source Files\Windows</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
