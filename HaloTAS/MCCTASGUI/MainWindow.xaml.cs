@@ -25,7 +25,6 @@ namespace MCCTASGUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private TASInterop TASInterop;
         private LiveMapDataViewer liveMapDataViewer = null;
         private AboutWindow aboutWindow = null;
         private TASInputEditor inputEditorWindow = null;
@@ -37,8 +36,6 @@ namespace MCCTASGUI
 
             Application.Current.MainWindow = this;
             Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
-
-            TASInterop = new TASInterop();
 
             tblkStatusConnected.Text = Directory.GetCurrentDirectory();
         }

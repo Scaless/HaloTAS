@@ -13,6 +13,8 @@
 void RealMain() {
     auto consoleWindow = std::make_unique<windows_console>();
     tas_logger::info("MCCTAS Started!");
+    tas_logger::warning("To close MCCTAS, press CTRL + C while this window is focused.");
+    tas_logger::warning("Pressing X on this window will close the game as well!");
 
     auto interop = std::make_unique<gui_interop>();
     auto hooks = std::make_unique<tas_hooks>();

@@ -3,6 +3,7 @@
 #include "patch.h"
 #include "hook.h"
 #include "tas_overlay.h"
+#include "tas_input.h"
 #include "kiero.h"
 
 #include <winternl.h>
@@ -10,6 +11,7 @@
 #include <mutex>
 #include <unordered_map>
 #include <filesystem>
+#include <chrono>
 
 static std::once_flag gOverlayInitialized;
 // Global hooks should only apply to areas that will never be unloaded
@@ -38,9 +40,13 @@ typedef BOOL(*FreeLibrary_t)(HMODULE hLibModule);
 BOOL hkFreeLibrary(HMODULE hLibModule);
 FreeLibrary_t originalFreeLibrary;
 
-typedef uint8_t(*MCCGetHalo1Input_t)(int64_t, int64_t, char*);
-uint8_t hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, char* outValue);
+typedef uint8_t(*MCCGetHalo1Input_t)(int64_t, int64_t, MCCInput*);
+uint8_t hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, MCCInput* inputTable);
 MCCGetHalo1Input_t originalMCCHalo1Input;
+
+typedef int64_t(*H1GetNumberOfTicksToTick)(float a1, uint8_t a2);
+int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2);
+H1GetNumberOfTicksToTick originalH1GetNumberOfTicksToTick;
 
 typedef char (*Halo1HandleInput_t)();
 char hkHalo1HandleInput();
@@ -53,6 +59,7 @@ D3D11Present_t originalD3D11Present;
 const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", L"halo1.dll", 0x077FD2F, std::vector<uint8_t>{ 0xB0, 0x01 });
 
 const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", L"halo1.dll", 0x70E430, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
+const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", L"halo1.dll", 0x6F5450, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
 
 const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
 const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
@@ -66,6 +73,7 @@ tas_hooks::tas_hooks()
 {
 	gRuntimePatches.push_back(RuntimePatch_EnableH1DevConsole);
 	gRuntimeHooks.push_back(RuntimeHook_Halo1HandleInput);
+	gRuntimeHooks.push_back(RuntimeHook_Halo1GetNumberOfTicksToTick);
 
 	gGlobalHooks.push_back(GlobalHook_D3D11Present);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryA);
@@ -224,6 +232,9 @@ struct input {
 };
 
 char hkHalo1HandleInput() {
+	return originalHalo1HandleInput();
+	/////////////////////////////////////////////
+
 	static bool recording = false;
 	static bool playback = false;
 	static std::unordered_map<int, input> input_map;
@@ -309,33 +320,94 @@ char hkHalo1HandleInput() {
 	return result;
 }
 
-uint8_t hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, char* vkeyTable) {
+uint8_t hkMCCGetHalo1Input(int64_t functionAddr, int64_t unknown, MCCInput* inputTable) {
 
-	// Pre-Input
-	auto MCCReturn = originalMCCHalo1Input(functionAddr, unknown, vkeyTable);
-	// Post-Input
+	// Get input from MCC
+	auto OriginalReturn = originalMCCHalo1Input(functionAddr, unknown, inputTable);
 
 	// This is where we set our own inputs
+	// Buffered: Space, CTRL, Tab (possibly others), Mouse
+	//  are buffered in the engine, multiple presses will be
+	// evaluated on the next tick. Ex: Pressing tab twice will be processed on the next tick,
+	// resulting in no weapon swap because you would end up on the original weapon.
+	// Other keys are immediate on the tick that they are needed, for example movement.
 
-	//uint8_t val = vkeyTable[0];
-	//tas_logger::info("{}", val);
+	int32_t** tick_base = (int32_t**)0x18115C640;
+	if (*tick_base == nullptr) {
+		return OriginalReturn;
+	}
 
-	//int32_t* tick = (int32_t*)(0x1957B0D02F4);
-	//static int32_t lasttick = *tick;
+	int32_t tick = *(*tick_base + 3);
+	static int32_t lasttick = tick;
 
-	//if (lasttick != *tick) {
-	//	static bool flipflop = false;
-	//	vkeyTable[4 + VK_TAB] = 1;
-	//	//flipflop = !flipflop;
-	//	//vkeyTable[4 + VK_TAB] = flipflop ? 1 : 0;
-	//	lasttick = *tick;
-	//}
-	//else {
-	//	vkeyTable[4 + VK_TAB] = 0;
-	//}
+	MCCInput* Input = (MCCInput*)inputTable;
 
-	//float* mouseX = (float*)(vkeyTable + 260);
-	//float* mouseY = (float*)(vkeyTable + 264);
+	if (lasttick != tick) {
+		lasttick = tick;
+		
+		// Set these once when the tick value changes
+		//Input->VKeyTable[VK_TAB] = 1;
+		//Input->VKeyTable[0x31] = 1;
+	}
 
-	return MCCReturn;
+	uint32_t LMB = Input->MouseButtonFlags & MOUSE_BUTTON_LEFT;
+
+	return OriginalReturn;
+}
+
+int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
+	
+	// TODO-SCALES: For the time being, just return the original value until flags are implemented :)
+	 return originalH1GetNumberOfTicksToTick(a1, a2);
+	/************************************************************************************************/
+	
+	// The function is called multiple times in a frame loop
+	// a2 is 0 when we are getting the actual amount of ticks to loop, otherwise it is usually 1
+	if (a2)
+		return originalH1GetNumberOfTicksToTick(a1, a2);
+
+	/*bool Limit1TickPerFrame = true;
+	if (Limit1TickPerFrame) {
+		originalReturn = std::clamp<int64_t>(originalReturn, 0, 1);
+	}*/
+
+	//                                        W                         A                         S                         D
+	bool superhotKeyDown = GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41) || GetAsyncKeyState(0x53) || GetAsyncKeyState(0x44)
+		//                  SHIFT                         LEFT MOUSE                      RIGHT MOUSE
+		|| GetAsyncKeyState(VK_SHIFT) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON);
+		
+	auto now = std::chrono::system_clock::now();
+	static auto lastNow = now;
+
+	int slowdownTicksPerSecond = 2;
+	float slowdownMilliseconds = 1000.0f / slowdownTicksPerSecond;
+
+	static auto slowTimer = std::chrono::system_clock::now();
+	if (superhotKeyDown) {
+		auto originalReturn = originalH1GetNumberOfTicksToTick(a1, a2);
+		slowTimer = std::chrono::system_clock::now();
+		lastNow = now;
+		return originalReturn;
+	}
+	else {
+		auto msdiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - slowTimer);
+
+		auto lastDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastNow);
+		lastNow = now;
+
+		//lastDiff += std::chrono::milliseconds(1);
+
+		tas_logger::info("{}", lastDiff.count());
+
+		float deltaRealTime = lastDiff.count() / 1000.0f;
+		float deltaTickTime = deltaRealTime * (slowdownTicksPerSecond / 30.0f);
+		auto originalReturn = originalH1GetNumberOfTicksToTick(deltaTickTime, 0);
+		if (msdiff.count() > slowdownMilliseconds) {
+			if (originalReturn) {
+				slowTimer = now;
+			}
+			return originalReturn;
+		}
+		return 0;
+	}
 }

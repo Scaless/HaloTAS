@@ -178,8 +178,7 @@ void handle_response_execute_command(const InteropRequest& request, InteropRespo
 	ExecuteCommandRequestPayload commandPayload;
 	memcpy_s(&commandPayload, sizeof(commandPayload), request.payload, sizeof(commandPayload));
 
-	auto& h1Engine = halo1_engine::get();
-	h1Engine.execute_command(commandPayload.command);
+	halo1_engine::execute_command(commandPayload.command);
 
 	tas_logger::info("Executed Halo1 Command: {}", commandPayload.command);
 
@@ -225,11 +224,9 @@ void handle_response_get_game_information(const InteropRequest& request, Interop
 
 	gameInfoPayload.Halo1Information.Tick = 999;
 
-	auto& engine = halo1_engine::get();
-
 	if (gameInfoPayload.Halo1Loaded) {
 		halo::halo1_snapshot h1Snapshot = {};
-		engine.get_game_information(h1Snapshot);
+		halo1_engine::get_game_information(h1Snapshot);
 		
 		for (int i = 0; i < 22; i++) {
 			gameInfoPayload.Halo1Information.SkullsEnabled[i] = h1Snapshot.skulls[i];
@@ -249,8 +246,7 @@ void handle_response_set_halo1_skull_enabled(const InteropRequest& request, Inte
 
 	auto skull = (halo::Halo1Skull)skullSetPayload.Skull;
 
-	auto& h1engine = halo1_engine::get();
-	h1engine.set_skull_enabled(skull, skullSetPayload.Enabled);
+	halo1_engine::set_skull_enabled(skull, skullSetPayload.Enabled);
 
 	response.header.type = InteropResponseType::SUCCESS;
 }

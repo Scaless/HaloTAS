@@ -176,7 +176,6 @@ void tas_console::execute_global(const ParsedCommand& command)
 
 void tas_console::execute_h1dev(const std::string& command)
 {
-	auto& engine = halo1_engine::get();
-	engine.execute_command(command.c_str());
+	halo1_engine::execute_command(command.c_str());
 	tas_logger::info("Executed HALO1DEV command: {}", command);
 }

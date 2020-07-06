@@ -11,7 +11,7 @@
 class tas_logger
 {
 #pragma region Singleton
-public:
+private:
 	static tas_logger& get() {
 		static tas_logger instance;
 		return instance;
