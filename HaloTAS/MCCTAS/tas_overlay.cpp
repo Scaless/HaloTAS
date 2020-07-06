@@ -17,10 +17,13 @@ static ID3D11RenderTargetView* gRenderTargetView = nullptr;
 static IDXGISwapChain* gSwapChain = nullptr;
 static bool gShowMenu = false;
 static bool gShowConsole = false;
+static bool gShowSpeedometer = false;
 static bool gIsInitD3D = false;
 static WNDPROC gOriginalWndProcHandler = nullptr;
 static int gWndWidth = 0, gWndHeight = 0;
 static tas_console gConsole;
+
+static std::vector<float> speeds;
 
 LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -78,6 +81,10 @@ LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				}
 			}
 		}
+		if (wParam == VK_END) {
+			gShowSpeedometer = !gShowSpeedometer;
+			return true;
+		}
 	}
 
 	if (gShowMenu)
@@ -112,6 +119,31 @@ void reset_wndproc_handler()
 	if (gOriginalWndProcHandler) {
 		SetWindowLongPtr(gWindow, GWLP_WNDPROC, (LONG_PTR)gOriginalWndProcHandler);
 	}
+}
+
+void speedometer_bullshit_render() {
+	ImGui::SetNextWindowPos(ImVec2(0, 0));
+	ImGui::SetNextWindowSize(ImVec2(1080, 540));
+	ImGui::Begin("Speedometer");
+
+	int maxPoints = 5 * 30;
+
+	std::vector<float> heck = speeds;
+	if (heck.size() > maxPoints) {
+		heck.erase(heck.begin(), heck.begin() + heck.size() - maxPoints);
+	}
+
+	float maxValue = 0;
+	for (auto& h : heck) {
+		if (h > maxValue) {
+			maxValue = h;
+		}
+	}
+	maxValue = std::clamp<float>(maxValue + .05f, .1f, 50.0f);
+
+	ImGui::PlotHistogram("SPEED", heck.data(), heck.size(), 0, "OK", 0.0f, maxValue, ImVec2(1000.0f, 480.0f));
+
+	ImGui::End();
 }
 
 namespace tas::overlay {
@@ -179,6 +211,10 @@ namespace tas::overlay {
 		if (gShowConsole) {
 			gConsole.render(gWndWidth);
 		}
+		if (gShowSpeedometer) {
+			speedometer_bullshit_render();
+		}
+
 
 		ImGui::EndFrame();
 		ImGui::Render();
@@ -189,6 +225,10 @@ namespace tas::overlay {
 	void shutdown()
 	{
 		reset_wndproc_handler();
+	}
+	void bullshit(float speed)
+	{
+		speeds.push_back(speed);
 	}
 }
 

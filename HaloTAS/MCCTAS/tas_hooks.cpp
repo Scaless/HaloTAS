@@ -339,23 +339,37 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 	// Other keys are immediate on the tick that they are needed, for example movement.
 
 	// TODO-SCALES: This is specific to halo 1, need to add support to check which engine is running before this can be refined without crashing.
-	//int32_t** tick_base = (int32_t**)0x18115C640;
-	//if (*tick_base == nullptr) {
-	//	return OriginalReturn;
-	//}
+	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 
-	//int32_t tick = *(*tick_base + 3);
-	//static int32_t lasttick = tick;
+	if (!H1DLL.has_value()) {
+		return OriginalReturn;
+	}
+	
+	int32_t** tick_base = (int32_t**) ((uint8_t*)H1DLL.value() + 0x115C640);
+	if (*tick_base == nullptr) {
+		return OriginalReturn;
+	}
 
-	//MCCInput* Input = (MCCInput*)inputTable;
+	int32_t tick = *(*tick_base + 3);
+	static int32_t lasttick = tick;
 
-	//if (lasttick != tick) {
-	//	lasttick = tick;
-	//	
-	//	// Set these once when the tick value changes
-	//	//Input->VKeyTable[VK_TAB] = 1;
-	//	//Input->VKeyTable[0x31] = 1;
-	//}
+	MCCInput* Input = (MCCInput*)inputTable;
+
+	if (lasttick != tick) {
+		lasttick = tick;
+
+		float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1DLL.value() + 0x2199338);
+		glm::vec3 currentCameraPosition(cameraPositionArr[0], cameraPositionArr[1], 0);
+		static glm::vec3 previousCameraPosition = currentCameraPosition;
+
+		float distance = glm::distance(previousCameraPosition, currentCameraPosition);
+		previousCameraPosition = currentCameraPosition;
+		tas::overlay::bullshit(distance);
+		
+		// Set these once when the tick value changes
+		//Input->VKeyTable[VK_TAB] = 1;
+		//Input->VKeyTable[0x31] = 1;
+	}
 
 	return OriginalReturn;
 }
