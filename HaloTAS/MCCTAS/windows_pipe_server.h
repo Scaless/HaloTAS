@@ -8,7 +8,6 @@ The pipe implementation is based on the Microsoft example here, with some change
 https://docs.microsoft.com/en-us/windows/win32/ipc/named-pipe-server-using-overlapped-i-o=
 */
 
-using namespace tas::literals;
 class windows_pipe_server
 {
 public:

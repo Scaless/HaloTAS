@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <type_traits>
 
-namespace tas::literals {
+namespace {
 	constexpr auto operator""_KiB(const uint64_t x) { return (1024ULL) * x; }
 	constexpr auto operator""_MiB(const uint64_t x) { return (1024ULL * 1024ULL) * x; }
 	constexpr auto operator""_GiB(const uint64_t x) { return (1024ULL * 1024ULL * 1024ULL) * x; }

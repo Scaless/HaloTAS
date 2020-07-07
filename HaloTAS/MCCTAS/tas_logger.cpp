@@ -6,8 +6,6 @@
 
 tas_logger::tas_logger()
 {
-	using namespace tas::literals;
-
 	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 	console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
 	console_sink->set_level(spdlog::level::info);
