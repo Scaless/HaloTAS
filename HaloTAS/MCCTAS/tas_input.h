@@ -50,7 +50,31 @@ struct MCCInput {
 	// Possibly more after this...
 };
 
+class tick_inputs {
+	std::vector<MCCInput> mInputs;
+
+public:
+	tick_inputs() = default;
+	~tick_inputs() = default;
+
+	void add(const MCCInput& input);
+	void clear();
+	const MCCInput& get_input_at_frame(int frame);
+	int count();
+};
+
 class tas_input
 {
+	std::vector<tick_inputs> mLevelInput;
+public:
+	tas_input() = default;
+	~tas_input() = default;
+
+	void add(const tick_inputs& inputs);
+	void clear();
+
+	int tick_count();
+	int input_count();
+	const tick_inputs& get_inputs_at_tick(int32_t tick);
 };
 

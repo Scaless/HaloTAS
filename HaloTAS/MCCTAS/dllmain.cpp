@@ -10,28 +10,38 @@
 #include "gui_interop.h"
 #include "dll_cache.h"
 
+LONG CALLBACK unhandled_handler(EXCEPTION_POINTERS* e)
+{
+	tas_logger::critical("Unhandled exception, creating minidump!");
+	make_minidump(e);
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
 // Main Execution Loop
 void RealMain() {
-    auto consoleWindow = std::make_unique<windows_console>();
-    tas_logger::info("MCCTAS Started!");
-    tas_logger::warning("To close MCCTAS, press CTRL + C while this window is focused.");
-    tas_logger::warning("Pressing X on this window will close the game as well!");
+	SetUnhandledExceptionFilter(unhandled_handler);
 
-    dll_cache::initialize();
+	auto consoleWindow = std::make_unique<windows_console>();
+	tas_logger::info("MCCTAS Started!");
+	tas_logger::warning("To close MCCTAS, press CTRL + C while this window is focused.");
+	tas_logger::warning("Pressing X on this window will close the game as well!");
 
-    auto interop = std::make_unique<gui_interop>();
-    auto hooks = std::make_unique<tas_hooks>();
-    hooks->attach_all();
+	dll_cache::initialize();
 
-    while (!consoleWindow->get_exit_status()) {
-        // Do stuff :)
-        Sleep(100);
-    }
+	auto interop = std::make_unique<gui_interop>();
+	auto hooks = std::make_unique<tas_hooks>();
+	hooks->attach_all();
 
-    hooks->detach_all();
+	// Most of the cool stuff happens in other threads.
+	// This loop is just to keep stuff alive.
+	while (!consoleWindow->get_exit_status()) {
+		Sleep(100);
+	}
 
-    tas_logger::info("MCCTAS Stopped!");
-    tas_logger::flush_and_exit();
+	hooks->detach_all();
+
+	tas_logger::info("MCCTAS Stopped!");
+	tas_logger::flush_and_exit();
 }
 
 // This thread is created by the dll when loaded into the process, see RealMain() for the actual event loop.
@@ -39,29 +49,29 @@ void RealMain() {
 // will occur before they fall out of scope and will not be cleaned up properly! This is very
 // important for being able to hotload the DLL multiple times without restarting the game.
 DWORD WINAPI MainThread(HMODULE hDLL) {
-    RealMain();
+	RealMain();
 
-    Sleep(200);
-    FreeLibraryAndExitThread(hDLL, NULL);
+	Sleep(200);
+	FreeLibraryAndExitThread(hDLL, NULL);
 }
 
 // DLL Entry Point
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserved)
 {
-    DWORD dwThreadID;
+	DWORD dwThreadID;
 
-    if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
-        CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)MainThread, hModule, 0, &dwThreadID);
-    }
+	if (ul_reason_for_call == DLL_PROCESS_ATTACH) {
+		CreateThread(0, 0x1000, (LPTHREAD_START_ROUTINE)MainThread, hModule, 0, &dwThreadID);
+	}
 
-    switch (ul_reason_for_call)
-    {
-        case DLL_PROCESS_ATTACH:
-        case DLL_THREAD_ATTACH:
-        case DLL_THREAD_DETACH:
-        case DLL_PROCESS_DETACH:
-            break;
-    }
+	switch (ul_reason_for_call)
+	{
+	case DLL_PROCESS_ATTACH:
+	case DLL_THREAD_ATTACH:
+	case DLL_THREAD_DETACH:
+	case DLL_PROCESS_DETACH:
+		break;
+	}
 
-    return TRUE;
+	return TRUE;
 }

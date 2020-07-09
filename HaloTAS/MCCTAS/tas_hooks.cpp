@@ -244,7 +244,7 @@ char hkHalo1HandleInput() {
 	static bool recording = false;
 	static bool playback = false;
 	static std::unordered_map<int, input> input_map;
-	
+
 	uint8_t* inputaddr = (uint8_t*)0x18218E2B0;
 	int32_t* currenttime = (int32_t*)(0x18218E88C);
 	int32_t* lasttabpress = (int32_t*)(0x18218E630);
@@ -283,7 +283,7 @@ char hkHalo1HandleInput() {
 		else {
 			float* mouseX = (float*)&input_map[*tick].everything[500];
 			float* mouseY = (float*)&input_map[*tick].everything[504];
-			
+
 			float* newMouseX = (float*)&inputaddr[500];
 			float* newMouseY = (float*)&inputaddr[504];
 
@@ -303,7 +303,7 @@ char hkHalo1HandleInput() {
 			float* mouseY = (float*)&inputaddr[504];
 			*mouseY = *mouseY / 3.1f;
 			memcpy(inputaddr, &i, sizeof(i));
-			
+
 			if (lasttick == *tick) {
 				*mouseX = 0;
 				*mouseY = 0;
@@ -326,8 +326,15 @@ char hkHalo1HandleInput() {
 	return result;
 }
 
-// The MCCGetInput function is used to pass input from the MCC parent process to
-// each individual game DLL. Do not do anything game-specific in here unless doing the proper checks!
+// The MCCGetInput function is used to pass input from the MCC parent process to each individual game DLL.
+// Be careful when doing anything game-specific in here unless doing the proper checks!
+tas_input InputCache;
+tick_inputs CurrentTickInputs;
+bool recording = false;
+bool playback = false;
+bool tickStall = false;
+bool forceTick = false;
+int currentPlaybackFrame = 0;
 uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTable) {
 
 	// Get input from MCC
@@ -338,95 +345,188 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 	// Ex: Pressing tab twice will be processed on the next tick, resulting in no weapon swap because you would end up on the original weapon.
 	// Other keys are immediate on the tick that they are needed, for example movement.
 
-	// TODO-SCALES: This is specific to halo 1, need to add support to check which engine is running before this can be refined without crashing.
+	if (GetAsyncKeyState(VK_ADD)) {
+		recording = true;
+		playback = false;
+		tas_logger::warning("recording");
+	}
+	if (GetAsyncKeyState(VK_MULTIPLY)) {
+		playback = true;
+		recording = false;
+		tas_logger::warning("playback");
+	}
+	if (GetAsyncKeyState(VK_SUBTRACT)) {
+		playback = false;
+		recording = false;
+		tas_logger::warning("disabled");
+	}
+
+	// Halo 1 code path
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+	if (H1DLL.has_value()) {
+		int32_t** tick_base = (int32_t**)((uint8_t*)H1DLL.value() + 0x115C640);
+		if (*tick_base == nullptr) {
+			return OriginalReturn;
+		}
 
-	if (!H1DLL.has_value()) {
-		return OriginalReturn;
+		int32_t tick = *(*tick_base + 3);
+		static int32_t lasttick = tick;
+		static int32_t absoluteTick = 0;
+
+		MCCInput* Input = (MCCInput*)inputTable;
+
+		if (tick == 0) {
+			absoluteTick = 0;
+		}
+
+		if (tick == 0 && recording) {
+			InputCache.clear();
+		}
+
+		if (recording) {
+			CurrentTickInputs.add(*Input);
+		}
+
+		bool ticked = false;
+		if (lasttick != tick) {
+			currentPlaybackFrame = 0;
+			ticked = true;
+		}
+
+		if (lasttick != tick) {
+			lasttick = tick;
+
+			// Goatrope speedometer
+			float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1DLL.value() + 0x2199338);
+			glm::vec3 currentCameraPosition(cameraPositionArr[0], cameraPositionArr[1], 0);
+			static glm::vec3 previousCameraPosition = currentCameraPosition;
+
+			float distance = glm::distance(previousCameraPosition, currentCameraPosition);
+			previousCameraPosition = currentCameraPosition;
+			tas::overlay::add_speed_value(distance);
+			/////////////////////////
+		}
+
+		if (playback) {
+
+			if (absoluteTick < InputCache.tick_count()) {
+				auto inputs = InputCache.get_inputs_at_tick(absoluteTick);
+
+				if (currentPlaybackFrame < inputs.count() - 1) {
+					forceTick = false;
+					tickStall = true;
+				}
+				else {
+					forceTick = true;
+					tickStall = false;
+				}
+
+				if (currentPlaybackFrame < inputs.count()) {
+					ZeroMemory(Input, sizeof(MCCInput));
+					auto currentInput = inputs.get_input_at_frame(currentPlaybackFrame);
+					memcpy_s(Input, sizeof(MCCInput), &currentInput, sizeof(currentInput));
+
+					Input->VKeyTable[VK_ESCAPE] = 0;
+				}
+			}
+
+			currentPlaybackFrame++;
+		}
+
+		if (ticked) {
+			tas_logger::info("T:{} | AT:{}", tick, absoluteTick);
+			absoluteTick++;
+		}
+
+		// Just in case
+		if (!playback) {
+			tickStall = false;
+			forceTick = false;
+		}
+
 	}
-	
-	int32_t** tick_base = (int32_t**) ((uint8_t*)H1DLL.value() + 0x115C640);
-	if (*tick_base == nullptr) {
-		return OriginalReturn;
-	}
 
-	int32_t tick = *(*tick_base + 3);
-	static int32_t lasttick = tick;
-
-	MCCInput* Input = (MCCInput*)inputTable;
-
-	if (lasttick != tick) {
-		lasttick = tick;
-
-		float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1DLL.value() + 0x2199338);
-		glm::vec3 currentCameraPosition(cameraPositionArr[0], cameraPositionArr[1], 0);
-		static glm::vec3 previousCameraPosition = currentCameraPosition;
-
-		float distance = glm::distance(previousCameraPosition, currentCameraPosition);
-		previousCameraPosition = currentCameraPosition;
-		tas::overlay::add_speed_value(distance);
-		
-		// Set these once when the tick value changes
-		//Input->VKeyTable[VK_TAB] = 1;
-		//Input->VKeyTable[0x31] = 1;
-	}
-
+	// DEFAULT
 	return OriginalReturn;
 }
 
 int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
-	
-	// TODO-SCALES: For the time being, just return the original value until flags are implemented :)
-	 return originalH1GetNumberOfTicksToTick(a1, a2);
-	/************************************************************************************************/
-	
+
+	if (playback) {
+		if (tickStall) {
+			return 0;
+		}
+		if (forceTick) {
+			return 1;
+		}
+	}
+
 	// The function is called multiple times in a frame loop
 	// a2 is 0 when we are getting the actual amount of ticks to loop, otherwise it is usually 1
-	if (a2)
+	if (a2) {
 		return originalH1GetNumberOfTicksToTick(a1, a2);
+	}
 
-	/*bool Limit1TickPerFrame = true;
+	auto originalReturn = originalH1GetNumberOfTicksToTick(a1, a2);
+
+	bool Limit1TickPerFrame = true;
 	if (Limit1TickPerFrame) {
 		originalReturn = std::clamp<int64_t>(originalReturn, 0, 1);
-	}*/
-
-	//                                        W                         A                         S                         D
-	bool superhotKeyDown = GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41) || GetAsyncKeyState(0x53) || GetAsyncKeyState(0x44)
-		//                  SHIFT                         LEFT MOUSE                      RIGHT MOUSE
-		|| GetAsyncKeyState(VK_SHIFT) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON);
-		
-	auto now = std::chrono::system_clock::now();
-	static auto lastNow = now;
-
-	int slowdownTicksPerSecond = 2;
-	float slowdownMilliseconds = 1000.0f / slowdownTicksPerSecond;
-
-	static auto slowTimer = std::chrono::system_clock::now();
-	if (superhotKeyDown) {
-		auto originalReturn = originalH1GetNumberOfTicksToTick(a1, a2);
-		slowTimer = std::chrono::system_clock::now();
-		lastNow = now;
-		return originalReturn;
 	}
-	else {
-		auto msdiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - slowTimer);
 
-		auto lastDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastNow);
-		lastNow = now;
+	if (GetAsyncKeyState(VK_RIGHT)) {
+		originalReturn = 1;
+	}
 
-		//lastDiff += std::chrono::milliseconds(1);
+	if (originalReturn > 0 && recording) {
+		InputCache.add(CurrentTickInputs);
+		CurrentTickInputs.clear();
+		/*tas_logger::info("InputCache has {} ticks with {} total inputs.",
+			InputCache.tick_count(), InputCache.input_count());*/
+	}
 
-		tas_logger::info("{}", lastDiff.count());
+	bool superhot = false;
+	if (superhot) {
+		//                                        W                         A                         S                         D
+		bool superhotKeyDown = GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41) || GetAsyncKeyState(0x53) || GetAsyncKeyState(0x44)
+			//                  SHIFT                         LEFT MOUSE                      RIGHT MOUSE
+			|| GetAsyncKeyState(VK_SHIFT) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON);
 
-		float deltaRealTime = lastDiff.count() / 1000.0f;
-		float deltaTickTime = deltaRealTime * (slowdownTicksPerSecond / 30.0f);
-		auto originalReturn = originalH1GetNumberOfTicksToTick(deltaTickTime, 0);
-		if (msdiff.count() > slowdownMilliseconds) {
-			if (originalReturn) {
-				slowTimer = now;
-			}
+		auto now = std::chrono::system_clock::now();
+		static auto lastNow = now;
+
+		int slowdownTicksPerSecond = 2;
+		float slowdownMilliseconds = 1000.0f / slowdownTicksPerSecond;
+
+		static auto slowTimer = std::chrono::system_clock::now();
+		if (superhotKeyDown) {
+			auto originalReturn = originalH1GetNumberOfTicksToTick(a1, a2);
+			slowTimer = std::chrono::system_clock::now();
+			lastNow = now;
 			return originalReturn;
 		}
-		return 0;
+		else {
+			auto msdiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - slowTimer);
+
+			auto lastDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastNow);
+			lastNow = now;
+
+			//lastDiff += std::chrono::milliseconds(1);
+
+			tas_logger::info("{}", lastDiff.count());
+
+			float deltaRealTime = lastDiff.count() / 1000.0f;
+			float deltaTickTime = deltaRealTime * (slowdownTicksPerSecond / 30.0f);
+			auto originalReturn = originalH1GetNumberOfTicksToTick(deltaTickTime, 0);
+			if (msdiff.count() > slowdownMilliseconds) {
+				if (originalReturn) {
+					slowTimer = now;
+				}
+				return originalReturn;
+			}
+			return 0;
+		}
 	}
+
+	return originalReturn;
 }

@@ -33,30 +33,30 @@ namespace halo {
 		SPUTNIK
 	};
 
-	inline extern bool* HALO1_SKULL_IRON = reinterpret_cast<bool*>(0x18117C7C1);
-	inline extern bool* HALO1_SKULL_FOG = reinterpret_cast<bool*>(0x18117C7C2);
-	inline extern bool* HALO1_SKULL_MYTHIC = reinterpret_cast<bool*>(0x18117C7C3);
-	inline extern bool* HALO1_SKULL_FAMINE = reinterpret_cast<bool*>(0x18117C7C4);
-	inline extern bool* HALO1_SKULL_GRUNT_FUNERAL = reinterpret_cast<bool*>(0x18117C7C5);
-	inline extern bool* HALO1_SKULL_FOREIGN = reinterpret_cast<bool*>(0x18117C7C6);
-	inline extern bool* HALO1_SKULL_EYE_PATCH = reinterpret_cast<bool*>(0x18117C7C7);
-	inline extern bool* HALO1_SKULL_RECESSION = reinterpret_cast<bool*>(0x18117C7C8);
-	inline extern bool* HALO1_SKULL_MALFUNCTION = reinterpret_cast<bool*>(0x18117C7C9);
-	inline extern bool* HALO1_SKULL_BLACK_EYE = reinterpret_cast<bool*>(0x18117C7CA);
-	inline extern bool* HALO1_SKULL_GRUNT_BIRTHDAY_PARTY = reinterpret_cast<bool*>(0x18117C7CB);
-	inline extern bool* HALO1_SKULL_PINATA = reinterpret_cast<bool*>(0x18117C7CC);
+	inline extern size_t HALO1_SKULL_IRON_OFFSET = 0x117C7C1;
+	inline extern size_t HALO1_SKULL_FOG_OFFSET = 0x117C7C2;
+	inline extern size_t HALO1_SKULL_MYTHIC_OFFSET = 0x117C7C3;
+	inline extern size_t HALO1_SKULL_FAMINE_OFFSET = 0x117C7C4;
+	inline extern size_t HALO1_SKULL_GRUNT_FUNERAL_OFFSET = 0x117C7C5;
+	inline extern size_t HALO1_SKULL_FOREIGN_OFFSET = 0x117C7C6;
+	inline extern size_t HALO1_SKULL_EYE_PATCH_OFFSET = 0x117C7C7;
+	inline extern size_t HALO1_SKULL_RECESSION_OFFSET = 0x117C7C8;
+	inline extern size_t HALO1_SKULL_MALFUNCTION_OFFSET = 0x117C7C9;
+	inline extern size_t HALO1_SKULL_BLACK_EYE_OFFSET = 0x117C7CA;
+	inline extern size_t HALO1_SKULL_GRUNT_BIRTHDAY_PARTY_OFFSET = 0x117C7CB;
+	inline extern size_t HALO1_SKULL_PINATA_OFFSET = 0x117C7CC;
 	// Padding x 1
-	inline extern bool* HALO1_SKULL_BANDANA = reinterpret_cast<bool*>(0x18117C7CE);
-	inline extern bool* HALO1_SKULL_BOOM = reinterpret_cast<bool*>(0x18117C7CF);
-	inline extern bool* HALO1_SKULL_BLIND = reinterpret_cast<bool*>(0x18117C7D1);
-	inline extern bool* HALO1_SKULL_GHOST = reinterpret_cast<bool*>(0x18117C7D2);
+	inline extern size_t HALO1_SKULL_BANDANA_OFFSET = 0x117C7CE;
+	inline extern size_t HALO1_SKULL_BOOM_OFFSET = 0x117C7CF;
+	inline extern size_t HALO1_SKULL_BLIND_OFFSET = 0x117C7D1;
+	inline extern size_t HALO1_SKULL_GHOST_OFFSET = 0x117C7D2;
 	// Padding x 1
-	inline extern bool* HALO1_SKULL_CATCH = reinterpret_cast<bool*>(0x18117C7D4);
-	inline extern bool* HALO1_SKULL_SPUTNIK = reinterpret_cast<bool*>(0x18117C7D5);
-	inline extern bool* HALO1_SKULL_ANGER = reinterpret_cast<bool*>(0x18117C7D6);
-	inline extern bool* HALO1_SKULL_THUNDERSTORM = reinterpret_cast<bool*>(0x18117C7D7);
-	inline extern bool* HALO1_SKULL_THATS_JUST_WRONG = reinterpret_cast<bool*>(0x18117C7D8);
+	inline extern size_t HALO1_SKULL_CATCH_OFFSET = 0x117C7D4;
+	inline extern size_t HALO1_SKULL_SPUTNIK_OFFSET = 0x117C7D5;
+	inline extern size_t HALO1_SKULL_ANGER_OFFSET = 0x117C7D6;
+	inline extern size_t HALO1_SKULL_THUNDERSTORM_OFFSET = 0x117C7D7;
+	inline extern size_t HALO1_SKULL_THATS_JUST_WRONG_OFFSET = 0x117C7D8;
 	// Padding x 5
-	inline extern bool* HALO1_SKULL_TOUGH_LUCK = reinterpret_cast<bool*>(0x18117C7DE);
+	inline extern size_t HALO1_SKULL_TOUGH_LUCK_OFFSET = 0x117C7DE;
 
 }

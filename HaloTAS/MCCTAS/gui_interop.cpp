@@ -161,7 +161,14 @@ void handle_response_set_camera_details(const InteropRequest& request, InteropRe
 	SetCameraDetailsRequestPayload cameraDetailsPayload;
 	memcpy_s(&cameraDetailsPayload, sizeof(cameraDetailsPayload), request.payload, sizeof(cameraDetailsPayload));
 
-	float* cameraPositionArr = reinterpret_cast<float*>(0x182199338);
+	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+	if (!H1DLL.has_value()) {
+		return;
+	}
+
+	auto H1Base = H1DLL.value();
+
+	float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1Base + 0x2199338);
 
 	cameraPositionArr[0] = cameraDetailsPayload.positionX;
 	cameraPositionArr[1] = cameraDetailsPayload.positionY;
@@ -296,6 +303,7 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 
 gui_interop::gui_interop()
 {
+	tas_logger::trace("Starting Interop Pipe Server");
 	pipe_server = std::make_unique<windows_pipe_server>();
 	pipe_server->set_request_callback(&answer_request);
 	std::thread serverThread = std::thread(&windows_pipe_server::server_main, pipe_server.get());

@@ -11,28 +11,30 @@ void halo1_engine::get_game_information(halo::halo1_snapshot& snapshot)
 		return;
 	}
 
-	snapshot.skulls[to_underlying(Halo1Skull::ANGER)] = *HALO1_SKULL_ANGER;
-	snapshot.skulls[to_underlying(Halo1Skull::BLIND)] = *HALO1_SKULL_BLIND;
-	snapshot.skulls[to_underlying(Halo1Skull::BLACK_EYE)] = *HALO1_SKULL_BLACK_EYE;
-	snapshot.skulls[to_underlying(Halo1Skull::CATCH)] = *HALO1_SKULL_CATCH;
-	snapshot.skulls[to_underlying(Halo1Skull::EYE_PATCH)] = *HALO1_SKULL_EYE_PATCH;
-	snapshot.skulls[to_underlying(Halo1Skull::FAMINE)] = *HALO1_SKULL_FAMINE;
-	snapshot.skulls[to_underlying(Halo1Skull::FOG)] = *HALO1_SKULL_FOG;
-	snapshot.skulls[to_underlying(Halo1Skull::FOREIGN)] = *HALO1_SKULL_FOREIGN;
-	snapshot.skulls[to_underlying(Halo1Skull::IRON)] = *HALO1_SKULL_IRON;
-	snapshot.skulls[to_underlying(Halo1Skull::MYTHIC)] = *HALO1_SKULL_MYTHIC;
-	snapshot.skulls[to_underlying(Halo1Skull::RECESSION)] = *HALO1_SKULL_RECESSION;
-	snapshot.skulls[to_underlying(Halo1Skull::THATS_JUST_WRONG)] = *HALO1_SKULL_THATS_JUST_WRONG;
-	snapshot.skulls[to_underlying(Halo1Skull::THUNDERSTORM)] = *HALO1_SKULL_THUNDERSTORM;
-	snapshot.skulls[to_underlying(Halo1Skull::TOUGH_LUCK)] = *HALO1_SKULL_TOUGH_LUCK;
-	snapshot.skulls[to_underlying(Halo1Skull::BANDANA)] = *HALO1_SKULL_BANDANA;
-	snapshot.skulls[to_underlying(Halo1Skull::BOOM)] = *HALO1_SKULL_BOOM;
-	snapshot.skulls[to_underlying(Halo1Skull::GHOST)] = *HALO1_SKULL_GHOST;
-	snapshot.skulls[to_underlying(Halo1Skull::GRUNT_BIRTHDAY_PARTY)] = *HALO1_SKULL_GRUNT_BIRTHDAY_PARTY;
-	snapshot.skulls[to_underlying(Halo1Skull::GRUNT_FUNERAL)] = *HALO1_SKULL_GRUNT_FUNERAL;
-	snapshot.skulls[to_underlying(Halo1Skull::MALFUNCTION)] = *HALO1_SKULL_MALFUNCTION;
-	snapshot.skulls[to_underlying(Halo1Skull::PINATA)] = *HALO1_SKULL_PINATA;
-	snapshot.skulls[to_underlying(Halo1Skull::SPUTNIK)] = *HALO1_SKULL_SPUTNIK;
+	auto H1Base = H1DLL.value();
+
+	snapshot.skulls[to_underlying(Halo1Skull::ANGER)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_ANGER_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::BLIND)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_BLIND_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::BLACK_EYE)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_BLACK_EYE_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::CATCH)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_CATCH_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::EYE_PATCH)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_EYE_PATCH_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::FAMINE)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_FAMINE_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::FOG)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_FOG_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::FOREIGN)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_FOREIGN_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::IRON)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_IRON_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::MYTHIC)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_MYTHIC_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::RECESSION)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_RECESSION_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::THATS_JUST_WRONG)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_THATS_JUST_WRONG_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::THUNDERSTORM)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_THUNDERSTORM_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::TOUGH_LUCK)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_TOUGH_LUCK_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::BANDANA)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_BANDANA_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::BOOM)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_BOOM_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::GHOST)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_GHOST_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::GRUNT_BIRTHDAY_PARTY)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_GRUNT_BIRTHDAY_PARTY_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::GRUNT_FUNERAL)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_GRUNT_FUNERAL_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::MALFUNCTION)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_MALFUNCTION_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::PINATA)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_PINATA_OFFSET);
+	snapshot.skulls[to_underlying(Halo1Skull::SPUTNIK)] = *(bool*)((uint8_t*)H1Base+HALO1_SKULL_SPUTNIK_OFFSET);
 }
 
 void halo1_engine::set_skull_enabled(halo::Halo1Skull skull, bool enabled)
@@ -42,72 +44,74 @@ void halo1_engine::set_skull_enabled(halo::Halo1Skull skull, bool enabled)
 		return;
 	}
 
+	auto H1Base = H1DLL.value();
+
 	switch (skull) {
 	case Halo1Skull::ANGER:
-		*HALO1_SKULL_ANGER = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_ANGER_OFFSET) = enabled;
 		break;
 	case Halo1Skull::BLIND:
-		*HALO1_SKULL_BLIND = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_BLIND_OFFSET) = enabled;
 		break;
 	case Halo1Skull::BLACK_EYE:
-		*HALO1_SKULL_BLACK_EYE = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_BLACK_EYE_OFFSET) = enabled;
 		break;
 	case Halo1Skull::CATCH:
-		*HALO1_SKULL_CATCH = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_CATCH_OFFSET) = enabled;
 		break;
 	case Halo1Skull::EYE_PATCH:
-		*HALO1_SKULL_EYE_PATCH = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_EYE_PATCH_OFFSET) = enabled;
 		break;
 	case Halo1Skull::FAMINE:
-		*HALO1_SKULL_FAMINE = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_FAMINE_OFFSET) = enabled;
 		break;
 	case Halo1Skull::FOG:
-		*HALO1_SKULL_FOG = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_FOG_OFFSET) = enabled;
 		break;
 	case Halo1Skull::FOREIGN:
-		*HALO1_SKULL_FOREIGN = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_FOREIGN_OFFSET) = enabled;
 		break;
 	case Halo1Skull::IRON:
-		*HALO1_SKULL_IRON = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_IRON_OFFSET) = enabled;
 		break;
 	case Halo1Skull::MYTHIC:
-		*HALO1_SKULL_MYTHIC = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_MYTHIC_OFFSET) = enabled;
 		break;
 	case Halo1Skull::RECESSION:
-		*HALO1_SKULL_RECESSION = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_RECESSION_OFFSET) = enabled;
 		break;
 	case Halo1Skull::THATS_JUST_WRONG:
-		*HALO1_SKULL_THATS_JUST_WRONG = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_THATS_JUST_WRONG_OFFSET) = enabled;
 		break;
 	case Halo1Skull::THUNDERSTORM:
-		*HALO1_SKULL_THUNDERSTORM = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_THUNDERSTORM_OFFSET) = enabled;
 		break;
 	case Halo1Skull::TOUGH_LUCK:
-		*HALO1_SKULL_TOUGH_LUCK = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_TOUGH_LUCK_OFFSET) = enabled;
 		break;
 	case Halo1Skull::BANDANA:
-		*HALO1_SKULL_BANDANA = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_BANDANA_OFFSET) = enabled;
 		break;
 	case Halo1Skull::BOOM:
-		*HALO1_SKULL_BOOM = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_BOOM_OFFSET) = enabled;
 		break;
 	case Halo1Skull::GHOST:
-		*HALO1_SKULL_GHOST = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_GHOST_OFFSET) = enabled;
 		break;
 	case Halo1Skull::GRUNT_BIRTHDAY_PARTY:
-		*HALO1_SKULL_GRUNT_BIRTHDAY_PARTY = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_GRUNT_BIRTHDAY_PARTY_OFFSET) = enabled;
 		break;
 	case Halo1Skull::GRUNT_FUNERAL:
-		*HALO1_SKULL_GRUNT_FUNERAL = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_GRUNT_FUNERAL_OFFSET) = enabled;
 		break;
 	case Halo1Skull::MALFUNCTION:
-		*HALO1_SKULL_MALFUNCTION = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_MALFUNCTION_OFFSET) = enabled;
 		break;
 	case Halo1Skull::PINATA:
-		*HALO1_SKULL_PINATA = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_PINATA_OFFSET) = enabled;
 		break;
 	case Halo1Skull::SPUTNIK:
-		*HALO1_SKULL_SPUTNIK = enabled;
+		*(bool*)((uint8_t*)H1Base+HALO1_SKULL_SPUTNIK_OFFSET) = enabled;
 		break;
 	}
 }

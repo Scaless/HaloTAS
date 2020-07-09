@@ -17,6 +17,7 @@ tas_logger::tas_logger()
 	multi_logger = std::make_shared<spdlog::logger>("multi_sink", spdlog::sinks_init_list{ console_sink, file_sink });
 	multi_logger->set_level(spdlog::level::trace);
 
+	spdlog::set_default_logger(multi_logger);
 	spdlog::set_level(spdlog::level::trace);
 	spdlog::flush_on(spdlog::level::trace);
 }
