@@ -143,6 +143,28 @@ void speedometer_render() {
 	ImGui::End();
 }
 
+void InputRender(const tas_input& Input) {
+	ImGui::Begin("Inputs");
+
+	/*int count = Input.tick_count();
+
+	for (int i = 0; i < count; i++) {
+		ImGui::Text(std::to_string(i).c_str());
+		ImGui::Indent();
+		{
+			auto tick = Input.get_inputs_at_tick(i);
+			int tickCount = tick.count();
+			for (int t = 0; t < tickCount; t++) {
+				auto frameInput = tick.get_input_at_frame(t);
+				ImGui::Text("%d", t);
+			}
+		}
+		ImGui::Unindent();
+	}*/
+
+	ImGui::End();
+}
+
 namespace tas::overlay {
 	void initialize(IDXGISwapChain* SwapChain)
 	{
@@ -192,7 +214,7 @@ namespace tas::overlay {
 		gIsInitD3D = true;
 	}
 
-	void render()
+	void render(const tas_input& Input)
 	{
 		if (!gIsInitD3D) {
 			return;
@@ -204,6 +226,7 @@ namespace tas::overlay {
 
 		if (gShowMenu) {
 			ImGui::ShowDemoWindow();
+			InputRender(Input);
 		}
 		if (gShowConsole) {
 			gConsole.render(gWndWidth);

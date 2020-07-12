@@ -1,5 +1,6 @@
 #pragma once
 #include "pch.h"
+#include <optional>
 
 const uint32_t MOUSE_BUTTON_LEFT = 0x1;
 const uint32_t MOUSE_BUTTON_MIDDLE = 0x2;
@@ -50,31 +51,30 @@ struct MCCInput {
 	// Possibly more after this...
 };
 
-class tick_inputs {
+struct tick_inputs {
+	int32_t mAbsoluteTick;
+	int32_t mRNGStart;
 	std::vector<MCCInput> mInputs;
-
-public:
-	tick_inputs() = default;
-	~tick_inputs() = default;
-
-	void add(const MCCInput& input);
-	void clear();
-	const MCCInput& get_input_at_frame(int frame);
-	int count();
 };
 
+struct input_return {
+	MCCInput input;
+	bool isLastFrame;
+};
 class tas_input
 {
 	std::vector<tick_inputs> mLevelInput;
+	int32_t mCurrentTick = 0;
+	tick_inputs mWorkingInputs;
 public:
-	tas_input() = default;
-	~tas_input() = default;
 
-	void add(const tick_inputs& inputs);
-	void clear();
+	void start_tick(int RNG);
+	void push_input(const MCCInput& input);
+	void end_tick();
+	
+	void reset();
 
-	int tick_count();
-	int input_count();
-	const tick_inputs& get_inputs_at_tick(int32_t tick);
+	
+	std::optional<input_return> get_input(int32_t tick, int32_t frame, int32_t RNG);
 };
 

@@ -6,6 +6,7 @@
 #include "tas_input.h"
 #include "kiero.h"
 #include "dll_cache.h"
+#include "halo1_engine.h"
 
 #include <winternl.h>
 #include <string>
@@ -225,10 +226,13 @@ BOOL hkFreeLibrary(HMODULE hLibModule) {
 	return originalFreeLibrary(hLibModule);
 }
 
+tas_input InputCache;
+tick_inputs CurrentTickInputs;
+
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags) {
 	std::call_once(gOverlayInitialized, tas::overlay::initialize, SwapChain);
 
-	tas::overlay::render();
+	tas::overlay::render(InputCache);
 
 	return originalD3D11Present(SwapChain, SyncInterval, Flags);
 }
@@ -328,11 +332,9 @@ char hkHalo1HandleInput() {
 
 // The MCCGetInput function is used to pass input from the MCC parent process to each individual game DLL.
 // Be careful when doing anything game-specific in here unless doing the proper checks!
-tas_input InputCache;
-tick_inputs CurrentTickInputs;
+
 bool recording = false;
 bool playback = false;
-bool tickStall = false;
 bool forceTick = false;
 int currentPlaybackFrame = 0;
 uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTable) {
@@ -361,6 +363,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 		tas_logger::warning("disabled");
 	}
 
+
 	// Halo 1 code path
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
@@ -369,33 +372,45 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 			return OriginalReturn;
 		}
 
+		int32_t* rng = (int32_t*)((uint8_t*)H1DLL.value() + 0x115CB80);
 		int32_t tick = *(*tick_base + 3);
 		static int32_t lasttick = tick;
 		static int32_t absoluteTick = 0;
+		static bool tickRevert = false;
 
 		MCCInput* Input = (MCCInput*)inputTable;
 
-		if (tick == 0) {
-			absoluteTick = 0;
-		}
+		tas_logger::info("GetInput on tick {} | Space({}) | RNG({})", tick, Input->VKeyTable[VK_SPACE], *rng);
+
+		
 
 		if (tick == 0 && recording) {
-			InputCache.clear();
+			InputCache.reset();
+			InputCache.start_tick(*rng);
 		}
-
-		if (recording) {
-			CurrentTickInputs.add(*Input);
+		
+		if (tick == 0) {
+			absoluteTick = 0;
+			currentPlaybackFrame = 0;
 		}
 
 		bool ticked = false;
-		if (lasttick != tick) {
-			currentPlaybackFrame = 0;
+		if (lasttick != tick && tick != 0) {
 			ticked = true;
 		}
+		lasttick = tick;
 
-		if (lasttick != tick) {
-			lasttick = tick;
 
+		if (tick > 0 && recording && ticked) {
+			InputCache.end_tick();
+			InputCache.start_tick(*rng);
+		}
+
+		if (recording) {
+			InputCache.push_input(*Input);
+		}
+
+		if (ticked) {
 			// Goatrope speedometer
 			float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1DLL.value() + 0x2199338);
 			glm::vec3 currentCameraPosition(cameraPositionArr[0], cameraPositionArr[1], 0);
@@ -406,41 +421,29 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 			tas::overlay::add_speed_value(distance);
 			/////////////////////////
 		}
-
-		if (playback) {
-
-			if (absoluteTick < InputCache.tick_count()) {
-				auto inputs = InputCache.get_inputs_at_tick(absoluteTick);
-
-				if (currentPlaybackFrame < inputs.count() - 1) {
-					forceTick = false;
-					tickStall = true;
-				}
-				else {
-					forceTick = true;
-					tickStall = false;
-				}
-
-				if (currentPlaybackFrame < inputs.count()) {
-					ZeroMemory(Input, sizeof(MCCInput));
-					auto currentInput = inputs.get_input_at_frame(currentPlaybackFrame);
-					memcpy_s(Input, sizeof(MCCInput), &currentInput, sizeof(currentInput));
-
-					Input->VKeyTable[VK_ESCAPE] = 0;
-				}
-			}
-
-			currentPlaybackFrame++;
+		
+		if (ticked) {
+			absoluteTick++;
+			currentPlaybackFrame = 0;
 		}
 
-		if (ticked) {
-			tas_logger::info("T:{} | AT:{}", tick, absoluteTick);
-			absoluteTick++;
+		if (playback) {
+			auto hasCurrentInput = InputCache.get_input(absoluteTick, currentPlaybackFrame, *rng);
+			if (hasCurrentInput.has_value()) {
+				auto currentInput = hasCurrentInput.value();
+				memcpy_s(Input, sizeof(MCCInput), &currentInput.input, sizeof(currentInput.input));
+				forceTick = currentInput.isLastFrame;
+				currentPlaybackFrame++;
+			}
+			else {
+				tas_logger::info("Tick({}) No input", absoluteTick);
+				currentPlaybackFrame = 0;
+				forceTick = true;
+			}
 		}
 
 		// Just in case
 		if (!playback) {
-			tickStall = false;
 			forceTick = false;
 		}
 
@@ -452,12 +455,13 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 
 int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 
+
 	if (playback) {
-		if (tickStall) {
-			return 0;
-		}
 		if (forceTick) {
 			return 1;
+		}
+		else {
+			return 0;
 		}
 	}
 
@@ -466,7 +470,7 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 	if (a2) {
 		return originalH1GetNumberOfTicksToTick(a1, a2);
 	}
-
+	
 	auto originalReturn = originalH1GetNumberOfTicksToTick(a1, a2);
 
 	bool Limit1TickPerFrame = true;
@@ -478,11 +482,8 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 		originalReturn = 1;
 	}
 
-	if (originalReturn > 0 && recording) {
-		InputCache.add(CurrentTickInputs);
-		CurrentTickInputs.clear();
-		/*tas_logger::info("InputCache has {} ticks with {} total inputs.",
-			InputCache.tick_count(), InputCache.input_count());*/
+	if (originalReturn > 0) {
+		tas_logger::info("Ticked");
 	}
 
 	bool superhot = false;
