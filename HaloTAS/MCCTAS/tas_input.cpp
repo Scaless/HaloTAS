@@ -29,12 +29,13 @@ std::optional<input_return> tas_input::get_input(int32_t tick, int32_t frame, in
 	if (tick < mLevelInput.size() - 1) {
 		auto tickInputs = mLevelInput[tick];
 
+		input_return ir;
 		if (RNG != tickInputs.mRNGStart) {
+			ir.rngError = true;
 			tas_logger::warning("Tick({}): RNG does not match: Expected({}) / Actual({})", tick, tickInputs.mRNGStart, RNG);
 		}
 
 		if (frame < tickInputs.mInputs.size()) {
-			input_return ir;
 			ir.input = tickInputs.mInputs[frame];
 
 			if (frame == tickInputs.mInputs.size() - 1) {

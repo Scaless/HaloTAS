@@ -59,7 +59,8 @@ struct tick_inputs {
 
 struct input_return {
 	MCCInput input;
-	bool isLastFrame;
+	bool isLastFrame = false;
+	bool rngError = false;
 };
 class tas_input
 {

@@ -333,6 +333,7 @@ char hkHalo1HandleInput() {
 // The MCCGetInput function is used to pass input from the MCC parent process to each individual game DLL.
 // Be careful when doing anything game-specific in here unless doing the proper checks!
 
+bool globalStall = false;
 bool recording = false;
 bool playback = false;
 bool forceTick = false;
@@ -363,12 +364,20 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 		tas_logger::warning("disabled");
 	}
 
+	if (GetAsyncKeyState(VK_NUMPAD0)) {
+		globalStall = false;
+		tas_logger::warning("stall stopped");
+	}
 
 	// Halo 1 code path
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
 		int32_t** tick_base = (int32_t**)((uint8_t*)H1DLL.value() + 0x115C640);
 		if (*tick_base == nullptr) {
+			return OriginalReturn;
+		}
+
+		if (globalStall) {
 			return OriginalReturn;
 		}
 
@@ -380,9 +389,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 
 		MCCInput* Input = (MCCInput*)inputTable;
 
-		tas_logger::info("GetInput on tick {} | Space({}) | RNG({})", tick, Input->VKeyTable[VK_SPACE], *rng);
-
-		
+		tas_logger::info("GetInput on tick {} | RNG({})", tick, *rng);
 
 		if (tick == 0 && recording) {
 			InputCache.reset();
@@ -396,10 +403,11 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 
 		bool ticked = false;
 		if (lasttick != tick && tick != 0) {
-			ticked = true;
+			if (!(tick < lasttick && lasttick != 0)) { // Revert
+				ticked = true;
+			}
 		}
 		lasttick = tick;
-
 
 		if (tick > 0 && recording && ticked) {
 			InputCache.end_tick();
@@ -434,6 +442,10 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 				memcpy_s(Input, sizeof(MCCInput), &currentInput.input, sizeof(currentInput.input));
 				forceTick = currentInput.isLastFrame;
 				currentPlaybackFrame++;
+
+				if (currentInput.rngError) {
+					globalStall = true;
+				}
 			}
 			else {
 				tas_logger::info("Tick({}) No input", absoluteTick);
@@ -455,6 +467,9 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 
 int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 
+	if (globalStall) {
+		return 0;
+	}
 
 	if (playback) {
 		if (forceTick) {
@@ -480,10 +495,6 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 
 	if (GetAsyncKeyState(VK_RIGHT)) {
 		originalReturn = 1;
-	}
-
-	if (originalReturn > 0) {
-		tas_logger::info("Ticked");
 	}
 
 	bool superhot = false;
