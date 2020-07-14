@@ -17,7 +17,42 @@ namespace {
 	const std::wstring HALO4_DLL_WSTR = L"halo4.dll";
 }
 
+namespace mcc {
+	namespace function {
+		inline const uint64_t OFFSET_MCCGETINPUT = 0x18E3714;
+	}
+}
+
 namespace halo1 {
+
+	namespace function {
+		// TODO-SCALES - Get scan for this func
+		inline const uint64_t OFFSET_H1_HANDLE_INPUT = 0x70EBC0;
+
+		// SCAN: 48 8B C4 53 57 41 54 41 57 48 81 EC A8 00 00 00
+		inline const uint64_t OFFSET_H1_GET_NUMBER_OF_TICKS = 0x6F5D90;
+
+		//SCAN: 40 53 56 48 81 EC 38 09 00 00
+		inline const uint64_t OFFSET_H1_EXECUTE_COMMAND = 0x7EEA70;
+	}
+
+	namespace patch {
+		// SCAN: B2 05 41 ?? ?? ?? E8 ?? ?? ?? ?? 84 c0 74 ?? b0 01 48 ?? ?? 28 c3 32 c0 48 ?? ?? 28 C3
+		inline const uint64_t OFFSET_ENABLE_DEV_CONSOLE = 0x7811BF;
+		inline const auto PATCHBYTES_ENABLE_DEV_CONSOLE = std::vector<uint8_t>{ 0xB0, 0x01 };
+	}
+
+	namespace data {
+		// TODO-SCALES: Scan for this address when updated
+		// SCAN: 88 ?? ?? ?? ?? 01 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 84 C0
+		//inline const uint64_t SCAN_CHEATS
+		//inline const uint64_t SCAN_OFFSET = 0x6;
+		//inline const uint64_t RELATIVE_OFFSET_CHEATS = ...
+
+		inline const uint64_t OFFSET_CHEAT_TABLE = 0x117DA90;
+		inline const uint64_t OFFSET_TICK_BASE = 0x115D848;
+		inline const uint64_t OFFSET_RNG = 0x115DD80;
+	}
 
 	namespace constants {
 		static const float CAMERA_PITCH_MIN = -1.492f;

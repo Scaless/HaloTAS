@@ -11,7 +11,7 @@ namespace MCCTASGUI.Interop
         SetCameraDetails = 2,
         ExecuteCommand = 3,
         GetGameInformation = 4,
-        Halo1SetSkullEnabled = 5,
+        Halo1SetCheatEnabled = 5,
     }
 
     public enum InteropResponseType
@@ -83,16 +83,16 @@ namespace MCCTASGUI.Interop
         [MarshalAs(UnmanagedType.I4)]
         public int Tick;
 
-        // Skulls
-        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Bool, SizeConst = 22)]
-        public bool[] SkullsEnabled;
+        // Cheats
+        [MarshalAs(UnmanagedType.ByValArray, ArraySubType = UnmanagedType.Bool, SizeConst = 30)]
+        public bool[] CheatsEnabled;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct Halo1SetSkullEnabledRequest
+    public unsafe struct Halo1SetCheatEnabledRequest
     {
         [MarshalAs(UnmanagedType.I4)]
-        public int Skull;
+        public int Cheat;
 
         [MarshalAs(UnmanagedType.Bool)]
         public bool Enabled;

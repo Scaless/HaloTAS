@@ -68,17 +68,17 @@ namespace MCCTASGUI
                     iconHalo3Loaded.Fill = Status.H3DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHaloReachLoaded.Fill = Status.ReachDLLLoaded ? Brushes.Green : Brushes.Red;
 
-                    panelH1Skulls.Children.Clear();
-                    for(int i = 0; i < 22; i++)
+                    panelH1Cheats.Children.Clear();
+                    for(int i = 0; i < EnumUtils<Halo1Cheat>.Count; i++)
                     {
                         CheckBox cb = new CheckBox();
-                        cb.IsChecked = Status.Halo1.SkullsEnabled[i];
-                        cb.Content = Enum.GetName(typeof(Halo1Skull), i).ToString();
+                        cb.IsChecked = Status.Halo1.CheatsEnabled[i];
+                        cb.Content = Enum.GetName(typeof(Halo1Cheat), i).ToString();
                         cb.Margin = new Thickness(2);
-                        cb.Tag = (Halo1Skull)i;
-                        cb.Checked += cbSkullToggleChecked;
-                        cb.Unchecked += cbSkullToggleChecked;
-                        panelH1Skulls.Children.Add(cb);
+                        cb.Tag = (Halo1Cheat)i;
+                        cb.Checked += cbCheatToggleChecked;
+                        cb.Unchecked += cbCheatToggleChecked;
+                        panelH1Cheats.Children.Add(cb);
                     }
                 });
 
@@ -86,17 +86,17 @@ namespace MCCTASGUI
             }
         }
 
-        private async void cbSkullToggleChecked(object sender, RoutedEventArgs e)
+        private async void cbCheatToggleChecked(object sender, RoutedEventArgs e)
         {
             var checkbox = sender as CheckBox;
 
             if (checkbox == null)
                 return;
 
-            Halo1Skull skull = (Halo1Skull)checkbox.Tag;
+            Halo1Cheat cheat = (Halo1Cheat)checkbox.Tag;
             bool newEnabled = checkbox.IsChecked ?? false;
 
-            await H1EngineFunctions.SetSkullEnabled(skull, newEnabled);
+            await H1EngineFunctions.SetCheatEnabled(cheat, newEnabled);
         }
 
         private void MenuOpenMapData(object sender, RoutedEventArgs e)

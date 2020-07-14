@@ -58,10 +58,10 @@ typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, U
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 D3D11Present_t originalD3D11Present;
 
-const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", HALO1_DLL_WSTR, 0x077FD2F, std::vector<uint8_t>{ 0xB0, 0x01 });
+const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", HALO1_DLL_WSTR, halo1::patch::OFFSET_ENABLE_DEV_CONSOLE, halo1::patch::PATCHBYTES_ENABLE_DEV_CONSOLE);
 
-const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, 0x70E430, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
-const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, 0x6F5450, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
+const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
+const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_GET_NUMBER_OF_TICKS, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
 
 const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
 const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
@@ -69,7 +69,7 @@ const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibr
 const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
 const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
-const hook GlobalHook_MCCGetHalo1Input(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", 0x18C5A44, (PVOID**)&originalMCCInput, hkMCCGetInput);
+const hook GlobalHook_MCCGetHalo1Input(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
 
 tas_hooks::tas_hooks()
 {
@@ -372,7 +372,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 	// Halo 1 code path
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
-		int32_t** tick_base = (int32_t**)((uint8_t*)H1DLL.value() + 0x115C640);
+		int32_t** tick_base = (int32_t**)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_TICK_BASE);
 		if (*tick_base == nullptr) {
 			return OriginalReturn;
 		}
@@ -381,7 +381,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 			return OriginalReturn;
 		}
 
-		int32_t* rng = (int32_t*)((uint8_t*)H1DLL.value() + 0x115CB80);
+		int32_t* rng = (int32_t*)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_RNG);
 		int32_t tick = *(*tick_base + 3);
 		static int32_t lasttick = tick;
 		static int32_t absoluteTick = 0;

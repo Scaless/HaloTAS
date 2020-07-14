@@ -15,7 +15,7 @@ private:
 public:
 	static void get_game_information(halo::halo1_snapshot& snapshot);
 
-	static void set_skull_enabled(halo::Halo1Skull skull, bool enabled);
+	static void set_cheat_enabled(halo::Halo1Cheat skull, bool enabled);
 
 	static void execute_command(const char* command);
 };

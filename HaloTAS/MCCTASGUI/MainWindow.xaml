@@ -43,8 +43,8 @@
                         <StackPanel HorizontalAlignment="Stretch" >
                             <Button x:Name="btnH1SendCommand" Content="Send Command" Margin="2" HorizontalAlignment="Left" Click="btnH1SendCommand_Click"/>
                             <TextBox x:Name="tbH1SendCommand" HorizontalAlignment="Stretch" Margin="2" TextWrapping="Wrap" Width="auto" KeyDown="tbH1SendCommand_KeyDown"/>
-                            <TextBlock Text="Skulls: "></TextBlock>
-                            <StackPanel x:Name="panelH1Skulls">
+                            <TextBlock Text="Cheats + Skulls: "></TextBlock>
+                            <StackPanel x:Name="panelH1Cheats">
                             </StackPanel>
                         </StackPanel>
                     </Grid>

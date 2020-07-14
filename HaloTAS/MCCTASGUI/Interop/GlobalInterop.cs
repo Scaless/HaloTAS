@@ -48,7 +48,7 @@ namespace MCCTASGUI.Interop
 
                 if (Status.H1DLLLoaded)
                 {
-                    Status.Halo1.SkullsEnabled = responseData.Halo1.SkullsEnabled;
+                    Status.Halo1.CheatsEnabled = responseData.Halo1.CheatsEnabled;
                 }
             }
             else

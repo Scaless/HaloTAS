@@ -3,60 +3,85 @@
 
 namespace halo {
 
-	struct halo1_snapshot {
-		bool skulls[22];
-	};
-
 	// Used to interop with the GUI program
-	enum class Halo1Skull : int32_t {
-		ANGER,
-		BLIND,
-		BLACK_EYE,
-		CATCH,
-		EYE_PATCH,
-		FAMINE,
-		FOG,
-		FOREIGN,
-		IRON,
-		MYTHIC,
-		RECESSION,
-		THATS_JUST_WRONG,
-		THUNDERSTORM,
-		TOUGH_LUCK,
-		BANDANA,
-		BOOM,
-		GHOST,
-		GRUNT_BIRTHDAY_PARTY,
-		GRUNT_FUNERAL,
-		MALFUNCTION,
-		PINATA,
-		SPUTNIK
+	enum class Halo1Cheat : int32_t {
+		CHEAT_DEATHLESS_PLAYER,
+		CHEAT_BUMP_POSESSION,
+		CHEAT_SUPER_JUMP,
+		CHEAT_REFLECT_DAMAGE_HITS,
+		CHEAT_MEDUSA,
+		CHEAT_ONE_SHOT_KILL,
+		CHEAT_BOTTOMLESS_CLIP,
+
+		SKULL_ANGER,
+		SKULL_BLIND,
+		SKULL_BLACK_EYE,
+		SKULL_CATCH,
+		SKULL_EYE_PATCH,
+		SKULL_FAMINE,
+		SKULL_FOG,
+		SKULL_FOREIGN,
+		SKULL_IRON,
+		SKULL_MYTHIC,
+		SKULL_RECESSION,
+		SKULL_THATS_JUST_WRONG,
+		SKULL_THUNDERSTORM,
+		SKULL_TOUGH_LUCK,
+		SKULL_BANDANA,
+		SKULL_BOOM,
+		SKULL_GHOST,
+		SKULL_GRUNT_BIRTHDAY_PARTY,
+		SKULL_GRUNT_FUNERAL,
+		SKULL_MALFUNCTION,
+		SKULL_PINATA,
+		SKULL_SPUTNIK,
+		SKULL_BOOTS_OFF_THE_GROUND,
+
+		COUNT
 	};
 
-	inline extern size_t HALO1_SKULL_IRON_OFFSET = 0x117C7C1;
-	inline extern size_t HALO1_SKULL_FOG_OFFSET = 0x117C7C2;
-	inline extern size_t HALO1_SKULL_MYTHIC_OFFSET = 0x117C7C3;
-	inline extern size_t HALO1_SKULL_FAMINE_OFFSET = 0x117C7C4;
-	inline extern size_t HALO1_SKULL_GRUNT_FUNERAL_OFFSET = 0x117C7C5;
-	inline extern size_t HALO1_SKULL_FOREIGN_OFFSET = 0x117C7C6;
-	inline extern size_t HALO1_SKULL_EYE_PATCH_OFFSET = 0x117C7C7;
-	inline extern size_t HALO1_SKULL_RECESSION_OFFSET = 0x117C7C8;
-	inline extern size_t HALO1_SKULL_MALFUNCTION_OFFSET = 0x117C7C9;
-	inline extern size_t HALO1_SKULL_BLACK_EYE_OFFSET = 0x117C7CA;
-	inline extern size_t HALO1_SKULL_GRUNT_BIRTHDAY_PARTY_OFFSET = 0x117C7CB;
-	inline extern size_t HALO1_SKULL_PINATA_OFFSET = 0x117C7CC;
-	// Padding x 1
-	inline extern size_t HALO1_SKULL_BANDANA_OFFSET = 0x117C7CE;
-	inline extern size_t HALO1_SKULL_BOOM_OFFSET = 0x117C7CF;
-	inline extern size_t HALO1_SKULL_BLIND_OFFSET = 0x117C7D1;
-	inline extern size_t HALO1_SKULL_GHOST_OFFSET = 0x117C7D2;
-	// Padding x 1
-	inline extern size_t HALO1_SKULL_CATCH_OFFSET = 0x117C7D4;
-	inline extern size_t HALO1_SKULL_SPUTNIK_OFFSET = 0x117C7D5;
-	inline extern size_t HALO1_SKULL_ANGER_OFFSET = 0x117C7D6;
-	inline extern size_t HALO1_SKULL_THUNDERSTORM_OFFSET = 0x117C7D7;
-	inline extern size_t HALO1_SKULL_THATS_JUST_WRONG_OFFSET = 0x117C7D8;
-	// Padding x 5
-	inline extern size_t HALO1_SKULL_TOUGH_LUCK_OFFSET = 0x117C7DE;
+	struct halo1_cheats {
+		bool cheat_deathless_player;
+		bool padding_1[2];
+		bool cheat_bump_possession;
+		bool cheat_super_jump;
+		bool cheat_reflect_damage_hits;
+		bool cheat_medusa;
+		bool cheat_one_shot_kill;
+		bool padding_2;
+		bool cheat_bottomless_clip;
+		bool padding_3[7];
+		bool skull_iron;
+		bool skull_fog;
+		bool skull_mythic;
+		bool skull_famine;
+		bool skull_grunt_funeral;
+		bool skull_foreign;
+		bool skull_eye_patch;
+		bool skull_recession;
+		bool skull_malfunction;
+		bool skull_black_eye;
+		bool skull_grunt_birthday_party;
+		bool skull_pinata;
+		bool padding_4;
+		bool skull_bandana;
+		bool skull_boom;
+		bool padding_5;
+		bool skull_blind;
+		bool skull_ghost;
+		bool padding_6;
+		bool skull_catch;
+		bool skull_sputnik;
+		bool skull_anger;
+		bool skull_thunderstorm;
+		bool skull_thats_just_wrong;
+		bool padding_7[5];
+		bool skull_tough_luck;
+		bool skull_boots_off_the_ground;
+	};
+
+	struct halo1_snapshot {
+		bool skulls[to_underlying(Halo1Cheat::COUNT)];
+	};
 
 }

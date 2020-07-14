@@ -25,6 +25,8 @@ const uint16_t XINPUT_GAMEPAD_X = 0x4000;
 const uint16_t XINPUT_GAMEPAD_Y = 0x8000;
 
 struct MCCInput {
+	//std::byte Data[292]; // TODO-SCALES - The data in this struct changed with the recent update
+
 	// +000
 	uint8_t InputTypeFlag; // 0 = Controller, 1 = Mouse+Keyboard
 	uint8_t Padding1[3];

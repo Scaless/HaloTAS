@@ -6,8 +6,16 @@ using System.Threading.Tasks;
 
 namespace MCCTASGUI.Interop
 {
-    public enum Halo1Skull
+    public enum Halo1Cheat
     {
+        DeathlessPlayer,
+        BumpPosession,
+        SuperJump,
+        ReflectDamageHits,
+        Medusa,
+        OneShotKill,
+        BottomlessClip,
+
         Anger,
         Blind,
         BlackEye,
@@ -29,16 +37,17 @@ namespace MCCTASGUI.Interop
         GruntFuneral,
         Malfunction,
         Pinata,
-        Sputnik
+        Sputnik,
+        BootsOffTheGround
     }
 
     public class Halo1Status
     {
-        public bool[] SkullsEnabled;
+        public bool[] CheatsEnabled;
 
         public Halo1Status()
         {
-            SkullsEnabled = new bool[22];
+            CheatsEnabled = new bool[EnumUtils<Halo1Cheat>.Count];
         }
     }
 
@@ -65,14 +74,14 @@ namespace MCCTASGUI.Interop
             }
         }
 
-        public static async Task SetSkullEnabled(Halo1Skull skull, bool enabled)
+        public static async Task SetCheatEnabled(Halo1Cheat cheat, bool enabled)
         {
             InteropRequest request = new InteropRequest();
-            request.header.RequestType = InteropRequestType.Halo1SetSkullEnabled;
-            request.header.RequestPayloadSize = Marshal.SizeOf(typeof(Halo1SetSkullEnabledRequest));
+            request.header.RequestType = InteropRequestType.Halo1SetCheatEnabled;
+            request.header.RequestPayloadSize = Marshal.SizeOf(typeof(Halo1SetCheatEnabledRequest));
 
-            var payload = new Halo1SetSkullEnabledRequest();
-            payload.Skull = (int)skull;
+            var payload = new Halo1SetCheatEnabledRequest();
+            payload.Cheat = (int)cheat;
             payload.Enabled = enabled;
             request.requestData = TASInterop.MarshalObjectToArray(payload);
 

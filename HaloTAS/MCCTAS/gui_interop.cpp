@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include "windows_utilities.h"
 #include "halo1_engine.h"
+#include "halo1_types.h"
 #include "dll_cache.h"
 
 enum class InteropRequestType : int32_t {
@@ -95,7 +96,7 @@ struct ExecuteCommandRequestPayload {
 
 struct Halo1GameInformation {
 	int32_t Tick;
-	BOOL SkullsEnabled[22];
+	BOOL SkullsEnabled[to_underlying(halo::Halo1Cheat::COUNT)];
 };
 struct GetGameInformationResponsePayload {
 	BOOL Halo1Loaded;
@@ -214,7 +215,7 @@ void handle_response_get_game_information(const InteropRequest& request, Interop
 		halo::halo1_snapshot h1Snapshot = {};
 		halo1_engine::get_game_information(h1Snapshot);
 		
-		for (int i = 0; i < 22; i++) {
+		for (int i = 0; i < to_underlying(halo::Halo1Cheat::COUNT); i++) {
 			gameInfoPayload.Halo1Information.SkullsEnabled[i] = h1Snapshot.skulls[i];
 		}
 	}
@@ -230,9 +231,9 @@ void handle_response_set_halo1_skull_enabled(const InteropRequest& request, Inte
 	Halo1SetSkullEnabledRequestPayload skullSetPayload;
 	memcpy_s(&skullSetPayload, sizeof(skullSetPayload), request.payload, sizeof(skullSetPayload));
 
-	auto skull = (halo::Halo1Skull)skullSetPayload.Skull;
+	auto skull = (halo::Halo1Cheat)skullSetPayload.Skull;
 
-	halo1_engine::set_skull_enabled(skull, skullSetPayload.Enabled);
+	halo1_engine::set_cheat_enabled(skull, skullSetPayload.Enabled);
 
 	response.header.type = InteropResponseType::SUCCESS;
 }
