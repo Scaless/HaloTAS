@@ -25,6 +25,8 @@ TASDLL was the original project used to develop a TAS for the 2003 Gearbox port 
   - "Desktop development with C++"
   - Windows 10 SDK
   - .NET desktop development
+- [Boost](https://www.boost.org/users/download/) v1.73 or higher (sorry)
+  - Default location: C:\boost_1_73_0
 - [.NET Core 3.1 SDK](https://dotnet.microsoft.com/download/dotnet-core/3.1)
 
 #### Compiling TASDLL requires:
