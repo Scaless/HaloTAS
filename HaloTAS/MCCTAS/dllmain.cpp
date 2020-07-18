@@ -10,21 +10,22 @@
 #include "gui_interop.h"
 #include "dll_cache.h"
 
-LONG CALLBACK unhandled_handler(EXCEPTION_POINTERS* e)
-{
-	tas_logger::critical("Unhandled exception, creating minidump!");
-	make_minidump(e);
-	return EXCEPTION_CONTINUE_SEARCH;
-}
-
 // Main Execution Loop
 void RealMain() {
-	SetUnhandledExceptionFilter(unhandled_handler);
-
+	acquire_global_unhandled_exception_handler();
+	
 	auto consoleWindow = std::make_unique<windows_console>();
-	tas_logger::info("MCCTAS Started!");
-	tas_logger::warning("To close MCCTAS, press CTRL + C while this window is focused.");
-	tas_logger::warning("Pressing X on this window will close the game as well!");
+	consoleWindow->open();
+
+	const std::string startupMessage = "MCCTAS Started!\r\n"
+		"To close MCCTAS, press CTRL + C while this window is focused. MCC will continue running. "
+		"If you accidentally click into this window and highlight something, just press ESC to unfreeze the game.\r\n\r\n"
+		"MCCTAS significantly modifies game behavior and is not approved for official speedruns.\r\n"
+		"If you see this console window open, MCCTAS is running.\r\n\r\n"
+		"Report bugs and suggest features on Github at: https://github.com/Scaless/HaloTAS. \r\n"
+		"Have fun :) ~Scales"
+		;
+	tas_logger::warning("{}", startupMessage);
 
 	dll_cache::initialize();
 
@@ -34,7 +35,7 @@ void RealMain() {
 
 	// Most of the cool stuff happens in other threads.
 	// This loop is just to keep stuff alive.
-	while (!consoleWindow->get_exit_status()) {
+	while (!consoleWindow->is_open()) {
 		Sleep(100);
 	}
 
@@ -42,6 +43,7 @@ void RealMain() {
 
 	tas_logger::info("MCCTAS Stopped!");
 	tas_logger::flush_and_exit();
+	release_global_unhandled_exception_handler();
 }
 
 // This thread is created by the dll when loaded into the process, see RealMain() for the actual event loop.

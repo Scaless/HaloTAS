@@ -11,10 +11,10 @@ public:
 	windows_console();
 	~windows_console();
 
-	void init();
+	void open();
 	void free_console();
 	void clear();
-	static bool get_exit_status();
+	static bool is_open();
 	static void set_exit_status(bool newStatus);
 	
 };

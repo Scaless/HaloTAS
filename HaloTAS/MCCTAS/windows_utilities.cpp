@@ -15,8 +15,8 @@ void make_minidump(EXCEPTION_POINTERS* e)
         auto nameEnd = name + GetModuleFileNameA(GetModuleHandleA(0), name, MAX_PATH);
         SYSTEMTIME t;
         GetSystemTime(&t);
-        wsprintfA(nameEnd - strlen(".exe"),
-            "_%4d%02d%02d_%02d%02d%02d.dmp",
+        wsprintfA(nameEnd - strlen("MCC-Win64-Shipping.exe"),
+            "..\\..\\..\\MCCTAS\\MCCDMP_%4d%02d%02d_%02d%02d%02d.dmp",
             t.wYear, t.wMonth, t.wDay, t.wHour, t.wMinute, t.wSecond);
     }
 
@@ -62,4 +62,24 @@ std::wstring str_to_wstr(const std::string str)
     wchar_t* wStr = new wchar_t[wchars_num];
     MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wStr, wchars_num);
     return std::wstring(wStr);
+}
+
+static LPTOP_LEVEL_EXCEPTION_FILTER OriginalUnhandledExceptionFilter;
+LONG CALLBACK unhandled_handler(EXCEPTION_POINTERS* e)
+{
+    tas_logger::critical("Unhandled exception, creating minidump!");
+    make_minidump(e);
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+void acquire_global_unhandled_exception_handler()
+{
+    OriginalUnhandledExceptionFilter = SetUnhandledExceptionFilter(unhandled_handler);
+}
+
+void release_global_unhandled_exception_handler()
+{
+    if (OriginalUnhandledExceptionFilter) {
+        SetUnhandledExceptionFilter(OriginalUnhandledExceptionFilter);
+    }
 }
