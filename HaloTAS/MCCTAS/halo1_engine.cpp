@@ -161,7 +161,11 @@ void halo1_engine::execute_command(const char* command)
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
 
-		ExecuteCommand* Exec = (ExecuteCommand*)((uint8_t*)H1DLL.value() + halo1::function::OFFSET_H1_EXECUTE_COMMAND);
-		Exec(command, 0);
+		// Check that runtime data is accessible, if not we're probably on the main menu
+		auto data_ptr = (void**)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_TICK_BASE);
+		if (*data_ptr != nullptr) {
+			ExecuteCommand* Exec = (ExecuteCommand*)((uint8_t*)H1DLL.value() + halo1::function::OFFSET_H1_EXECUTE_COMMAND);
+			Exec(command, 0);
+		}
 	}
 }
