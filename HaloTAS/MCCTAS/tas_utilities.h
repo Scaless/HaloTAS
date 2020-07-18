@@ -22,3 +22,41 @@ constexpr auto to_underlying(E e) noexcept
 	return static_cast<std::underlying_type_t<E>>(e);
 }
 
+// Get pointer to existing values using offsets, dereferencing at each step
+template <typename T>
+T* value_ptr(void* baseAddress, int64_t baseOffset, std::initializer_list<int64_t> additionalOffsets) {
+
+	std::byte* finalAddress = (std::byte*)baseAddress;
+
+	if (finalAddress == nullptr)
+		return nullptr;
+
+	finalAddress += baseOffset;
+
+	for (auto& offset : additionalOffsets) {
+		if (finalAddress == nullptr)
+			return nullptr;
+
+		finalAddress = (std::byte*) *((uintptr_t*)finalAddress);
+
+		if (finalAddress == nullptr)
+			return nullptr;
+
+		finalAddress += offset;
+	}
+
+	if (finalAddress) {
+		return (T*)finalAddress;
+	}
+
+	return nullptr;
+}
+
+// Get pointer to existing value with base and offset
+template <typename T>
+T* value_ptr(void* baseAddress, int64_t baseOffset) {
+
+	std::byte* finalAddress = (std::byte*)baseAddress;
+	finalAddress += baseOffset;
+	return (T*)finalAddress;
+}

@@ -162,6 +162,10 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 
 void handle_response_set_camera_details(const InteropRequest& request, InteropResponse& response) {
 	
+	// TODO-SCALES - Fix the addresses for this
+	response.header.type = InteropResponseType::FAILURE;
+	return;
+
 	SetCameraDetailsRequestPayload cameraDetailsPayload;
 	memcpy_s(&cameraDetailsPayload, sizeof(cameraDetailsPayload), request.payload, sizeof(cameraDetailsPayload));
 

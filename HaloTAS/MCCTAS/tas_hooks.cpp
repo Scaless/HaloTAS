@@ -261,91 +261,6 @@ struct input {
 
 char hkHalo1HandleInput() {
 	return originalHalo1HandleInput();
-	/////////////////////////////////////////////
-
-	static bool recording = false;
-	static bool playback = false;
-	static std::unordered_map<int, input> input_map;
-
-	uint8_t* inputaddr = (uint8_t*)0x18218E2B0;
-	int32_t* currenttime = (int32_t*)(0x18218E88C);
-	int32_t* lasttabpress = (int32_t*)(0x18218E630);
-	int8_t* tabdown = (int8_t*)(0x18218E2CE);
-	int* absoluteMCCTick = (int*)(0x181176118);
-
-	void** runtimeBase = (void**)0x18218E250;
-
-	if (runtimeBase == nullptr) {
-		return originalHalo1HandleInput();
-	}
-
-	int* tick = (int*)((char*)*runtimeBase + 0x2F4);
-
-	char result = 0;
-	if (!playback) {
-		result = originalHalo1HandleInput();
-	}
-
-	if (*tick == 0 && recording && !playback) {
-		tas_logger::info("Playback started");
-		recording = false;
-		playback = true;
-	}
-	if (*tick == 0 && !recording && !playback) {
-		tas_logger::info("Recording started");
-		recording = true;
-	}
-
-	if (recording) {
-		if (input_map.find(*tick) == input_map.end()) {
-			input i;
-			memcpy(&i, inputaddr, sizeof(i));
-			input_map[*tick] = i;
-		}
-		else {
-			float* mouseX = (float*)&input_map[*tick].everything[500];
-			float* mouseY = (float*)&input_map[*tick].everything[504];
-
-			float* newMouseX = (float*)&inputaddr[500];
-			float* newMouseY = (float*)&inputaddr[504];
-
-			*mouseX += *newMouseX;
-			*mouseY += *newMouseY;
-		}
-	}
-
-	static int lasttick = *tick;
-
-	if (playback) {
-		if (input_map.find(*tick) != input_map.end()) {
-
-			input i = input_map.at(*tick);
-			float* mouseX = (float*)&inputaddr[500];
-			*mouseX = *mouseX / 3.1f;
-			float* mouseY = (float*)&inputaddr[504];
-			*mouseY = *mouseY / 3.1f;
-			memcpy(inputaddr, &i, sizeof(i));
-
-			if (lasttick == *tick) {
-				*mouseX = 0;
-				*mouseY = 0;
-			}
-
-			lasttick = *tick;
-		}
-	}
-
-	//if (*tick != lasttick) {
-	//	*tabdown = 1;
-	//	lasttick = *tick;
-	//}
-	//else {
-	//	*tabdown = 0;
-	//}
-
-	//*currenttime += 1000;
-
-	return result;
 }
 
 // The MCCGetInput function is used to pass input from the MCC parent process to each individual game DLL.
@@ -389,8 +304,10 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	// Halo 1
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
-		int32_t** tick_base = (int32_t**)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_TICK_BASE);
-		if (*tick_base == nullptr) {
+		auto rng = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_RNG);
+		auto tick_ptr = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_TICK_BASE, { 0xC });
+
+		if (!rng || !tick_ptr) {
 			return OriginalReturn;
 		}
 
@@ -398,8 +315,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 			return OriginalReturn;
 		}
 
-		int32_t* rng = (int32_t*)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_RNG);
-		int32_t tick = *(*tick_base + 3);
+		int32_t tick = *tick_ptr;
 		static int32_t lasttick = tick;
 		static int32_t absoluteTick = 0;
 		static bool tickRevert = false;
@@ -435,13 +351,13 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
 		if (ticked) {
 			// Goatrope speedometer
-			float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1DLL.value() + 0x2199338);
+			/*float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1DLL.value() + 0x2199338);
 			glm::vec3 currentCameraPosition(cameraPositionArr[0], cameraPositionArr[1], 0);
 			static glm::vec3 previousCameraPosition = currentCameraPosition;
 
 			float distance = glm::distance(previousCameraPosition, currentCameraPosition);
 			previousCameraPosition = currentCameraPosition;
-			tas::overlay::add_speed_value(distance);
+			tas::overlay::add_speed_value(distance);*/
 			/////////////////////////
 		}
 		
@@ -475,12 +391,15 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 		}
 
 	}
-
+	
 	// Halo 2
 	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
 	if (H2DLL.has_value()) {
-		int32_t** tick_base = (int32_t**)((uint8_t*)H2DLL.value() + halo2::data::OFFSET_TICK_BASE);
-		if (*tick_base == nullptr) {
+
+		auto tick_ptr = value_ptr<int32_t>(H2DLL.value(), halo2::data::OFFSET_TICK_BASE, { 0x8 });
+		auto rng_ptr = value_ptr<int32_t>(H2DLL.value(), halo2::data::OFFSET_RNG, { 0x4 });
+
+		if (!tick_ptr || !rng_ptr) {
 			return OriginalReturn;
 		}
 
@@ -488,13 +407,12 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 			return OriginalReturn;
 		}
 
-		int32_t** rng_base = (int32_t**)(((uint8_t*)H2DLL.value() + halo2::data::OFFSET_RNG));
-		int32_t rng = *(*rng_base + 1);
-		int32_t tick = *(*tick_base + 2);
+		int32_t rng = *rng_ptr;
+		int32_t tick = *tick_ptr;
 		static int32_t lasttick = tick;
 		static int32_t absoluteTick = 0;
 
-		tas_logger::info("GetInputH2 on tick {}", tick, rng);
+		tas_logger::info("GetInputH2 on tick {} | RNG({})", tick, rng);
 
 		if (tick == 0 && recording) {
 			InputCache.reset();
@@ -557,16 +475,20 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	auto H3DLL = dll_cache::get_info(HALO3_DLL_WSTR);
 	if (H3DLL.has_value()) {
 
-		uint32_t* TLSIndex = (uint32_t*)((uint8_t*)H3DLL.value() + 0x9F219C);
+		auto TLSIndex = value_ptr<uint32_t>(H3DLL.value(), halo3::data::OFFSET_TICK_TLSINDEX);
 		int64_t* TLSResult = (int64_t*)(__readgsqword(0x58) + 8 * (int64_t)*TLSIndex);
-		int32_t tick = *(int32_t*)(*((int64_t*)(*TLSResult + 0x58)) + 0xC);
+		auto tick_ptr = value_ptr<int32_t>((void*)*TLSResult, 0x58, { 0xC });
+		auto rng = value_ptr<int32_t>(H3DLL.value(), halo3::data::OFFSET_RNG);
 
-		int32_t* rng = (int32_t*)((uint8_t*)H3DLL.value() + 0xE328C0);
-		
+		if (!tick_ptr) {
+			return OriginalReturn;
+		}
+
+		int32_t tick = *tick_ptr;
 		static int32_t lasttick = tick;
 		static int32_t absoluteTick = 0;
 
-		tas_logger::info("GetInputH3 | Tick[{}] | RNG[{}]", tick, *rng, OriginalReturn);
+		tas_logger::info("GetInputH3 | Tick[{}] | RNG[{}]", tick, *rng);
 
 		if (tick == 0 && recording) {
 			InputCache.reset();
@@ -713,12 +635,7 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 
 int64_t hkH2Tick(void* a1)
 {
-	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
-	if (H2DLL.has_value()) {
-		int32_t** rng_base = (int32_t**)(((uint8_t*)H2DLL.value() + halo2::data::OFFSET_RNG));
-		int32_t rng = *(*rng_base + 1);
-		//tas_logger::info("        H2 Tick | RNG({})", rng);
-	}
+	//tas_logger::info("        H2 Tick);
 	return originalH2Tick(a1);
 }
 

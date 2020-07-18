@@ -28,6 +28,7 @@ namespace halo3 {
 		inline const uint64_t OFFSET_H3_TICK = 0x29F1B0;
 	}
 	namespace data {
+		inline const uint64_t OFFSET_TICK_TLSINDEX = 0x9F219C;
 		inline const uint64_t OFFSET_RNG = 0xE328C0;
 	}
 }

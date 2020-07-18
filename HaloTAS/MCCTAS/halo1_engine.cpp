@@ -14,8 +14,8 @@ bool halo1_engine::is_engine_active()
 
 	// Check that runtime data is accessible, if not we're probably not running
 	// TODO-SCALES: Make this more reliable
-	auto data_ptr = (void**)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_TICK_BASE);
-	if (*data_ptr != nullptr) {
+	auto tick_ptr = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_TICK_BASE, { 0xC });
+	if (tick_ptr != nullptr) {
 		return true;
 	}
 
@@ -29,8 +29,7 @@ void halo1_engine::get_game_information(h1snapshot& snapshot)
 		return;
 	}
 
-	auto H1Base = H1DLL.value();
-	all_cheats* cheats = (all_cheats*)((uint8_t*)H1Base + halo1::data::OFFSET_CHEAT_TABLE);
+	auto cheats = value_ptr<all_cheats>(H1DLL.value(), halo1::data::OFFSET_CHEAT_TABLE);
 
 	snapshot.skulls[to_underlying(cheat::CHEAT_DEATHLESS_PLAYER)] = cheats->cheat_deathless_player;
 	snapshot.skulls[to_underlying(cheat::CHEAT_BUMP_POSESSION)] = cheats->cheat_bump_possession;
@@ -72,8 +71,7 @@ void halo1_engine::set_cheat_enabled(halo1::cheat cheat, bool enabled)
 		return;
 	}
 
-	auto H1Base = H1DLL.value();
-	all_cheats* cheats = (all_cheats*)((uint8_t*)H1Base + halo1::data::OFFSET_CHEAT_TABLE);
+	auto cheats = value_ptr<all_cheats>(H1DLL.value(), halo1::data::OFFSET_CHEAT_TABLE);
 
 	switch (cheat) {
 		// Cheats
@@ -181,7 +179,7 @@ void halo1_engine::execute_command(const char* command)
 
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
-		ExecuteCommand* Exec = (ExecuteCommand*)((uint8_t*)H1DLL.value() + halo1::function::OFFSET_H1_EXECUTE_COMMAND);
+		auto Exec = value_ptr<ExecuteCommand>(H1DLL.value(), halo1::function::OFFSET_H1_EXECUTE_COMMAND);
 		Exec(command, 0);
 	}
 }
@@ -193,7 +191,7 @@ void halo1_engine::set_checkpoint_flag()
 
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
-		control_flags* cf = (control_flags*)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_CONTROL_FLAGS);
+		auto cf = value_ptr<control_flags>(H1DLL.value(), halo1::data::OFFSET_CONTROL_FLAGS);
 		cf->save_unsafe = true;
 	}
 }
@@ -205,7 +203,7 @@ void halo1_engine::set_revert_flag()
 
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
-		control_flags* cf = (control_flags*)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_CONTROL_FLAGS);
+		auto cf = value_ptr<control_flags>(H1DLL.value(), halo1::data::OFFSET_CONTROL_FLAGS);
 		cf->revert = true;
 		cf->player_dead = false;
 		cf->death_counter_90 = 0;
