@@ -54,6 +54,18 @@ typedef char (*Halo1HandleInput_t)();
 char hkHalo1HandleInput();
 Halo1HandleInput_t originalHalo1HandleInput;
 
+typedef int64_t(*H2Tick_t)(void* a1);
+int64_t hkH2Tick(void* a1);
+H2Tick_t originalH2Tick;
+
+typedef void (*H2TickLoop_t)(int32_t a1, float* a2);
+void hkH2TickLoop(int32_t a1, float* a2);
+H2TickLoop_t originalH2TickLoop;
+
+typedef void (*H3Tick_t)();
+void hkH3Tick();
+H3Tick_t originalH3Tick;
+
 typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 D3D11Present_t originalD3D11Present;
@@ -62,6 +74,9 @@ const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", HALO1_DLL_WST
 
 const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
 const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_GET_NUMBER_OF_TICKS, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
+const hook RuntimeHook_Halo2Tick(L"hkHalo2Tick", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK, (PVOID**)&originalH2Tick, hkH2Tick);
+const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
+const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
 
 const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
 const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
@@ -69,13 +84,16 @@ const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibr
 const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
 const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
-const hook GlobalHook_MCCGetHalo1Input(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
+const hook GlobalHook_MCCGetInput(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
 
 tas_hooks::tas_hooks()
 {
 	gRuntimePatches.push_back(RuntimePatch_EnableH1DevConsole);
 	gRuntimeHooks.push_back(RuntimeHook_Halo1HandleInput);
 	gRuntimeHooks.push_back(RuntimeHook_Halo1GetNumberOfTicksToTick);
+	gRuntimeHooks.push_back(RuntimeHook_Halo2Tick);
+	gRuntimeHooks.push_back(RuntimeHook_Halo2TickLoop);
+	gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
 	gGlobalHooks.push_back(GlobalHook_D3D11Present);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryA);
@@ -83,7 +101,7 @@ tas_hooks::tas_hooks()
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExA);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExW);
 	gGlobalHooks.push_back(GlobalHook_FreeLibrary);
-	gGlobalHooks.push_back(GlobalHook_MCCGetHalo1Input);
+	gGlobalHooks.push_back(GlobalHook_MCCGetInput);
 
 	init_global_hooks();
 }
@@ -338,10 +356,9 @@ bool recording = false;
 bool playback = false;
 bool forceTick = false;
 int currentPlaybackFrame = 0;
-uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTable) {
+uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
-	// Get input from MCC
-	auto OriginalReturn = originalMCCInput(functionAddr, unknown, inputTable);
+	
 
 	// This is where we set our own inputs
 	// Buffered: Space, CTRL, Tab , Mouse (& more) are buffered in the engine, multiple presses will be evaluated on the next tick.
@@ -364,14 +381,12 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 		tas_logger::warning("disabled");
 	}
 
-	if (GetAsyncKeyState(VK_NUMPAD0)) {
-		globalStall = false;
-		tas_logger::warning("stall stopped");
-	}
-
-	// Halo 1 code path
+	// Halo 1
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
+		// Get input from MCC
+		auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
+
 		int32_t** tick_base = (int32_t**)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_TICK_BASE);
 		if (*tick_base == nullptr) {
 			return OriginalReturn;
@@ -386,8 +401,6 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 		static int32_t lasttick = tick;
 		static int32_t absoluteTick = 0;
 		static bool tickRevert = false;
-
-		MCCInput* Input = (MCCInput*)inputTable;
 
 		tas_logger::info("GetInput on tick {} | RNG({})", tick, *rng);
 
@@ -461,12 +474,170 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTabl
 
 	}
 
+	// Halo 2
+	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
+	if (H2DLL.has_value()) {
+		// Get input from MCC
+		auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
+
+		int32_t** tick_base = (int32_t**)((uint8_t*)H2DLL.value() + halo2::data::OFFSET_TICK_BASE);
+		if (*tick_base == nullptr) {
+			return OriginalReturn;
+		}
+
+		if (globalStall) {
+			return OriginalReturn;
+		}
+
+		int32_t** rng_base = (int32_t**)(((uint8_t*)H2DLL.value() + halo2::data::OFFSET_RNG));
+		int32_t rng = *(*rng_base + 1);
+		int32_t tick = *(*tick_base + 2);
+		static int32_t lasttick = tick;
+		static int32_t absoluteTick = 0;
+
+		tas_logger::info("GetInputH2 on tick {}", tick, rng);
+
+		if (tick == 0 && recording) {
+			InputCache.reset();
+			InputCache.start_tick(rng);
+		}
+
+		if (tick == 0) {
+			absoluteTick = 0;
+			currentPlaybackFrame = 0;
+		}
+
+		bool ticked = false;
+		if (lasttick != tick && tick != 0) {
+			if (!(tick < lasttick && lasttick != 0)) { // Revert
+				ticked = true;
+			}
+		}
+		lasttick = tick;
+
+		if (tick > 0 && recording && ticked) {
+			InputCache.end_tick();
+			InputCache.start_tick(rng);
+		}
+
+		if (recording) {
+			InputCache.push_input(*Input);
+		}
+
+		if (ticked) {
+			absoluteTick++;
+			currentPlaybackFrame = 0;
+		}
+
+		if (playback && !GetAsyncKeyState(VK_ESCAPE)) {
+			auto hasCurrentInput = InputCache.get_input(absoluteTick, currentPlaybackFrame, rng);
+			if (hasCurrentInput.has_value()) {
+				auto currentInput = hasCurrentInput.value();
+				memcpy_s(Input, sizeof(MCCInput), &currentInput.input, sizeof(currentInput.input));
+				forceTick = currentInput.isLastFrame;
+				currentPlaybackFrame++;
+
+				if (currentInput.rngError) {
+					globalStall = true;
+				}
+			}
+			else {
+				tas_logger::info("Tick({}) No input", absoluteTick);
+				currentPlaybackFrame = 0;
+				forceTick = true;
+			}
+		}
+
+		// Just in case
+		if (!playback) {
+			forceTick = false;
+		}
+	}
+
+	// Halo 3
+	auto H3DLL = dll_cache::get_info(HALO3_DLL_WSTR);
+	if (H3DLL.has_value()) {
+
+		uint32_t* TLSIndex = (uint32_t*)((uint8_t*)H3DLL.value() + 0x9F219C);
+		int64_t* TLSResult = (int64_t*)(__readgsqword(0x58) + 8 * (int64_t)*TLSIndex);
+		int32_t tick = *(int32_t*)(*((int64_t*)(*TLSResult + 0x58)) + 0xC);
+
+		int32_t* rng = (int32_t*)((uint8_t*)H3DLL.value() + 0xE328C0);
+		
+		static int32_t lasttick = tick;
+		static int32_t absoluteTick = 0;
+
+		ZeroMemory(Input, sizeof(MCCInput));
+		//auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
+		//tas_logger::info("GetInputH3 | Tick[{}] | RNG[{}]", tick, *rng, OriginalReturn);
+
+		if (tick == 0 && recording) {
+			InputCache.reset();
+			InputCache.start_tick(*rng);
+		}
+
+		if (tick == 0) {
+			absoluteTick = 0;
+			currentPlaybackFrame = 0;
+		}
+
+		bool ticked = false;
+		if (lasttick != tick && tick != 0) {
+			if (!(tick < lasttick && lasttick != 0)) { // Revert
+				ticked = true;
+			}
+		}
+		lasttick = tick;
+
+		if (tick > 0 && recording && ticked) {
+			InputCache.end_tick();
+			InputCache.start_tick(*rng);
+		}
+
+		if (recording) {
+			InputCache.push_input(*Input);
+		}
+
+		if (ticked) {
+			absoluteTick++;
+			currentPlaybackFrame = 0;
+		}
+
+		if (playback && !GetAsyncKeyState(VK_ESCAPE)) {
+			auto hasCurrentInput = InputCache.get_input(absoluteTick, currentPlaybackFrame, *rng);
+			if (hasCurrentInput.has_value()) {
+				auto currentInput = hasCurrentInput.value();
+				memcpy_s(Input, sizeof(MCCInput), &currentInput.input, sizeof(currentInput.input));
+				currentPlaybackFrame++;
+
+				if (tick == 0 && currentPlaybackFrame == 0) {
+					*rng = currentInput.rng;
+				}
+			}
+			else {
+				currentPlaybackFrame = 0;
+				tas_logger::info("Tick({}) No input", absoluteTick);
+			}
+		}
+
+		// Just in case
+		if (!playback) {
+			forceTick = false;
+		}
+
+		lasttick = tick;
+	}
+
 	// DEFAULT
-	return OriginalReturn;
+	return 1;
 }
 
 int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 
+	if (GetAsyncKeyState(VK_NUMPAD0)) {
+		globalStall = false;
+		tas_logger::warning("stall stopped");
+	}
 	if (globalStall) {
 		return 0;
 	}
@@ -541,4 +712,46 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 	}
 
 	return originalReturn;
+}
+
+int64_t hkH2Tick(void* a1)
+{
+	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
+	if (H2DLL.has_value()) {
+		int32_t** rng_base = (int32_t**)(((uint8_t*)H2DLL.value() + halo2::data::OFFSET_RNG));
+		int32_t rng = *(*rng_base + 1);
+		tas_logger::info("        H2 Tick | RNG({})", rng);
+	}
+	return originalH2Tick(a1);
+}
+
+void hkH2TickLoop(int32_t a1, float* a2) {
+	if (GetAsyncKeyState(VK_NUMPAD0)) {
+		globalStall = false;
+		tas_logger::warning("stall stopped");
+	}
+	if (globalStall) {
+		return;
+	}
+
+	if (playback) {
+		if (forceTick) {
+			return originalH2TickLoop(1, a2);
+		}
+		else {
+			return;
+		}
+	}
+
+	if (a2 && *a2 > 0.0f) {
+		tas_logger::info("    H2 Tick Loop: {}/{}", a1, *a2);
+	}
+
+	return originalH2TickLoop(a1, a2);
+}
+
+void hkH3Tick()
+{
+	tas_logger::info("    H3 Tick");
+	originalH3Tick();
 }

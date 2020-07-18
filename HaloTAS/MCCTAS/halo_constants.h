@@ -23,6 +23,26 @@ namespace mcc {
 	}
 }
 
+namespace halo3 {
+	namespace function {
+		inline const uint64_t OFFSET_H3_TICK = 0x29F1B0;
+	}
+	namespace data {
+		inline const uint64_t OFFSET_RNG = 0xE328C0;
+	}
+}
+
+namespace halo2 {
+	namespace function {
+		inline const uint64_t OFFSET_H2_TICK = 0x6CC540;
+		inline const uint64_t OFFSET_H2_TICK_LOOP = 0x6CCA10;
+	}
+	namespace data {
+		inline const uint64_t OFFSET_TICK_BASE = 0x13B7F00;
+		inline const uint64_t OFFSET_RNG = 0xD76720;
+	}
+}
+
 namespace halo1 {
 
 	namespace function {

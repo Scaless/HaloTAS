@@ -30,6 +30,7 @@ std::optional<input_return> tas_input::get_input(int32_t tick, int32_t frame, in
 		auto tickInputs = mLevelInput[tick];
 
 		input_return ir;
+		ir.rng = tickInputs.mRNGStart;
 		if (RNG != tickInputs.mRNGStart) {
 			ir.rngError = true;
 			tas_logger::warning("Tick({}): RNG does not match: Expected({}) / Actual({})", tick, tickInputs.mRNGStart, RNG);

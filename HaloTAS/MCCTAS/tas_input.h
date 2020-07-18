@@ -63,6 +63,7 @@ struct input_return {
 	MCCInput input;
 	bool isLastFrame = false;
 	bool rngError = false;
+	int32_t rng = 0;
 };
 class tas_input
 {
