@@ -1,10 +1,10 @@
 #pragma once
 #include "pch.h"
 
-namespace halo {
+namespace halo1 {
 
 	// Used to interop with the GUI program
-	enum class Halo1Cheat : int32_t {
+	enum class cheat : int32_t {
 		CHEAT_DEATHLESS_PLAYER,
 		CHEAT_BUMP_POSESSION,
 		CHEAT_SUPER_JUMP,
@@ -40,7 +40,7 @@ namespace halo {
 		COUNT
 	};
 
-	struct halo1_cheats {
+	struct all_cheats {
 		bool cheat_deathless_player;
 		bool padding_1[2];
 		bool cheat_bump_possession;
@@ -80,8 +80,27 @@ namespace halo {
 		bool skull_boots_off_the_ground;
 	};
 
-	struct halo1_snapshot {
-		bool skulls[to_underlying(Halo1Cheat::COUNT)];
+	struct h1snapshot {
+		bool skulls[to_underlying(cheat::COUNT)];
 	};
 
+	struct control_flags {
+		bool level_restart;
+		const bool game_freeze_dont_use;
+		bool revert;
+		bool padding1;
+		bool save_safe;
+		bool padding2[2];
+		bool save_unsafe;
+		bool padding15[15];
+		bool game_won;
+		bool player_dead;
+		bool unk1;
+		bool core_save;
+		bool core_load;
+		bool padding22[22];
+		bool game_paused;
+		bool padding6[6];
+		int16_t death_counter_90;
+	};
 }

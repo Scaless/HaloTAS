@@ -268,7 +268,8 @@
     <ClInclude Include="global.h" />
     <ClInclude Include="gui_interop.h" />
     <ClInclude Include="halo1_engine.h" />
-    <ClInclude Include="halo1_types.h" />
+    <ClInclude Include="halo2_engine.h" />
+    <ClInclude Include="halo_types.h" />
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="kiero.h" />
@@ -299,6 +300,7 @@
     <ClCompile Include="global.cpp" />
     <ClCompile Include="gui_interop.cpp" />
     <ClCompile Include="halo1_engine.cpp" />
+    <ClCompile Include="halo2_engine.cpp" />
     <ClCompile Include="hook.cpp" />
     <ClCompile Include="kiero.cpp" />
     <ClCompile Include="patch.cpp" />

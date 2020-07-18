@@ -1,5 +1,5 @@
 #pragma once
-#include "halo1_types.h"
+#include "halo_types.h"
 
 class halo1_engine
 {
@@ -12,11 +12,16 @@ private:
 	halo1_engine() = default;
 	~halo1_engine() = default;
 
-public:
-	static void get_game_information(halo::halo1_snapshot& snapshot);
+private:
+	static bool is_engine_active();
 
-	static void set_cheat_enabled(halo::Halo1Cheat skull, bool enabled);
+public:
+	static void get_game_information(halo1::h1snapshot& snapshot);
+
+	static void set_cheat_enabled(halo1::cheat skull, bool enabled);
 
 	static void execute_command(const char* command);
-};
 
+	static void set_checkpoint_flag();
+	static void set_revert_flag();
+};

@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include "windows_utilities.h"
 #include "halo1_engine.h"
-#include "halo1_types.h"
+#include "halo_types.h"
 #include "dll_cache.h"
 #include "global.h"
 
@@ -99,7 +99,7 @@ struct ExecuteCommandRequestPayload {
 
 struct Halo1GameInformation {
 	int32_t Tick;
-	BOOL SkullsEnabled[to_underlying(halo::Halo1Cheat::COUNT)];
+	BOOL SkullsEnabled[to_underlying(halo1::cheat::COUNT)];
 };
 struct GetGameInformationResponsePayload {
 	BOOL Halo1Loaded;
@@ -215,10 +215,10 @@ void handle_response_get_game_information(const InteropRequest& request, Interop
 	gameInfoPayload.Halo1Information.Tick = 999;
 
 	if (gameInfoPayload.Halo1Loaded) {
-		halo::halo1_snapshot h1Snapshot = {};
+		halo1::h1snapshot h1Snapshot = {};
 		halo1_engine::get_game_information(h1Snapshot);
 		
-		for (int i = 0; i < to_underlying(halo::Halo1Cheat::COUNT); i++) {
+		for (int i = 0; i < to_underlying(halo1::cheat::COUNT); i++) {
 			gameInfoPayload.Halo1Information.SkullsEnabled[i] = h1Snapshot.skulls[i];
 		}
 	}
@@ -234,7 +234,7 @@ void handle_response_set_halo1_skull_enabled(const InteropRequest& request, Inte
 	Halo1SetSkullEnabledRequestPayload skullSetPayload;
 	memcpy_s(&skullSetPayload, sizeof(skullSetPayload), request.payload, sizeof(skullSetPayload));
 
-	auto skull = (halo::Halo1Cheat)skullSetPayload.Skull;
+	auto skull = (halo1::cheat)skullSetPayload.Skull;
 
 	halo1_engine::set_cheat_enabled(skull, skullSetPayload.Enabled);
 
