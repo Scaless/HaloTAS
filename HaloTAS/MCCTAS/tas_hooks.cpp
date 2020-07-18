@@ -358,7 +358,12 @@ bool forceTick = false;
 int currentPlaybackFrame = 0;
 uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
-	
+	auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
+
+	bool tasEnabled = false;
+	if (!tasEnabled) {
+		return OriginalReturn;
+	}
 
 	// This is where we set our own inputs
 	// Buffered: Space, CTRL, Tab , Mouse (& more) are buffered in the engine, multiple presses will be evaluated on the next tick.
@@ -384,9 +389,6 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	// Halo 1
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
-		// Get input from MCC
-		auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
-
 		int32_t** tick_base = (int32_t**)((uint8_t*)H1DLL.value() + halo1::data::OFFSET_TICK_BASE);
 		if (*tick_base == nullptr) {
 			return OriginalReturn;
@@ -477,9 +479,6 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	// Halo 2
 	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
 	if (H2DLL.has_value()) {
-		// Get input from MCC
-		auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
-
 		int32_t** tick_base = (int32_t**)((uint8_t*)H2DLL.value() + halo2::data::OFFSET_TICK_BASE);
 		if (*tick_base == nullptr) {
 			return OriginalReturn;
@@ -567,9 +566,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 		static int32_t lasttick = tick;
 		static int32_t absoluteTick = 0;
 
-		ZeroMemory(Input, sizeof(MCCInput));
-		//auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
-		//tas_logger::info("GetInputH3 | Tick[{}] | RNG[{}]", tick, *rng, OriginalReturn);
+		tas_logger::info("GetInputH3 | Tick[{}] | RNG[{}]", tick, *rng, OriginalReturn);
 
 		if (tick == 0 && recording) {
 			InputCache.reset();
@@ -629,15 +626,15 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	}
 
 	// DEFAULT
-	return 1;
+	return OriginalReturn;
 }
 
 int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 
-	if (GetAsyncKeyState(VK_NUMPAD0)) {
+	/*if (GetAsyncKeyState(VK_NUMPAD0)) {
 		globalStall = false;
 		tas_logger::warning("stall stopped");
-	}
+	}*/
 	if (globalStall) {
 		return 0;
 	}
@@ -664,9 +661,9 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 		originalReturn = std::clamp<int64_t>(originalReturn, 0, 1);
 	}
 
-	if (GetAsyncKeyState(VK_RIGHT)) {
+	/*if (GetAsyncKeyState(VK_RIGHT)) {
 		originalReturn = 1;
-	}
+	}*/
 
 	bool superhot = false;
 	if (superhot) {
@@ -720,16 +717,16 @@ int64_t hkH2Tick(void* a1)
 	if (H2DLL.has_value()) {
 		int32_t** rng_base = (int32_t**)(((uint8_t*)H2DLL.value() + halo2::data::OFFSET_RNG));
 		int32_t rng = *(*rng_base + 1);
-		tas_logger::info("        H2 Tick | RNG({})", rng);
+		//tas_logger::info("        H2 Tick | RNG({})", rng);
 	}
 	return originalH2Tick(a1);
 }
 
 void hkH2TickLoop(int32_t a1, float* a2) {
-	if (GetAsyncKeyState(VK_NUMPAD0)) {
+	/*if (GetAsyncKeyState(VK_NUMPAD0)) {
 		globalStall = false;
 		tas_logger::warning("stall stopped");
-	}
+	}*/
 	if (globalStall) {
 		return;
 	}
@@ -744,7 +741,7 @@ void hkH2TickLoop(int32_t a1, float* a2) {
 	}
 
 	if (a2 && *a2 > 0.0f) {
-		tas_logger::info("    H2 Tick Loop: {}/{}", a1, *a2);
+		//tas_logger::info("    H2 Tick Loop: {}/{}", a1, *a2);
 	}
 
 	return originalH2TickLoop(a1, a2);
@@ -752,6 +749,6 @@ void hkH2TickLoop(int32_t a1, float* a2) {
 
 void hkH3Tick()
 {
-	tas_logger::info("    H3 Tick");
+	//tas_logger::info("    H3 Tick");
 	originalH3Tick();
 }

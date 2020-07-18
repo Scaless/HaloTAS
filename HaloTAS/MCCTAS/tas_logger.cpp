@@ -18,7 +18,7 @@ tas_logger::tas_logger()
 	multi_logger->set_level(spdlog::level::trace);
 
 	spdlog::set_default_logger(multi_logger);
-	spdlog::set_level(spdlog::level::trace);
+	spdlog::set_level(spdlog::level::debug);
 	spdlog::flush_on(spdlog::level::trace);
 }
 

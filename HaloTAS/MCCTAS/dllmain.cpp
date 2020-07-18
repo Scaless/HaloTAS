@@ -23,7 +23,7 @@ void RealMain() {
 		"MCCTAS significantly modifies game behavior and is not approved for official speedruns.\r\n"
 		"If you see this console window open, MCCTAS is running.\r\n\r\n"
 		"Report bugs and suggest features on Github at: https://github.com/Scaless/HaloTAS. \r\n"
-		"Have fun :) ~Scales"
+		"Have fun! ~Scales"
 		;
 	tas_logger::warning("{}", startupMessage);
 
