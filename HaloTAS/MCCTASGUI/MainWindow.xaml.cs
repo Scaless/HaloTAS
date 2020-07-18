@@ -222,6 +222,16 @@ namespace MCCTASGUI
             tbH1SendCommand.Text = "";
         }
 
-       
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            InteropRequest request = new InteropRequest();
+            request.header.RequestType = InteropRequestType.KillMCCTAS;
+
+            var result = await TASInterop.MakeRequestAsync(request);
+            if (result?.header.ResponseType != InteropResponseType.Success)
+            {
+                // Something went wrong
+            }
+        }
     }
 }

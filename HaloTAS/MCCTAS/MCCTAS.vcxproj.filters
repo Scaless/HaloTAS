@@ -417,6 +417,9 @@
     <ClInclude Include="dll_cache.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="global.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -493,6 +496,9 @@
     </ClCompile>
     <ClCompile Include="dll_cache.cpp">
       <Filter>Source Files\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="global.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

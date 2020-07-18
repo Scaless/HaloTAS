@@ -265,6 +265,7 @@
     <ClInclude Include="console_parser.h" />
     <ClInclude Include="dll_cache.h" />
     <ClInclude Include="framework.h" />
+    <ClInclude Include="global.h" />
     <ClInclude Include="gui_interop.h" />
     <ClInclude Include="halo1_engine.h" />
     <ClInclude Include="halo1_types.h" />
@@ -295,6 +296,7 @@
     <ClCompile Include="console_parser.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="dll_cache.cpp" />
+    <ClCompile Include="global.cpp" />
     <ClCompile Include="gui_interop.cpp" />
     <ClCompile Include="halo1_engine.cpp" />
     <ClCompile Include="hook.cpp" />

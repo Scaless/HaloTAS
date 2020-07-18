@@ -12,6 +12,7 @@ namespace MCCTASGUI.Interop
         ExecuteCommand = 3,
         GetGameInformation = 4,
         Halo1SetCheatEnabled = 5,
+        KillMCCTAS = 6
     }
 
     public enum InteropResponseType

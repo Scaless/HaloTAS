@@ -8,6 +8,7 @@
 #include "halo1_engine.h"
 #include "halo1_types.h"
 #include "dll_cache.h"
+#include "global.h"
 
 enum class InteropRequestType : int32_t {
 	INVALID = -1,
@@ -17,6 +18,7 @@ enum class InteropRequestType : int32_t {
 	EXECUTE_COMMAND = 3,
 	GET_GAME_INFORMATION = 4,
 	SET_HALO1_SKULL_ENABLED = 5,
+	KILL_MCCTAS = 6,
 };
 std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
 	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
@@ -26,6 +28,7 @@ std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
 	{to_underlying(InteropRequestType::EXECUTE_COMMAND), L"EXECUTE_COMMAND"},
 	{to_underlying(InteropRequestType::GET_GAME_INFORMATION), L"GET_GAME_INFORMATION"},
 	{to_underlying(InteropRequestType::SET_HALO1_SKULL_ENABLED), L"SET_HALO1_SKULL_ENABLED"},
+	{to_underlying(InteropRequestType::KILL_MCCTAS), L"KILL_MCCTAS"},
 };
 
 enum class InteropResponseType : int32_t {
@@ -238,6 +241,12 @@ void handle_response_set_halo1_skull_enabled(const InteropRequest& request, Inte
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
+void handle_response_kill_mcctas(const InteropRequest& request, InteropResponse& response) {
+	global::kill_mcctas();
+
+	response.header.type = InteropResponseType::SUCCESS;
+}
+
 void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 {
 	auto request_execution_start_time = std::chrono::steady_clock::now();
@@ -266,6 +275,9 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 		break;
 	case InteropRequestType::SET_HALO1_SKULL_ENABLED:
 		handle_response_set_halo1_skull_enabled(request, response);
+		break;
+	case InteropRequestType::KILL_MCCTAS:
+		handle_response_kill_mcctas(request, response);
 		break;
 	case InteropRequestType::INVALID:
 	default:
@@ -304,7 +316,7 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 
 gui_interop::gui_interop()
 {
-	tas_logger::trace("Starting Interop Pipe Server");
+	tas_logger::debug("Starting Interop Pipe Server");
 	pipe_server = std::make_unique<windows_pipe_server>();
 	pipe_server->set_request_callback(&answer_request);
 	std::thread serverThread = std::thread(&windows_pipe_server::server_main, pipe_server.get());

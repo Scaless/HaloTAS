@@ -1,5 +1,6 @@
 #include "windows_console.h"
 #include <iostream>
+#include "global.h"
 
 std::atomic_bool windows_console::mExitFlag = false;
 
@@ -13,6 +14,7 @@ BOOL WINAPI console_event_handler(DWORD CEvent)
 	case CTRL_SHUTDOWN_EVENT:
 		windows_console::set_exit_status(true);
 		FreeConsole();
+		global::kill_mcctas();
 		break;
 	}
 	return TRUE;

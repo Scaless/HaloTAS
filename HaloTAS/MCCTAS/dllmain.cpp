@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 
+#include "global.h"
 #include "windows_utilities.h"
 #include "windows_console.h"
 #include "tas_hooks.h"
@@ -35,7 +36,7 @@ void RealMain() {
 
 	// Most of the cool stuff happens in other threads.
 	// This loop is just to keep stuff alive.
-	while (!consoleWindow->is_open()) {
+	while (!global::is_kill_set()) {
 		Sleep(100);
 	}
 
