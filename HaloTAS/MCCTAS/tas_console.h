@@ -9,7 +9,7 @@
 class tas_console
 {
 private:
-	enum class console_mode {MCCTAS, HALO1DEV};
+	enum class console_mode { MCCTAS, HALO1DEV };
 
 	char mCommandBuffer[1024] = "";
 	std::vector<std::string> mCommandHistory;

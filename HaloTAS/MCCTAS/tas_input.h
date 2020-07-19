@@ -75,10 +75,10 @@ public:
 	void start_tick(int RNG);
 	void push_input(const MCCInput& input);
 	void end_tick();
-	
+
 	void reset();
 
-	
+
 	std::optional<input_return> get_input(int32_t tick, int32_t frame, int32_t RNG);
 };
 

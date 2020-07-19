@@ -326,7 +326,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 			InputCache.reset();
 			InputCache.start_tick(*rng);
 		}
-		
+
 		if (tick == 0) {
 			absoluteTick = 0;
 			currentPlaybackFrame = 0;
@@ -360,7 +360,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 			tas::overlay::add_speed_value(distance);*/
 			/////////////////////////
 		}
-		
+
 		if (ticked) {
 			absoluteTick++;
 			currentPlaybackFrame = 0;
@@ -391,7 +391,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 		}
 
 	}
-	
+
 	// Halo 2
 	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
 	if (H2DLL.has_value()) {
@@ -575,7 +575,7 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 	if (a2) {
 		return originalH1GetNumberOfTicksToTick(a1, a2);
 	}
-	
+
 	auto originalReturn = originalH1GetNumberOfTicksToTick(a1, a2);
 
 	bool Limit1TickPerFrame = true;

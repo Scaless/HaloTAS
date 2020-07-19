@@ -129,7 +129,7 @@ void speedometer_render() {
 	ImGui::Begin("Speedometer");
 
 	std::vector<float> display(speeds.begin(), speeds.end());
-	
+
 	float maxValue = 0;
 	for (auto& h : display) {
 		if (h > maxValue) {
@@ -245,7 +245,7 @@ namespace tas::overlay {
 	{
 		reset_wndproc_handler();
 	}
-	
+
 	void add_speed_value(float speed)
 	{
 		speeds.push_back(speed);

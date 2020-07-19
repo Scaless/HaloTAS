@@ -37,7 +37,7 @@ T* value_ptr(void* baseAddress, int64_t baseOffset, std::initializer_list<int64_
 		if (finalAddress == nullptr)
 			return nullptr;
 
-		finalAddress = (std::byte*) *((uintptr_t*)finalAddress);
+		finalAddress = (std::byte*) * ((uintptr_t*)finalAddress);
 
 		if (finalAddress == nullptr)
 			return nullptr;

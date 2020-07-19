@@ -208,7 +208,7 @@ bool windows_pipe_server::server_init()
 	Pipe.dwState = Pipe.fPendingIO ?
 		PipeState::CONNECTING : // still connecting 
 		PipeState::READING;     // ready to read 
-	
+
 	return true;
 }
 

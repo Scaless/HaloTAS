@@ -3,7 +3,7 @@ class global
 {
 private:
 	bool mKillFlag;
-	
+
 	static global& get() {
 		static global instance;
 		return instance;

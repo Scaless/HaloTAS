@@ -20,7 +20,7 @@ enum class InteropRequestType : int32_t {
 	SET_HALO1_SKULL_ENABLED = 5,
 	KILL_MCCTAS = 6,
 };
-std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString {
+std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString{
 	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
 	{to_underlying(InteropRequestType::PING), L"PING"},
 	{to_underlying(InteropRequestType::GET_DLL_INFORMATION), L"GET_DLL_INFORMATION"},
@@ -150,7 +150,7 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 	dllName.copy(payloadOut.dll_name, dllName.size(), 0);
 	payloadOut.base_address = (uint64_t)dll.value();
 	// TODO-SCALES: Remove these values from propagation since they are not used
-	payloadOut.entry_point = 0; 
+	payloadOut.entry_point = 0;
 	payloadOut.image_size = 0;
 
 	response.header.type = InteropResponseType::SUCCESS;
@@ -161,7 +161,7 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 }
 
 void handle_response_set_camera_details(const InteropRequest& request, InteropResponse& response) {
-	
+
 	// TODO-SCALES - Fix the addresses for this
 	response.header.type = InteropResponseType::FAILURE;
 	return;
@@ -181,12 +181,12 @@ void handle_response_set_camera_details(const InteropRequest& request, InteropRe
 	cameraPositionArr[0] = cameraDetailsPayload.positionX;
 	cameraPositionArr[1] = cameraDetailsPayload.positionY;
 	cameraPositionArr[2] = cameraDetailsPayload.positionZ;
-	
+
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
 void handle_response_execute_command(const InteropRequest& request, InteropResponse& response) {
-	
+
 	ExecuteCommandRequestPayload commandPayload;
 	memcpy_s(&commandPayload, sizeof(commandPayload), request.payload, sizeof(commandPayload));
 
@@ -221,7 +221,7 @@ void handle_response_get_game_information(const InteropRequest& request, Interop
 	if (gameInfoPayload.Halo1Loaded) {
 		halo1::h1snapshot h1Snapshot = {};
 		halo1_engine::get_game_information(h1Snapshot);
-		
+
 		for (int i = 0; i < to_underlying(halo1::cheat::COUNT); i++) {
 			gameInfoPayload.Halo1Information.SkullsEnabled[i] = h1Snapshot.skulls[i];
 		}
@@ -290,7 +290,7 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 		break;
 	}
 	}
-	
+
 	DWORD TotalWriteSize = 0;
 
 	// Copy Header
@@ -301,7 +301,7 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 	if (response.header.payload_size > 0) {
 		memcpy_s(
 			pipe->chReply + sizeof(response.header),
-			windows_pipe_server::PIPE_BUFFER_SIZE - sizeof(response.header), 
+			windows_pipe_server::PIPE_BUFFER_SIZE - sizeof(response.header),
 			response.payload.data(),
 			response.header.payload_size);
 		TotalWriteSize += response.header.payload_size;

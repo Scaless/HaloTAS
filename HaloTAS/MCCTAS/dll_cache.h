@@ -20,7 +20,7 @@ private:
 		static dll_cache instance;
 		return instance;
 	}
-	
+
 	dll_cache() = default;
 	~dll_cache() = default;
 

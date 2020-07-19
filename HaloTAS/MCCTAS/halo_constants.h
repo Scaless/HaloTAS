@@ -70,7 +70,7 @@ namespace halo1 {
 		//inline const uint64_t SCAN_OFFSET = 0x6;
 		//inline const uint64_t RELATIVE_OFFSET_CHEATS = ...
 		inline const uint64_t OFFSET_CHEAT_TABLE = 0x117DA90;
-		
+
 		inline const uint64_t OFFSET_TICK_BASE = 0x115D848;
 		inline const uint64_t OFFSET_RNG = 0x115DD80;
 

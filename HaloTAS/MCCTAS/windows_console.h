@@ -16,6 +16,6 @@ public:
 	void clear();
 	static bool is_open();
 	static void set_exit_status(bool newStatus);
-	
+
 };
 

@@ -14,7 +14,7 @@
 // Main Execution Loop
 void RealMain() {
 	acquire_global_unhandled_exception_handler();
-	
+
 	auto consoleWindow = std::make_unique<windows_console>();
 	consoleWindow->open();
 
