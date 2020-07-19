@@ -167,7 +167,6 @@
     <ClInclude Include="..\include\imgui\imconfig.h" />
     <ClInclude Include="..\include\imgui\imgui.h" />
     <ClInclude Include="..\include\imgui\imgui_impl_dx11.h" />
-    <ClInclude Include="..\include\imgui\imgui_impl_opengl3.h" />
     <ClInclude Include="..\include\imgui\imgui_impl_win32.h" />
     <ClInclude Include="..\include\imgui\imgui_internal.h" />
     <ClInclude Include="..\include\imgui\imstb_rectpack.h" />
@@ -260,8 +259,6 @@
     <ClInclude Include="..\include\spdlog\spdlog.h" />
     <ClInclude Include="..\include\spdlog\tweakme.h" />
     <ClInclude Include="..\include\spdlog\version.h" />
-    <ClInclude Include="..\lib\gl3w\GL\gl3w.h" />
-    <ClInclude Include="..\lib\gl3w\GL\glcorearb.h" />
     <ClInclude Include="console_parser.h" />
     <ClInclude Include="dll_cache.h" />
     <ClInclude Include="framework.h" />
@@ -290,10 +287,8 @@
     <ClCompile Include="..\include\imgui\imgui_demo.cpp" />
     <ClCompile Include="..\include\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\include\imgui\imgui_impl_dx11.cpp" />
-    <ClCompile Include="..\include\imgui\imgui_impl_opengl3.cpp" />
     <ClCompile Include="..\include\imgui\imgui_impl_win32.cpp" />
     <ClCompile Include="..\include\imgui\imgui_widgets.cpp" />
-    <ClCompile Include="..\lib\gl3w\GL\gl3w.c" />
     <ClCompile Include="console_parser.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="dll_cache.cpp" />
