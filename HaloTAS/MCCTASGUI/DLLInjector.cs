@@ -11,6 +11,8 @@ namespace MCCTASGUI
 {
     class DLLInjector
     {
+        const string CURRENT_SUPPORTED_VERSION = "1.1698.0.0";
+
         [DllImport("kernel32.dll")]
         static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
 
@@ -62,6 +64,16 @@ namespace MCCTASGUI
             {
                 string caption = "Injection Failed - MCC not running";
                 string message = "Couldn't find MCC-Win64-Shipping.exe. Are you sure the game is running?";
+                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                return;
+            }
+
+            // Version Checking
+            var fileVersionInfo = FileVersionInfo.GetVersionInfo(targetProcess.MainModule.FileName);
+            if(fileVersionInfo.FileVersion != CURRENT_SUPPORTED_VERSION)
+            {
+                string caption = "Injection Failed - Version Mismatch";
+                string message = $"The version of Master Chief Collection ({fileVersionInfo.FileVersion}) does not match the version supported by MCCTAS ({CURRENT_SUPPORTED_VERSION}).";
                 MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }
