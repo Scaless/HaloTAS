@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "global.h"
 
 void global::kill_mcctas()

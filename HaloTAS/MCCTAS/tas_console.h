@@ -1,9 +1,6 @@
 #pragma once
 
 #include "pch.h"
-#include <vector>
-#include <string>
-#include <imgui/imgui.h>
 #include "console_parser.h"
 
 class tas_console

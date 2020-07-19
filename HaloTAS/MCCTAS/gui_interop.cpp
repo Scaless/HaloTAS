@@ -1,9 +1,5 @@
+#include "pch.h"
 #include "gui_interop.h"
-#include <thread>
-#include <chrono>
-#include <vector>
-#include <string>
-#include <unordered_map>
 #include "windows_utilities.h"
 #include "halo1_engine.h"
 #include "halo_types.h"

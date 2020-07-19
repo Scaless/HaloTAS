@@ -105,9 +105,6 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="tas_utilities.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
@@ -425,9 +422,6 @@
     <ClCompile Include="..\include\imgui\imgui_draw.cpp">
       <Filter>Libraries\imgui</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\imgui\imgui_impl_dx11.cpp">
-      <Filter>Libraries\imgui</Filter>
-    </ClCompile>
     <ClCompile Include="..\include\imgui\imgui_impl_win32.cpp">
       <Filter>Libraries\imgui</Filter>
     </ClCompile>
@@ -487,6 +481,9 @@
     </ClCompile>
     <ClCompile Include="halo2_engine.cpp">
       <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui\imgui_impl_dx11.cpp">
+      <Filter>Libraries\imgui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

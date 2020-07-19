@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "dll_cache.h"
 
 void dll_cache::initialize()

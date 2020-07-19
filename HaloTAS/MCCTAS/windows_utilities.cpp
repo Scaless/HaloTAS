@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "windows_utilities.h"
-#include <Dbghelp.h>
 
 void make_minidump(EXCEPTION_POINTERS* e)
 {

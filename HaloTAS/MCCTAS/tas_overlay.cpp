@@ -2,11 +2,6 @@
 #include "tas_overlay.h"
 #include "tas_console.h"
 
-#include <imgui/imgui.h>
-#include <imgui/imgui_impl_win32.h>
-#include <imgui/imgui_impl_dx11.h>
-#include <boost/circular_buffer.hpp>
-
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void reset_wndproc_handler();

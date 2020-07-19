@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "windows_pipe_server.h"
 
 void windows_pipe_server::server_main()

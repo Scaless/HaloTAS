@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "windows_console.h"
-#include <iostream>
 #include "global.h"
 
 std::atomic_bool windows_console::mExitFlag = false;

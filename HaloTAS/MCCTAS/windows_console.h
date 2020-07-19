@@ -1,6 +1,5 @@
 #pragma once
-#include <windows.h>
-#include <atomic>
+#include "pch.h"
 
 class windows_console
 {

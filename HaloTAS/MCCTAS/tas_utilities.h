@@ -1,7 +1,5 @@
 #pragma once
-
-#include <cstdint>
-#include <type_traits>
+#include "pch.h"
 
 namespace {
 	constexpr auto operator""_KiB(const uint64_t x) { return (1024ULL) * x; }

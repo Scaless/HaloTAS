@@ -1,6 +1,5 @@
 #pragma once
-#include <d3d11.h>
-#include <vector>
+#include "pch.h"
 #include "tas_input.h"
 
 namespace tas::overlay {

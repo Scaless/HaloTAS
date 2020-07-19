@@ -1,7 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <variant>
-#include <optional>
 
 enum class ConsoleCommand { MODE_SWITCH, CONSOLE_COLOR };
 

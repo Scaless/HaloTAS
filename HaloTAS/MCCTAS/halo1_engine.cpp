@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "halo1_engine.h"
 #include "windows_utilities.h"
 #include "dll_cache.h"

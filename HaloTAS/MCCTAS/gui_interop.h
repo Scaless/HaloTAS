@@ -1,7 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <atomic>
-#include <memory>
 #include "windows_pipe_server.h"
 
 class gui_interop

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "tas_input.h"
 
 void tas_input::start_tick(int RNG)

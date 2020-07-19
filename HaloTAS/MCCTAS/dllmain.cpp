@@ -1,13 +1,10 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
-#include <string>
-#include <memory>
 
 #include "global.h"
 #include "windows_utilities.h"
 #include "windows_console.h"
 #include "tas_hooks.h"
-#include "halo_constants.h"
 #include "gui_interop.h"
 #include "dll_cache.h"
 

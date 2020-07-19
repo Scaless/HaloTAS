@@ -1,6 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <optional>
 
 const uint32_t MOUSE_BUTTON_LEFT = 0x1;
 const uint32_t MOUSE_BUTTON_MIDDLE = 0x2;

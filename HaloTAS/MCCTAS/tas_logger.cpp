@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "tas_logger.h"
 
 tas_logger::tas_logger()

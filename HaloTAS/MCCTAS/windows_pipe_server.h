@@ -1,7 +1,5 @@
 #pragma once
 #include "pch.h"
-#include <functional>
-#include <atomic>
 
 /*
 The pipe implementation is based on the Microsoft example here, with some changes:

@@ -1,19 +1,12 @@
+#include "pch.h"
 #include "tas_hooks.h"
 #include "windows_utilities.h"
 #include "patch.h"
 #include "hook.h"
 #include "tas_overlay.h"
 #include "tas_input.h"
-#include "kiero.h"
 #include "dll_cache.h"
 #include "halo1_engine.h"
-
-#include <winternl.h>
-#include <string>
-#include <mutex>
-#include <unordered_map>
-#include <filesystem>
-#include <chrono>
 
 static std::once_flag gOverlayInitialized;
 // Global hooks should only apply to areas that will never be unloaded
