@@ -3,8 +3,12 @@
 #include <cinttypes>
 #include <vector>
 #include <string>
+
+#pragma warning(push)
+#pragma warning(disable: 26495)
 #include <glm/glm.hpp>
 #include <glm/gtc/constants.hpp>
+#pragma warning(pop)
 
 #include "tas_utilities.h"
 

@@ -1,7 +1,13 @@
 #pragma once
 #include "pch.h"
 #include <string>
+
+#pragma warning(push)
+#pragma warning(disable: 26451 26495 26812)
 #include <spdlog/spdlog.h>
+#include <spdlog/sinks/rotating_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#pragma warning(pop)
 
 /// <summary>
 /// tas_logger wraps spdlog, which in turn uses the fmt library

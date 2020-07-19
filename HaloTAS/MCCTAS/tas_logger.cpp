@@ -1,9 +1,5 @@
 #include "tas_logger.h"
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/rotating_file_sink.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-
 tas_logger::tas_logger()
 {
 	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

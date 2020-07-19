@@ -138,7 +138,8 @@ void speedometer_render() {
 	}
 	maxValue = std::clamp<float>(maxValue + .05f, .1f, 5.0f);
 
-	ImGui::PlotHistogram("SPEED", display.data(), display.size(), 0, "OK", 0.0f, maxValue, ImVec2(1000.0f, 480.0f));
+	int value_count = display.size() > INT_MAX ? INT_MAX : static_cast<int>(display.size());
+	ImGui::PlotHistogram("SPEED", display.data(), value_count, 0, "OK", 0.0f, maxValue, ImVec2(1000.0f, 480.0f));
 
 	ImGui::End();
 }

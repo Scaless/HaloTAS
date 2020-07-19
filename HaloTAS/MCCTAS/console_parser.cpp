@@ -117,7 +117,7 @@ std::optional<ParsedCommand> parse_command_string(const std::string& str)
 		return std::nullopt;
 	}
 
-	int numGivenParameters = stringTokens.size() - 1;
+	auto numGivenParameters = stringTokens.size() - 1;
 	auto expectedParameters = optExpectedParameters.value();
 	if (numGivenParameters != expectedParameters.size()) {
 		// Number of parameters given does not match expected

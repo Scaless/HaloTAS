@@ -49,7 +49,6 @@ bool dll_cache::add_to_cache(const std::wstring& dllName, HMODULE handle)
 bool dll_cache::remove_from_cache(const std::wstring& dllName)
 {
 	auto& instance = get();
-
 	auto it = instance.mCache.find(dllName);
 	if (it != instance.mCache.end()) {
 		instance.mCache.erase(it);
@@ -62,12 +61,10 @@ bool dll_cache::remove_from_cache(const std::wstring& dllName)
 std::optional<HMODULE> dll_cache::get_info(const std::wstring& dllName)
 {
 	auto& instance = get();
-	std::optional<HMODULE> ret = std::nullopt;
-
 	auto it = instance.mCache.find(dllName);
 	if (it != instance.mCache.end()) {
-		ret = it->second;
+		return it->second;
 	}
 
-	return ret;
+	return std::nullopt;
 }

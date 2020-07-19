@@ -42,7 +42,7 @@ namespace MCCTASGUI.Interop
                 {
                     await pipeClient.ConnectAsync(500);
                 }
-                catch (TimeoutException e)
+                catch (TimeoutException)
                 {
                     return null;
                 }
@@ -63,7 +63,7 @@ namespace MCCTASGUI.Interop
 
                         return await ids.GetResponse();
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         return null;
                     }
@@ -104,8 +104,8 @@ namespace MCCTASGUI.Interop
 
         private class InteropDataStream
         {
-            private Stream DataStream;
-            private byte[] WriteBuffer;
+            private readonly Stream DataStream;
+            private readonly byte[] WriteBuffer;
             private int WrittenBytes;
 
             public InteropDataStream(Stream stream)
@@ -129,8 +129,10 @@ namespace MCCTASGUI.Interop
 
             public async Task<InteropResponse> GetResponse()
             {
-                InteropResponse response = new InteropResponse();
-                response.header = new InteropResponseHeader();
+                InteropResponse response = new InteropResponse
+                {
+                    header = new InteropResponseHeader()
+                };
 
                 byte[] responseHeaderArray = new byte[Marshal.SizeOf(response.header)];
                 await DataStream.ReadAsync(responseHeaderArray, 0, responseHeaderArray.Length);
