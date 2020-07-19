@@ -197,7 +197,7 @@ void handle_response_execute_command(const InteropRequest& request, InteropRespo
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
-void handle_response_get_game_information(const InteropRequest& request, InteropResponse& response) {
+void handle_response_get_game_information(const InteropRequest& /*request*/, InteropResponse& response) {
 
 	auto h1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
 	auto h2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
@@ -245,7 +245,7 @@ void handle_response_set_halo1_skull_enabled(const InteropRequest& request, Inte
 	response.header.type = InteropResponseType::SUCCESS;
 }
 
-void handle_response_kill_mcctas(const InteropRequest& request, InteropResponse& response) {
+void handle_response_kill_mcctas(const InteropRequest& /*request*/, InteropResponse& response) {
 	global::kill_mcctas();
 
 	response.header.type = InteropResponseType::SUCCESS;

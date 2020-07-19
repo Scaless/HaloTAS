@@ -43,10 +43,10 @@
 
 #define KIERO_ARRAY_SIZE(arr) ((size_t)(sizeof(arr)/sizeof(arr[0])))
 
-static kiero::RenderType::Enum g_renderType = kiero::RenderType::None;
+static kiero::RenderType g_renderType = kiero::RenderType::None;
 static uint150_t* g_methodsTable = NULL;
 
-kiero::Status::Enum kiero::init(RenderType::Enum _renderType)
+kiero::Status kiero::init(RenderType _renderType)
 {
 	if (g_renderType != RenderType::None)
 	{
@@ -633,7 +633,7 @@ kiero::Status::Enum kiero::init(RenderType::Enum _renderType)
 		}
 		else
 		{
-			RenderType::Enum type = RenderType::None;
+			RenderType type = RenderType::None;
 
 			if (::GetModuleHandle(KIERO_TEXT("d3d9.dll")) != NULL)
 			{
@@ -685,7 +685,7 @@ void kiero::shutdown()
 	}
 }
 
-kiero::Status::Enum kiero::bind(uint16_t _index, void** _original, void* _function)
+kiero::Status kiero::bind(uint16_t _index, void** _original, void* _function)
 {
 	// TODO: Need own detour function
 
@@ -717,7 +717,7 @@ void kiero::unbind(uint16_t _index)
 	}
 }
 
-kiero::RenderType::Enum kiero::getRenderType()
+kiero::RenderType kiero::getRenderType()
 {
 	return g_renderType;
 }

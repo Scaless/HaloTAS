@@ -32,46 +32,40 @@ typedef uint32_t uint150_t;
 
 namespace kiero
 {
-	struct Status
+	enum class Status
 	{
-		enum Enum
-		{
-			UnknownError = -1,
-			NotSupportedError = -2,
-			ModuleNotFoundError = -3,
+		UnknownError = -1,
+		NotSupportedError = -2,
+		ModuleNotFoundError = -3,
 
-			AlreadyInitializedError = -4,
-			NotInitializedError = -5,
+		AlreadyInitializedError = -4,
+		NotInitializedError = -5,
 
-			Success = 0,
-		};
+		Success = 0,
 	};
 
-	struct RenderType
+	enum class RenderType
 	{
-		enum Enum
-		{
-			None,
+		None,
 
-			D3D9,
-			D3D10,
-			D3D11,
-			D3D12,
+		D3D9,
+		D3D10,
+		D3D11,
+		D3D12,
 
-			OpenGL,
-			Vulkan,
+		OpenGL,
+		Vulkan,
 
-			Auto
-		};
+		Auto
 	};
 
-	Status::Enum init(RenderType::Enum renderType);
+	Status init(RenderType renderType);
 	void shutdown();
 
-	Status::Enum bind(uint16_t index, void** original, void* function);
+	Status bind(uint16_t index, void** original, void* function);
 	void unbind(uint16_t index);
 
-	RenderType::Enum getRenderType();
+	RenderType getRenderType();
 	uint150_t* getMethodsTable();
 }
 

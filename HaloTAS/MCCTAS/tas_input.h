@@ -54,8 +54,8 @@ struct MCCInput {
 };
 
 struct tick_inputs {
-	int32_t mAbsoluteTick;
-	int32_t mRNGStart;
+	int32_t mAbsoluteTick = 0;
+	int32_t mRNGStart = 0;
 	std::vector<MCCInput> mInputs;
 };
 

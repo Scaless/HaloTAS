@@ -29,7 +29,7 @@ void make_minidump(EXCEPTION_POINTERS* e)
 	exceptionInfo.ExceptionPointers = e;
 	exceptionInfo.ClientPointers = FALSE;
 
-	auto dumped = pMiniDumpWriteDump(
+	pMiniDumpWriteDump(
 		GetCurrentProcess(),
 		GetCurrentProcessId(),
 		hFile,

@@ -65,7 +65,6 @@ void tas_console::render(int windowWidth)
 {
 	const float DISTANCE = 10.0f;
 
-	ImGuiStyle& style = ImGui::GetStyle();
 	ImGuiIO& io = ImGui::GetIO();
 
 	int colorStyles = 0;

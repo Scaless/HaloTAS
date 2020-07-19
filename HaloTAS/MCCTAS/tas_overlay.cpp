@@ -144,7 +144,7 @@ void speedometer_render() {
 	ImGui::End();
 }
 
-void InputRender(const tas_input& Input) {
+void InputRender(const tas_input& /*Input*/) {
 	ImGui::Begin("Inputs");
 
 	/*int count = Input.tick_count();

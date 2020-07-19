@@ -173,7 +173,7 @@ bool windows_pipe_server::server_init()
 {
 	LPCWSTR lpcwPipeName = TEXT("\\\\.\\pipe\\MCCTAS");
 
-	auto Event = CreateEvent(
+	Event = CreateEvent(
 		NULL,    // default security attribute 
 		TRUE,    // manual-reset event 
 		TRUE,    // initial state = signaled 
