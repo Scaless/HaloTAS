@@ -270,6 +270,7 @@
     <ClInclude Include="hook.h" />
     <ClInclude Include="kiero.h" />
     <ClInclude Include="patch.h" />
+    <ClInclude Include="speedometer.h" />
     <ClInclude Include="tas_console.h" />
     <ClInclude Include="tas_hooks.h" />
     <ClInclude Include="pch.h" />
@@ -319,6 +320,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="patch.cpp" />
+    <ClCompile Include="speedometer.cpp" />
     <ClCompile Include="tas_console.cpp" />
     <ClCompile Include="tas_hooks.cpp" />
     <ClCompile Include="pch.cpp">

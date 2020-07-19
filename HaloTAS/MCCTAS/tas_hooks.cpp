@@ -7,6 +7,7 @@
 #include "tas_input.h"
 #include "dll_cache.h"
 #include "halo1_engine.h"
+#include "speedometer.h"
 
 static std::once_flag gOverlayInitialized;
 // Global hooks should only apply to areas that will never be unloaded
@@ -14,6 +15,8 @@ static std::vector<hook> gGlobalHooks;
 // Runtime hooks & patches are applied and unapplied when dlls are loaded and unloaded
 static std::vector<hook> gRuntimeHooks;
 static std::vector<patch> gRuntimePatches;
+
+static std::shared_ptr<speedometer> speedo = std::make_shared<speedometer>(5, 30);
 
 typedef HMODULE(*LoadLibraryA_t)(LPCSTR lpLibFileName);
 HMODULE hkLoadLibraryA(LPCSTR lpLibFileName);
@@ -268,7 +271,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
 	auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
 
-	bool tasEnabled = false;
+	bool tasEnabled = true;
 	if (!tasEnabled) {
 		return OriginalReturn;
 	}
@@ -293,6 +296,8 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 		recording = false;
 		tas_logger::warning("disabled");
 	}
+
+	tas::overlay::set_current_speedometer(speedo);
 
 	// Halo 1
 	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
@@ -323,6 +328,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 		if (tick == 0) {
 			absoluteTick = 0;
 			currentPlaybackFrame = 0;
+			speedo->clear();
 		}
 
 		bool ticked = false;
@@ -340,18 +346,6 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
 		if (recording) {
 			InputCache.push_input(*Input);
-		}
-
-		if (ticked) {
-			// Goatrope speedometer
-			/*float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1DLL.value() + 0x2199338);
-			glm::vec3 currentCameraPosition(cameraPositionArr[0], cameraPositionArr[1], 0);
-			static glm::vec3 previousCameraPosition = currentCameraPosition;
-
-			float distance = glm::distance(previousCameraPosition, currentCameraPosition);
-			previousCameraPosition = currentCameraPosition;
-			tas::overlay::add_speed_value(distance);*/
-			/////////////////////////
 		}
 
 		if (ticked) {
@@ -574,6 +568,12 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 	bool Limit1TickPerFrame = true;
 	if (Limit1TickPerFrame) {
 		originalReturn = std::clamp<int64_t>(originalReturn, 0, 1);
+	}
+
+	if (originalReturn) {
+		auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+		auto currentCameraPosition = value_ptr<glm::vec3>(H1DLL.value(), 0x219AF08);
+		speedo->push_back(*currentCameraPosition);
 	}
 
 	/*if (GetAsyncKeyState(VK_RIGHT)) {

@@ -408,6 +408,9 @@
     <ClInclude Include="halo2_engine.h">
       <Filter>Header Files\Engine</Filter>
     </ClInclude>
+    <ClInclude Include="speedometer.h">
+      <Filter>Header Files\Overlay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -484,6 +487,9 @@
     </ClCompile>
     <ClCompile Include="..\include\imgui\imgui_impl_dx11.cpp">
       <Filter>Libraries\imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="speedometer.cpp">
+      <Filter>Source Files\Overlay</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

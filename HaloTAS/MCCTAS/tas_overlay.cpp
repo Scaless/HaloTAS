@@ -18,9 +18,7 @@ static bool gIsInitD3D = false;
 static WNDPROC gOriginalWndProcHandler = nullptr;
 static int gWndWidth = 0, gWndHeight = 0;
 static tas_console gConsole;
-
-const size_t MAX_SPEEDS = 5 * 30; // 5 seconds
-static boost::circular_buffer<float> speeds(MAX_SPEEDS);
+static std::shared_ptr<speedometer> speedo;
 
 LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -119,11 +117,13 @@ void reset_wndproc_handler()
 }
 
 void speedometer_render() {
-	ImGui::SetNextWindowPos(ImVec2(0, 0));
-	ImGui::SetNextWindowSize(ImVec2(1080, 540));
-	ImGui::Begin("Speedometer");
+	if (!speedo) {
+		return;
+	}
+	ImGui::SetNextWindowSize(ImVec2(1000.0f, 200.0f));
+	ImGui::Begin("Speedometer", nullptr, ImGuiWindowFlags_NoTitleBar);
 
-	std::vector<float> display(speeds.begin(), speeds.end());
+	auto display = speedo->display_data(speedometer::axis::XY);
 
 	float maxValue = 0;
 	for (auto& h : display) {
@@ -134,7 +134,7 @@ void speedometer_render() {
 	maxValue = std::clamp<float>(maxValue + .05f, .1f, 5.0f);
 
 	int value_count = display.size() > INT_MAX ? INT_MAX : static_cast<int>(display.size());
-	ImGui::PlotHistogram("SPEED", display.data(), value_count, 0, "OK", 0.0f, maxValue, ImVec2(1000.0f, 480.0f));
+	ImGui::PlotHistogram("SPEED", display.data(), value_count, 0, "OK", 0.0f, maxValue, ImVec2(1000.0f, 200.0f));
 
 	ImGui::End();
 }
@@ -242,9 +242,9 @@ namespace tas::overlay {
 		reset_wndproc_handler();
 	}
 
-	void add_speed_value(float speed)
+	void set_current_speedometer(std::shared_ptr<speedometer> spm)
 	{
-		speeds.push_back(speed);
+		speedo = spm;
 	}
 }
 
