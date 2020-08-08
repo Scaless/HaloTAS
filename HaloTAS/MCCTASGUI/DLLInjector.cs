@@ -11,7 +11,7 @@ namespace MCCTASGUI
 {
     class DLLInjector
     {
-        const string CURRENT_SUPPORTED_VERSION = "1.1698.0.0";
+        const string CURRENT_SUPPORTED_VERSION = "1.1716.0.0";
 
         [DllImport("kernel32.dll")]
         static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);

@@ -68,11 +68,11 @@ D3D11Present_t originalD3D11Present;
 
 const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", HALO1_DLL_WSTR, halo1::patch::OFFSET_ENABLE_DEV_CONSOLE, halo1::patch::PATCHBYTES_ENABLE_DEV_CONSOLE);
 
-const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
+//const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
 const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_GET_NUMBER_OF_TICKS, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
-const hook RuntimeHook_Halo2Tick(L"hkHalo2Tick", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK, (PVOID**)&originalH2Tick, hkH2Tick);
-const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
-const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
+//const hook RuntimeHook_Halo2Tick(L"hkHalo2Tick", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK, (PVOID**)&originalH2Tick, hkH2Tick);
+//const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
+//const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
 
 const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
 const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
@@ -80,16 +80,16 @@ const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibr
 const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
 const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
-const hook GlobalHook_MCCGetInput(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
+//const hook GlobalHook_MCCGetInput(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
 
 tas_hooks::tas_hooks()
 {
 	gRuntimePatches.push_back(RuntimePatch_EnableH1DevConsole);
-	gRuntimeHooks.push_back(RuntimeHook_Halo1HandleInput);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1HandleInput);
 	gRuntimeHooks.push_back(RuntimeHook_Halo1GetNumberOfTicksToTick);
-	gRuntimeHooks.push_back(RuntimeHook_Halo2Tick);
-	gRuntimeHooks.push_back(RuntimeHook_Halo2TickLoop);
-	gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo2Tick);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo2TickLoop);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
 	gGlobalHooks.push_back(GlobalHook_D3D11Present);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryA);
@@ -97,7 +97,7 @@ tas_hooks::tas_hooks()
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExA);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExW);
 	gGlobalHooks.push_back(GlobalHook_FreeLibrary);
-	gGlobalHooks.push_back(GlobalHook_MCCGetInput);
+	//gGlobalHooks.push_back(GlobalHook_MCCGetInput);
 
 	init_global_hooks();
 }
@@ -380,6 +380,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	}
 
 	// Halo 2
+	/*
 	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
 	if (H2DLL.has_value()) {
 
@@ -457,8 +458,9 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 			forceTick = false;
 		}
 	}
-
+	*/
 	// Halo 3
+	/*
 	auto H3DLL = dll_cache::get_info(HALO3_DLL_WSTR);
 	if (H3DLL.has_value()) {
 
@@ -533,7 +535,8 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
 		lasttick = tick;
 	}
-
+	*/
+	
 	// DEFAULT
 	return OriginalReturn;
 }

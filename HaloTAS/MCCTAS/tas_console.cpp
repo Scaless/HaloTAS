@@ -43,18 +43,41 @@ void tas_console::execute()
 	mCommandHistory.push_back(command);
 
 	auto parsed_command = parse_command_string(command);
-
-	if (mMode == tas_console::console_mode::MCCTAS) {
-		if (parsed_command.has_value() && parsed_command.value().is_global()) {
-			execute_global(parsed_command.value());
-		}
+	// Check if it's a global command
+	if (parsed_command.has_value() && parsed_command.value().is_global()) {
+		execute_global(parsed_command.value());
 	}
-	if (mMode == tas_console::console_mode::HALO1DEV) {
-		if (parsed_command.has_value() && parsed_command.value().is_global()) {
-			execute_global(parsed_command.value());
+	// Otherwise pass on to the specific mode
+	else {
+		switch (mMode)
+		{
+		case tas_console::console_mode::MCCTAS:
+		{
+			// TODO-SCALES: Handler for tas commands
+			break;
 		}
-		else {
-			execute_h1dev(command);
+		case tas_console::console_mode::HALO1DEV:
+		{
+			if (parsed_command.has_value()) {
+				execute_h1dev(parsed_command.value());
+			}
+			else {
+				execute_h1raw(command);
+			}
+			break;
+		}
+		case tas_console::console_mode::HALO2DEV:
+		{
+			execute_h2dev(parsed_command.value());
+			break;
+		}
+		case tas_console::console_mode::HALO3DEV:
+		{
+			execute_h3dev(parsed_command.value());
+			break;
+		}
+		default:
+			break;
 		}
 	}
 
@@ -99,7 +122,13 @@ void tas_console::render(int windowWidth)
 			ImGui::Text("mcctas(");
 			break;
 		case tas_console::console_mode::HALO1DEV:
-			ImGui::Text("halo(");
+			ImGui::Text("halo1(");
+			break;
+		case tas_console::console_mode::HALO2DEV:
+			ImGui::Text("halo2(");
+			break;
+		case tas_console::console_mode::HALO3DEV:
+			ImGui::Text("halo3(");
 			break;
 		default:
 			tas_logger::error("Invalid console mode set: {}", mMode);
@@ -162,6 +191,12 @@ void tas_console::execute_global(const ParsedCommand& command)
 	case ConsoleCommand::MODE_SWITCH:
 	{
 		auto newModeString = std::get<std::string>(command.mParameters[0]);
+		if (newModeString == "h3dev") {
+			mMode = console_mode::HALO3DEV;
+		}
+		if (newModeString == "h2dev") {
+			mMode = console_mode::HALO2DEV;
+		}
 		if (newModeString == "h1dev") {
 			mMode = console_mode::HALO1DEV;
 		}
@@ -174,8 +209,23 @@ void tas_console::execute_global(const ParsedCommand& command)
 	}
 }
 
-void tas_console::execute_h1dev(const std::string& command)
+void tas_console::execute_h1raw(const std::string& command)
 {
 	halo1_engine::execute_command(command.c_str());
 	tas_logger::info("Executed HALO1DEV command: {}", command);
+}
+
+void tas_console::execute_h1dev(const ParsedCommand& command)
+{
+
+}
+
+void tas_console::execute_h2dev(const ParsedCommand& command)
+{
+
+}
+
+void tas_console::execute_h3dev(const ParsedCommand& command)
+{
+
 }

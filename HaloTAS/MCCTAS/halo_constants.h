@@ -17,32 +17,32 @@ namespace mcc {
 	}
 }
 
-namespace halo3 {
-	namespace function {
-		inline const uint64_t OFFSET_H3_TICK = 0x29F1B0;
-	}
-	namespace data {
-		inline const uint64_t OFFSET_TICK_TLSINDEX = 0x9F219C;
-		inline const uint64_t OFFSET_RNG = 0xE328C0;
-	}
-}
-
-namespace halo2 {
-	namespace function {
-		inline const uint64_t OFFSET_H2_TICK = 0x6CC540;
-		inline const uint64_t OFFSET_H2_TICK_LOOP = 0x6CCA10;
-	}
-	namespace data {
-		inline const uint64_t OFFSET_TICK_BASE = 0x13B7F00;
-		inline const uint64_t OFFSET_RNG = 0xD76720;
-	}
-}
+//namespace halo3 {
+//	namespace function {
+//		inline const uint64_t OFFSET_H3_TICK = 0x29F1B0;
+//	}
+//	namespace data {
+//		inline const uint64_t OFFSET_TICK_TLSINDEX = 0x9F219C;
+//		inline const uint64_t OFFSET_RNG = 0xE328C0;
+//	}
+//}
+//
+//namespace halo2 {
+//	namespace function {
+//		inline const uint64_t OFFSET_H2_TICK = 0x6CC540;
+//		inline const uint64_t OFFSET_H2_TICK_LOOP = 0x6CCA10;
+//	}
+//	namespace data {
+//		inline const uint64_t OFFSET_TICK_BASE = 0x13B7F00;
+//		inline const uint64_t OFFSET_RNG = 0xD76720;
+//	}
+//}
 
 namespace halo1 {
 
 	namespace function {
 		// TODO-SCALES - Get scan for this func
-		inline const uint64_t OFFSET_H1_HANDLE_INPUT = 0x70EBC0;
+		//inline const uint64_t OFFSET_H1_HANDLE_INPUT = 0x70EBC0;
 
 		// SCAN: 48 8B C4 53 57 41 54 41 57 48 81 EC A8 00 00 00
 		inline const uint64_t OFFSET_H1_GET_NUMBER_OF_TICKS = 0x6F5D90;
@@ -63,13 +63,19 @@ namespace halo1 {
 		//inline const uint64_t SCAN_CHEATS
 		//inline const uint64_t SCAN_OFFSET = 0x6;
 		//inline const uint64_t RELATIVE_OFFSET_CHEATS = ...
-		inline const uint64_t OFFSET_CHEAT_TABLE = 0x117DA90;
+		//inline const uint64_t OFFSET_CHEAT_TABLE = 0x117DA90;
+		inline const uint64_t OFFSET_CHEAT_TABLE = 0x117CA90;
 
-		inline const uint64_t OFFSET_TICK_BASE = 0x115D848;
-		inline const uint64_t OFFSET_RNG = 0x115DD80;
+
+		//inline const uint64_t OFFSET_TICK_BASE = 0x115D848;
+		inline const uint64_t OFFSET_TICK_BASE = 0x115C848;
+		
+		inline const uint64_t OFFSET_RNG = 0x115CD80;
+		//inline const uint64_t OFFSET_RNG = 0x115DD80;
 
 		// SCAN: E8 ** ** ** ** E8 ** ** ** ** E8 ** ** ** ** E8 ** ** ** ** C7 ** ** ** ** ** ** ** ** ** C6 05 <Relative addr>
-		inline const uint64_t OFFSET_CONTROL_FLAGS = 0x115D8C0;
+		inline const uint64_t OFFSET_CONTROL_FLAGS = 0x115C8C0;
+		//inline const uint64_t OFFSET_CONTROL_FLAGS = 0x115D8C0;
 	}
 
 	namespace constants {
