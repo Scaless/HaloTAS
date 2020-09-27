@@ -65,6 +65,8 @@ namespace MCCTASGUI
                     iconHalo2Loaded.Fill = Status.H2DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHalo3Loaded.Fill = Status.H3DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHaloReachLoaded.Fill = Status.ReachDLLLoaded ? Brushes.Green : Brushes.Red;
+                    iconHaloODSTLoaded.Fill = Status.ODSTDLLLoaded ? Brushes.Green : Brushes.Red;
+                    iconHalo4Loaded.Fill = Status.H4DLLLoaded ? Brushes.Green : Brushes.Red;
 
                     panelH1Cheats.Children.Clear();
                     for(int i = 0; i < EnumUtils<Halo1Cheat>.Count; i++)
