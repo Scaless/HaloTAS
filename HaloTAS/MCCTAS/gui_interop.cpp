@@ -10,7 +10,7 @@ enum class InteropRequestType : int32_t {
 	INVALID = -1,
 	PING = 0,
 	GET_DLL_INFORMATION = 1,
-	SET_CAMERA_DETAILS = 2,
+	//SET_CAMERA_DETAILS = 2,
 	EXECUTE_COMMAND = 3,
 	GET_GAME_INFORMATION = 4,
 	SET_HALO1_SKULL_ENABLED = 5,
@@ -20,7 +20,7 @@ std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString{
 	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
 	{to_underlying(InteropRequestType::PING), L"PING"},
 	{to_underlying(InteropRequestType::GET_DLL_INFORMATION), L"GET_DLL_INFORMATION"},
-	{to_underlying(InteropRequestType::SET_CAMERA_DETAILS), L"SET_CAMERA_DETAILS"},
+	//{to_underlying(InteropRequestType::SET_CAMERA_DETAILS), L"SET_CAMERA_DETAILS"},
 	{to_underlying(InteropRequestType::EXECUTE_COMMAND), L"EXECUTE_COMMAND"},
 	{to_underlying(InteropRequestType::GET_GAME_INFORMATION), L"GET_GAME_INFORMATION"},
 	{to_underlying(InteropRequestType::SET_HALO1_SKULL_ENABLED), L"SET_HALO1_SKULL_ENABLED"},
@@ -156,31 +156,6 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 	memcpy_s(response.payload.data(), response.payload.capacity(), &payloadOut, sizeof(payloadOut));
 }
 
-void handle_response_set_camera_details(const InteropRequest& request, InteropResponse& response) {
-
-	// TODO-SCALES - Fix the addresses for this
-	response.header.type = InteropResponseType::FAILURE;
-	return;
-
-	SetCameraDetailsRequestPayload cameraDetailsPayload;
-	memcpy_s(&cameraDetailsPayload, sizeof(cameraDetailsPayload), request.payload, sizeof(cameraDetailsPayload));
-
-	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
-	if (!H1DLL.has_value()) {
-		return;
-	}
-
-	auto H1Base = H1DLL.value();
-
-	float* cameraPositionArr = reinterpret_cast<float*>((uint8_t*)H1Base + 0x2199338);
-
-	cameraPositionArr[0] = cameraDetailsPayload.positionX;
-	cameraPositionArr[1] = cameraDetailsPayload.positionY;
-	cameraPositionArr[2] = cameraDetailsPayload.positionZ;
-
-	response.header.type = InteropResponseType::SUCCESS;
-}
-
 void handle_response_execute_command(const InteropRequest& request, InteropResponse& response) {
 
 	ExecuteCommandRequestPayload commandPayload;
@@ -263,9 +238,6 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 		break;
 	case InteropRequestType::GET_DLL_INFORMATION:
 		handle_response_dll_information(request, response);
-		break;
-	case InteropRequestType::SET_CAMERA_DETAILS:
-		handle_response_set_camera_details(request, response);
 		break;
 	case InteropRequestType::EXECUTE_COMMAND:
 		handle_response_execute_command(request, response);

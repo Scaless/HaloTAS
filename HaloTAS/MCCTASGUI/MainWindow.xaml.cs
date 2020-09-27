@@ -25,10 +25,8 @@ namespace MCCTASGUI
     /// </summary>
     public partial class MainWindow : Window
     {
-        private LiveMapDataViewer liveMapDataViewer = null;
         private AboutWindow aboutWindow = null;
         private TASInputEditor inputEditorWindow = null;
-        private H1CinematicCameraWindow H1CinematicCameraWindow = null;
 
         public MainWindow()
         {
@@ -72,6 +70,7 @@ namespace MCCTASGUI
                     for(int i = 0; i < EnumUtils<Halo1Cheat>.Count; i++)
                     {
                         CheckBox cb = new CheckBox();
+                        cb.Width = 150;
                         cb.IsChecked = Status.Halo1.CheatsEnabled[i];
                         cb.Content = Enum.GetName(typeof(Halo1Cheat), i).ToString();
                         cb.Margin = new Thickness(2);
@@ -97,42 +96,6 @@ namespace MCCTASGUI
             bool newEnabled = checkbox.IsChecked ?? false;
 
             await H1EngineFunctions.SetCheatEnabled(cheat, newEnabled);
-        }
-
-        private void MenuOpenMapData(object sender, RoutedEventArgs e)
-        {
-            if (liveMapDataViewer == null)
-            {
-                liveMapDataViewer = new LiveMapDataViewer();
-                liveMapDataViewer.Closed += LiveMapDataViewer_Closed;
-                liveMapDataViewer.Show();
-            } 
-            else
-            {
-                FocusWindow(liveMapDataViewer);
-            }
-        }
-        private void LiveMapDataViewer_Closed(object sender, EventArgs e)
-        {
-            liveMapDataViewer = null;
-        }
-
-        private void MenuOpenH1CinematicCamera(object sender, RoutedEventArgs e)
-        {
-            if(H1CinematicCameraWindow == null)
-            {
-                H1CinematicCameraWindow = new H1CinematicCameraWindow();
-                H1CinematicCameraWindow.Closed += H1CinematicCamera_Closed;
-                H1CinematicCameraWindow.Show();
-            } 
-            else
-            {
-                FocusWindow(H1CinematicCameraWindow);
-            }
-        }
-        private void H1CinematicCamera_Closed(object sender, EventArgs e)
-        {
-            H1CinematicCameraWindow = null;
         }
 
         private void MenuOpenAbout(object sender, RoutedEventArgs e)

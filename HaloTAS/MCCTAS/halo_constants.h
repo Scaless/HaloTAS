@@ -69,7 +69,6 @@ namespace halo1 {
 
 		//inline const uint64_t OFFSET_TICK_BASE = 0x115D848;
 		inline const uint64_t OFFSET_TICK_BASE = 0x115C848;
-		
 		inline const uint64_t OFFSET_RNG = 0x115CD80;
 		//inline const uint64_t OFFSET_RNG = 0x115DD80;
 

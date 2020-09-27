@@ -17,9 +17,7 @@
                 <MenuItem Header="Close"></MenuItem>
             </MenuItem>
             <MenuItem Header="View">
-                <MenuItem Header="Map Data" Click="MenuOpenMapData"></MenuItem>
                 <MenuItem Header="Input Editor" Click="MenuOpenInputEditor"></MenuItem>
-                <MenuItem Header="Halo 1 Cinematic Camera" Click="MenuOpenH1CinematicCamera"></MenuItem>
             </MenuItem>
             <MenuItem Header="Help">
                 <MenuItem Header="About" Click="MenuOpenAbout"></MenuItem>
@@ -40,13 +38,31 @@
                         </StackPanel>
                     </TabItem.Header>
                     <Grid>
-                        <StackPanel HorizontalAlignment="Stretch" >
-                            <Button x:Name="btnH1SendCommand" Content="Send Command" Margin="2" HorizontalAlignment="Left" Click="btnH1SendCommand_Click"/>
-                            <TextBox x:Name="tbH1SendCommand" HorizontalAlignment="Stretch" Margin="2" TextWrapping="Wrap" Width="auto" KeyDown="tbH1SendCommand_KeyDown"/>
-                            <TextBlock Text="Cheats + Skulls: "></TextBlock>
-                            <StackPanel x:Name="panelH1Cheats">
-                            </StackPanel>
-                        </StackPanel>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"></RowDefinition>
+                                    <RowDefinition Height="auto"></RowDefinition>
+                                    <RowDefinition Height="auto"></RowDefinition>
+                                    <RowDefinition Height="auto"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="auto"></ColumnDefinition>
+                                        <ColumnDefinition Width="*"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+                                    <Button x:Name="btnH1SendCommand" Content="Send Command" Margin="2" Grid.Column="0" HorizontalAlignment="Left" Click="btnH1SendCommand_Click"/>
+                                    <TextBox x:Name="tbH1SendCommand" HorizontalAlignment="Stretch" Margin="2" Grid.Column="1" TextWrapping="Wrap" Width="auto" KeyDown="tbH1SendCommand_KeyDown"/>
+                                </Grid>
+                                 <TextBlock Grid.Row="1" Text="Cheats + Skulls: "></TextBlock>
+                                <Border Grid.Row="2" Margin="3" Background="GhostWhite" BorderThickness="1" BorderBrush="Black">
+                                    <WrapPanel x:Name="panelH1Cheats"></WrapPanel>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
                     </Grid>
                 </TabItem>
                 <TabItem>
@@ -71,11 +87,36 @@
 
                     </Grid>
                 </TabItem>
+
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="ODST"></TextBlock>
+                            <Ellipse x:Name="iconHaloODSTLoaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+
+                    </Grid>
+                </TabItem>
+
                 <TabItem>
                     <TabItem.Header>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="Reach"></TextBlock>
                             <Ellipse x:Name="iconHaloReachLoaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
+                        </StackPanel>
+                    </TabItem.Header>
+                    <Grid>
+
+                    </Grid>
+                </TabItem>
+                
+                <TabItem>
+                    <TabItem.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Halo 4"></TextBlock>
+                            <Ellipse x:Name="iconHalo4Loaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
                         </StackPanel>
                     </TabItem.Header>
                     <Grid>
