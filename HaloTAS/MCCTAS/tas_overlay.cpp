@@ -11,6 +11,8 @@ static ID3D11Device* gD3DDevice = nullptr;
 static ID3D11DeviceContext* gD3DContext = nullptr;
 static ID3D11RenderTargetView* gRenderTargetView = nullptr;
 static IDXGISwapChain* gSwapChain = nullptr;
+static ID3D11RasterizerState* WireframeRasterState;
+static ID3D11RasterizerState* NormalRasterState;
 static bool gShowMenu = false;
 static bool gShowConsole = false;
 static bool gShowSpeedometer = false;
@@ -139,8 +141,13 @@ void speedometer_render() {
 	ImGui::End();
 }
 
+static int geolimits[2] = { 999999, 999999 };
+static bool onlyrendergeo = false;
 void InputRender(const tas_input& /*Input*/) {
 	ImGui::Begin("Inputs");
+	
+	ImGui::InputInt2("Render Geo Min/Max Range", geolimits);
+	ImGui::Checkbox("Only render wireframe geo", &onlyrendergeo);
 
 	/*int count = Input.tick_count();
 
@@ -160,6 +167,7 @@ void InputRender(const tas_input& /*Input*/) {
 
 	ImGui::End();
 }
+
 
 namespace tas::overlay {
 	void initialize(IDXGISwapChain* SwapChain)
@@ -194,6 +202,19 @@ namespace tas::overlay {
 			return;
 		}
 
+		D3D11_RASTERIZER_DESC descwf;
+		ZeroMemory(&descwf, sizeof(D3D11_RASTERIZER_DESC));
+		descwf.FillMode = D3D11_FILL_WIREFRAME;
+		descwf.CullMode = D3D11_CULL_NONE;
+		descwf.DepthClipEnable = true;
+		gD3DDevice->CreateRasterizerState(&descwf, &WireframeRasterState);
+
+		D3D11_RASTERIZER_DESC descnrom;
+		ZeroMemory(&descnrom, sizeof(D3D11_RASTERIZER_DESC));
+		descnrom.FillMode = D3D11_FILL_SOLID;
+		descnrom.CullMode = D3D11_CULL_NONE;
+		gD3DDevice->CreateRasterizerState(&descnrom, &NormalRasterState);
+
 		ID3D11Texture2D* pBackBuffer;
 		if (FAILED(SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer))) {
 			pBackBuffer->Release();
@@ -210,6 +231,32 @@ namespace tas::overlay {
 		gIsInitD3D = true;
 	}
 
+	bool should_render(int index_count)
+	{
+		if (!onlyrendergeo) {
+			return true;
+		}
+
+		if (index_count >= geolimits[0] && index_count <= geolimits[1]) {
+			return true;
+		}
+		return false;
+	}
+
+	void set_wireframe() {
+		gD3DContext->RSSetState(WireframeRasterState);
+	}
+	void set_wireframe(ID3D11DeviceContext* Ctx, int index_count) {
+		if (index_count >= geolimits[0] && index_count <= geolimits[1]) {
+			Ctx->RSSetState(WireframeRasterState);
+		}
+		
+	}
+
+	void set_normal(ID3D11DeviceContext* Ctx) {
+		Ctx->RSSetState(NormalRasterState);
+	}
+
 	void render(const tas_input& Input)
 	{
 		if (!gIsInitD3D) {
@@ -221,7 +268,7 @@ namespace tas::overlay {
 		ImGui::NewFrame();
 
 		if (gShowMenu) {
-			ImGui::ShowDemoWindow();
+			//ImGui::ShowDemoWindow();
 			InputRender(Input);
 		}
 		if (gShowConsole) {

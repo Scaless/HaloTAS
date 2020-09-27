@@ -8,6 +8,7 @@
 #include "dll_cache.h"
 #include "halo1_engine.h"
 #include "speedometer.h"
+#include <d3d9.h>
 
 static std::once_flag gOverlayInitialized;
 // Global hooks should only apply to areas that will never be unloaded
@@ -66,6 +67,22 @@ typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, U
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 D3D11Present_t originalD3D11Present;
 
+typedef void (*D3D11RSSetState_t)(ID3D11Device* Ctx, ID3D11RasterizerState* pRasterizerState);
+void hkD3D11RSSetState(ID3D11DeviceContext* Ctx, ID3D11RasterizerState* pRasterizerState);
+D3D11RSSetState_t originalD3D11RSSetState;
+
+typedef void (*D3D9SetRenderState_t)(IDirect3DDevice9* Device, D3DRENDERSTATETYPE State, DWORD Value);
+void hkD3D9SetRenderState(IDirect3DDevice9* Device, D3DRENDERSTATETYPE State, DWORD Value);
+D3D9SetRenderState_t originalD3D9SetRenderState;
+
+typedef void (*D3D11Draw_t)(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLocation);
+void hkD3D11Draw(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLocation);
+D3D11Draw_t originalD3D11Draw;
+
+typedef void (*D3D11DrawIndexed_t)(ID3D11DeviceContext* Ctx, UINT IndexCount,UINT StartIndexLocation,INT  BaseVertexLocation);
+void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount,UINT StartIndexLocation,INT  BaseVertexLocation);
+D3D11DrawIndexed_t originalD3D11DrawIndexed;
+
 const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", HALO1_DLL_WSTR, halo1::patch::OFFSET_ENABLE_DEV_CONSOLE, halo1::patch::PATCHBYTES_ENABLE_DEV_CONSOLE);
 
 //const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
@@ -74,7 +91,11 @@ const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick"
 //const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
 //const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
 
+const hook GlobalHook_D3D9SetRenderState(L"hkD3D9SetRenderState", (PVOID**)&originalD3D9SetRenderState, hkD3D9SetRenderState);
+const hook GlobalHook_D3D11Draw(L"hkD3D11Draw", (PVOID**)&originalD3D11Draw, hkD3D11Draw);
+const hook GlobalHook_D3D11RSSetState(L"hkD3D11RSSetState", (PVOID**)&originalD3D11RSSetState, hkD3D11RSSetState);
 const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
+const hook GlobalHook_D3D11DrawIndexed(L"hkD3D11DrawIndexed", (PVOID**)&originalD3D11DrawIndexed, hkD3D11DrawIndexed);
 const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
 const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibraryW, hkLoadLibraryW);
 const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
@@ -91,7 +112,11 @@ tas_hooks::tas_hooks()
 	//gRuntimeHooks.push_back(RuntimeHook_Halo2TickLoop);
 	//gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
+	//gGlobalHooks.push_back(GlobalHook_D3D9SetRenderState);
+	//gGlobalHooks.push_back(GlobalHook_D3D11RSSetState);
 	gGlobalHooks.push_back(GlobalHook_D3D11Present);
+	gGlobalHooks.push_back(GlobalHook_D3D11Draw);
+	gGlobalHooks.push_back(GlobalHook_D3D11DrawIndexed);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryA);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryW);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExA);
@@ -145,7 +170,17 @@ void tas_hooks::init_global_hooks()
 		// See https://github.com/Rebzzel/kiero/blob/master/METHODSTABLE.txt for available functions
 		auto methods = kiero::getMethodsTable();
 		originalD3D11Present = (D3D11Present_t)methods[8];
+		originalD3D11RSSetState = (D3D11RSSetState_t)methods[104];
+		originalD3D11Draw = (D3D11Draw_t)methods[74];
+		originalD3D11DrawIndexed = (D3D11DrawIndexed_t)methods[73];
 	}
+
+	// D3D9 Hooking
+	//if (kiero::init(kiero::RenderType::D3D9) == kiero::Status::Success) {
+	//	// See https://github.com/Rebzzel/kiero/blob/master/METHODSTABLE.txt for available functions
+	//	auto methods = kiero::getMethodsTable();
+	//	originalD3D9SetRenderState = (D3D9SetRenderState_t)methods[57];
+	//}
 
 	// Windows API Hooking
 	originalLoadLibraryA = LoadLibraryA;
@@ -246,9 +281,43 @@ tick_inputs CurrentTickInputs;
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags) {
 	std::call_once(gOverlayInitialized, tas::overlay::initialize, SwapChain);
 
+	tas::overlay::set_wireframe();
 	tas::overlay::render(InputCache);
 
 	return originalD3D11Present(SwapChain, SyncInterval, Flags);
+}
+
+void hkD3D11RSSetState(ID3D11DeviceContext* Ctx, ID3D11RasterizerState* pRasterizerState)
+{
+	tas::overlay::set_wireframe(Ctx, 0);
+}
+
+void hkD3D9SetRenderState(IDirect3DDevice9* Device, D3DRENDERSTATETYPE State, DWORD Value)
+{
+	if (State == D3DRS_FILLMODE) {
+		Value = D3DFILLMODE::D3DFILL_WIREFRAME;
+	}
+	Device->SetRenderState(State, Value);
+	//originalD3D9SetRenderState(Device, State, Value);
+}
+
+void hkD3D11Draw(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLocation)
+{
+	if (VertexCount > 1) {
+		//tas::overlay::set_wireframe(Ctx);
+	}
+	originalD3D11Draw(Ctx, VertexCount, StartVertexLocation);
+}
+
+void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
+{
+	tas::overlay::set_wireframe(Ctx, IndexCount);
+	
+	if (tas::overlay::should_render(IndexCount)) {
+		originalD3D11DrawIndexed(Ctx, IndexCount, StartIndexLocation, BaseVertexLocation);
+	}
+
+	tas::overlay::set_normal(Ctx);
 }
 
 struct input {
