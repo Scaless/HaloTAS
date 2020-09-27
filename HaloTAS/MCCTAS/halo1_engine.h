@@ -15,6 +15,9 @@ private:
 private:
 	static bool is_engine_active();
 
+	static halo1::all_cheats* cheat_table();
+	static halo1::all_skulls* skull_table();
+
 public:
 	static void get_game_information(halo1::h1snapshot& snapshot);
 

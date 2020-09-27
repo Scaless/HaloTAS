@@ -7,6 +7,7 @@
 #include "tas_hooks.h"
 #include "gui_interop.h"
 #include "dll_cache.h"
+#include "signatures.h"
 
 // Main Execution Loop
 void RealMain() {

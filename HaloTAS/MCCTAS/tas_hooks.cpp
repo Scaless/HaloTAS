@@ -369,7 +369,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	tas::overlay::set_current_speedometer(speedo);
 
 	// Halo 1
-	auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+	auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
 		auto rng = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_RNG);
 		auto tick_ptr = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_TICK_BASE, { 0xC });
@@ -450,7 +450,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
 	// Halo 2
 	/*
-	auto H2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
+	auto H2DLL = dll_cache::get_module_handle(HALO2_DLL_WSTR);
 	if (H2DLL.has_value()) {
 
 		auto tick_ptr = value_ptr<int32_t>(H2DLL.value(), halo2::data::OFFSET_TICK_BASE, { 0x8 });
@@ -530,7 +530,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	*/
 	// Halo 3
 	/*
-	auto H3DLL = dll_cache::get_info(HALO3_DLL_WSTR);
+	auto H3DLL = dll_cache::get_module_handle(HALO3_DLL_WSTR);
 	if (H3DLL.has_value()) {
 
 		auto TLSIndex = value_ptr<uint32_t>(H3DLL.value(), halo3::data::OFFSET_TICK_TLSINDEX);
@@ -643,7 +643,7 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 	}
 
 	if (originalReturn) {
-		auto H1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
+		auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
 		auto currentCameraPosition = value_ptr<glm::vec3>(H1DLL.value(), 0x219AF08);
 		speedo->push_back(*currentCameraPosition);
 	}

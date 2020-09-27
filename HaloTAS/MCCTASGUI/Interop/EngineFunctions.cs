@@ -41,6 +41,46 @@ namespace MCCTASGUI.Interop
         BootsOffTheGround
     }
 
+    public enum Halo2Skull
+    {
+        // Scoring
+        Anger,
+        Assassins,
+        BlackEye,
+        Blind,
+        Catch,
+        EyePatch,
+        Famine,
+        Fog,
+        Iron,
+        Jacked,
+        MasterBlaster,
+        Mythic,
+        Recession,
+        SoAngry,
+        Streaking,
+        Swarm,
+        ThatsJustWrong,
+        TheyComeBack,
+        Thunderstorm,
+
+        // Non-scoring
+        Bandanna,
+        BondedPair,
+        Boom,
+        Envy,
+        Feather,
+        Ghost,
+        GruntBirthdayParty,
+        GruntFuneral,
+        IWHBYD,
+        Malfunction,
+        Pinata,
+        ProphetBirthdayParty,
+        Scarab,
+        Sputnik
+    }
+
     public class Halo1Status
     {
         public bool[] CheatsEnabled;
@@ -48,6 +88,16 @@ namespace MCCTASGUI.Interop
         public Halo1Status()
         {
             CheatsEnabled = new bool[EnumUtils<Halo1Cheat>.Count];
+        }
+    }
+
+    public class Halo2Status
+    {
+        public bool[] SkullsEnabled;
+
+        public Halo2Status()
+        {
+            SkullsEnabled = new bool[EnumUtils<Halo2Skull>.Count];
         }
     }
 
@@ -82,6 +132,28 @@ namespace MCCTASGUI.Interop
 
             var payload = new Halo1SetCheatEnabledRequest();
             payload.Cheat = (int)cheat;
+            payload.Enabled = enabled;
+            request.requestData = TASInterop.MarshalObjectToArray(payload);
+
+            var response = await TASInterop.MakeRequestAsync(request);
+
+            if (response?.header.ResponseType != InteropResponseType.Success)
+            {
+                // Something went wrong
+            }
+        }
+    }
+
+    class H2EngineFunctions
+    {
+        public static async Task SetSkullEnabled(Halo2Skull skull, bool enabled)
+        {
+            InteropRequest request = new InteropRequest();
+            request.header.RequestType = InteropRequestType.Halo2SetCheatEnabled;
+            request.header.RequestPayloadSize = Marshal.SizeOf(typeof(Halo2SetSkullEnabledRequest));
+
+            var payload = new Halo2SetSkullEnabledRequest();
+            payload.Skull = (int)skull;
             payload.Enabled = enabled;
             request.requestData = TASInterop.MarshalObjectToArray(payload);
 

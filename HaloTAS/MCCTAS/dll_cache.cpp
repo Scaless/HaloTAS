@@ -23,7 +23,7 @@ void dll_cache::initialize()
 				MODULEINFO info;
 				if (GetModuleInformation(hProcess, hMods[i], &info, sizeof(info))) {
 					std::wstring name{ szModName };
-					instance.mCache.emplace(name, (HMODULE)info.lpBaseOfDll);
+					instance.mCache.emplace(name, info);
 				}
 			}
 		}
@@ -43,7 +43,14 @@ bool dll_cache::add_to_cache(const std::wstring& dllName, HMODULE handle)
 	}
 
 	// if not add to cache
-	instance.mCache.emplace(dllName, handle);
+	MODULEINFO info;
+	if (GetModuleInformation(GetCurrentProcess(), handle, &info, sizeof(info))) {
+		instance.mCache.emplace(dllName, info);
+	}
+	else {
+		throw std::exception("Could not cache module");
+	}
+
 	return true;
 }
 
@@ -59,7 +66,18 @@ bool dll_cache::remove_from_cache(const std::wstring& dllName)
 	return false;
 }
 
-std::optional<HMODULE> dll_cache::get_info(const std::wstring& dllName)
+std::optional<HMODULE> dll_cache::get_module_handle(const std::wstring& dllName)
+{
+	auto& instance = get();
+	auto it = instance.mCache.find(dllName);
+	if (it != instance.mCache.end()) {
+		return (HMODULE)it->second.lpBaseOfDll;
+	}
+
+	return std::nullopt;
+}
+
+std::optional<MODULEINFO> dll_cache::get_module_info(const std::wstring& dllName)
 {
 	auto& instance = get();
 	auto it = instance.mCache.find(dllName);

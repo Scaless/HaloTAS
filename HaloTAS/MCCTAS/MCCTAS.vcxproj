@@ -270,6 +270,7 @@
     <ClInclude Include="hook.h" />
     <ClInclude Include="kiero.h" />
     <ClInclude Include="patch.h" />
+    <ClInclude Include="signatures.h" />
     <ClInclude Include="speedometer.h" />
     <ClInclude Include="tas_console.h" />
     <ClInclude Include="tas_hooks.h" />

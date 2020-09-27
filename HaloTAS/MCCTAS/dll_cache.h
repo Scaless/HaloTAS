@@ -9,7 +9,7 @@ class dll_cache
 {
 private:
 	// DLL Name, Base Address
-	std::unordered_map<std::wstring, HMODULE> mCache;
+	std::unordered_map<std::wstring, MODULEINFO> mCache;
 
 	static dll_cache& get() {
 		static dll_cache instance;
@@ -29,5 +29,6 @@ public:
 	// Returns true if succssfully removed from cache
 	static bool remove_from_cache(const std::wstring& dllName);
 
-	static std::optional<HMODULE> get_info(const std::wstring& dllName);
+	static std::optional<HMODULE> get_module_handle(const std::wstring& dllName);
+	static std::optional<MODULEINFO> get_module_info(const std::wstring& dllName);
 };

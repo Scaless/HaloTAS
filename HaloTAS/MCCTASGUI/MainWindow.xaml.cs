@@ -75,9 +75,23 @@ namespace MCCTASGUI
                         cb.Content = Enum.GetName(typeof(Halo1Cheat), i).ToString();
                         cb.Margin = new Thickness(2);
                         cb.Tag = (Halo1Cheat)i;
-                        cb.Checked += cbCheatToggleChecked;
-                        cb.Unchecked += cbCheatToggleChecked;
+                        cb.Checked += cbH1CheatToggleChecked;
+                        cb.Unchecked += cbH1CheatToggleChecked;
                         panelH1Cheats.Children.Add(cb);
+                    }
+
+                    panelH2Skulls.Children.Clear();
+                    for (int i = 0; i < EnumUtils<Halo2Skull>.Count; i++)
+                    {
+                        CheckBox cb = new CheckBox();
+                        cb.Width = 150;
+                        cb.IsChecked = Status.Halo2.SkullsEnabled[i];
+                        cb.Content = Enum.GetName(typeof(Halo2Skull), i).ToString();
+                        cb.Margin = new Thickness(2);
+                        cb.Tag = (Halo2Skull)i;
+                        cb.Checked += cbH2SkullToggleChecked;
+                        cb.Unchecked += cbH2SkullToggleChecked;
+                        panelH2Skulls.Children.Add(cb);
                     }
                 });
 
@@ -85,10 +99,9 @@ namespace MCCTASGUI
             }
         }
 
-        private async void cbCheatToggleChecked(object sender, RoutedEventArgs e)
+        private async void cbH1CheatToggleChecked(object sender, RoutedEventArgs e)
         {
             var checkbox = sender as CheckBox;
-
             if (checkbox == null)
                 return;
 
@@ -96,6 +109,18 @@ namespace MCCTASGUI
             bool newEnabled = checkbox.IsChecked ?? false;
 
             await H1EngineFunctions.SetCheatEnabled(cheat, newEnabled);
+        }
+
+        private async void cbH2SkullToggleChecked(object sender, RoutedEventArgs e)
+        {
+            var checkbox = sender as CheckBox;
+            if (checkbox == null)
+                return;
+
+            Halo2Skull skull = (Halo2Skull)checkbox.Tag;
+            bool newEnabled = checkbox.IsChecked ?? false;
+
+            await H2EngineFunctions.SetSkullEnabled(skull, newEnabled);
         }
 
         private void MenuOpenAbout(object sender, RoutedEventArgs e)

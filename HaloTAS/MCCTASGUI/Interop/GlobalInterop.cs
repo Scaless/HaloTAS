@@ -15,10 +15,12 @@ namespace MCCTASGUI.Interop
         public bool H4DLLLoaded { get; set; }
 
         public Halo1Status Halo1 { get; set; }
+        public Halo2Status Halo2 { get; set; }
 
         public TASStatus()
         {
             Halo1 = new Halo1Status();
+            Halo2 = new Halo2Status();
         }
     }
 
@@ -49,6 +51,10 @@ namespace MCCTASGUI.Interop
                 if (Status.H1DLLLoaded)
                 {
                     Status.Halo1.CheatsEnabled = responseData.Halo1.CheatsEnabled;
+                }
+                if (Status.H2DLLLoaded)
+                {
+                    Status.Halo2.SkullsEnabled = responseData.Halo2.SkullsEnabled;
                 }
             }
             else

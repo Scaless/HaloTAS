@@ -2,6 +2,7 @@
 #include "gui_interop.h"
 #include "windows_utilities.h"
 #include "halo1_engine.h"
+#include "halo2_engine.h"
 #include "halo_types.h"
 #include "dll_cache.h"
 #include "global.h"
@@ -15,6 +16,7 @@ enum class InteropRequestType : int32_t {
 	GET_GAME_INFORMATION = 4,
 	SET_HALO1_SKULL_ENABLED = 5,
 	KILL_MCCTAS = 6,
+	SET_HALO2_SKULL_ENABLED = 7
 };
 std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString{
 	{to_underlying(InteropRequestType::INVALID), L"INVALID"},
@@ -25,6 +27,7 @@ std::unordered_map<int32_t, const wchar_t*> InteropRequestTypeString{
 	{to_underlying(InteropRequestType::GET_GAME_INFORMATION), L"GET_GAME_INFORMATION"},
 	{to_underlying(InteropRequestType::SET_HALO1_SKULL_ENABLED), L"SET_HALO1_SKULL_ENABLED"},
 	{to_underlying(InteropRequestType::KILL_MCCTAS), L"KILL_MCCTAS"},
+	{to_underlying(InteropRequestType::SET_HALO2_SKULL_ENABLED), L"SET_HALO2_SKULL_ENABLED"},
 };
 
 enum class InteropResponseType : int32_t {
@@ -89,6 +92,11 @@ struct Halo1SetSkullEnabledRequestPayload {
 	BOOL Enabled;
 };
 
+struct Halo2SetSkullEnabledRequestPayload {
+	int32_t Skull;
+	BOOL Enabled;
+};
+
 struct ExecuteCommandRequestPayload {
 	char command[256];
 };
@@ -96,6 +104,10 @@ struct ExecuteCommandRequestPayload {
 struct Halo1GameInformation {
 	int32_t Tick;
 	BOOL SkullsEnabled[to_underlying(halo1::cheat::COUNT)];
+};
+struct Halo2GameInformation {
+	int32_t Tick;
+	BOOL SkullsEnabled[to_underlying(halo2::skull::COUNT)];
 };
 struct GetGameInformationResponsePayload {
 	BOOL Halo1Loaded;
@@ -106,6 +118,7 @@ struct GetGameInformationResponsePayload {
 	BOOL Halo4Loaded;
 
 	Halo1GameInformation Halo1Information;
+	Halo2GameInformation Halo2Information;
 
 	GetGameInformationResponsePayload()
 	{
@@ -116,6 +129,7 @@ struct GetGameInformationResponsePayload {
 		ReachLoaded = FALSE;
 		Halo4Loaded = FALSE;
 		Halo1Information = {};
+		Halo2Information = {};
 	}
 };
 
@@ -134,7 +148,7 @@ void handle_response_dll_information(const InteropRequest& request, InteropRespo
 	memcpy_s(&requestPayload, sizeof(requestPayload), request.payload, sizeof(requestPayload));
 	std::wstring dllName(requestPayload.dll_name);
 
-	auto dll = dll_cache::get_info(dllName);
+	auto dll = dll_cache::get_module_handle(dllName);
 
 	if (!dll.has_value()) {
 		response.header.type = InteropResponseType::FAILURE;
@@ -170,12 +184,12 @@ void handle_response_execute_command(const InteropRequest& request, InteropRespo
 
 void handle_response_get_game_information(const InteropRequest& /*request*/, InteropResponse& response) {
 
-	auto h1DLL = dll_cache::get_info(HALO1_DLL_WSTR);
-	auto h2DLL = dll_cache::get_info(HALO2_DLL_WSTR);
-	auto h3DLL = dll_cache::get_info(HALO3_DLL_WSTR);
-	auto hodstDLL = dll_cache::get_info(HALOODST_DLL_WSTR);
-	auto hreachDLL = dll_cache::get_info(HALOREACH_DLL_WSTR);
-	auto h4DLL = dll_cache::get_info(HALO4_DLL_WSTR);
+	auto h1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
+	auto h2DLL = dll_cache::get_module_handle(HALO2_DLL_WSTR);
+	auto h3DLL = dll_cache::get_module_handle(HALO3_DLL_WSTR);
+	auto hodstDLL = dll_cache::get_module_handle(HALOODST_DLL_WSTR);
+	auto hreachDLL = dll_cache::get_module_handle(HALOREACH_DLL_WSTR);
+	auto h4DLL = dll_cache::get_module_handle(HALO4_DLL_WSTR);
 
 	GetGameInformationResponsePayload gameInfoPayload = {};
 
@@ -188,13 +202,21 @@ void handle_response_get_game_information(const InteropRequest& /*request*/, Int
 
 	// TODO-SCALES: ???
 	gameInfoPayload.Halo1Information.Tick = 999;
+	gameInfoPayload.Halo2Information.Tick = 999;
 
 	if (gameInfoPayload.Halo1Loaded) {
 		halo1::h1snapshot h1Snapshot = {};
 		halo1_engine::get_game_information(h1Snapshot);
-
 		for (int i = 0; i < to_underlying(halo1::cheat::COUNT); i++) {
 			gameInfoPayload.Halo1Information.SkullsEnabled[i] = h1Snapshot.skulls[i];
+		}
+	}
+
+	if (gameInfoPayload.Halo2Loaded) {
+		halo2::h2snapshot h2Snapshot = {};
+		halo2_engine::get_game_information(h2Snapshot);
+		for (int i = 0; i < to_underlying(halo2::skull::COUNT); i++) {
+			gameInfoPayload.Halo2Information.SkullsEnabled[i] = h2Snapshot.skulls[i];
 		}
 	}
 
@@ -212,6 +234,17 @@ void handle_response_set_halo1_skull_enabled(const InteropRequest& request, Inte
 	auto skull = (halo1::cheat)skullSetPayload.Skull;
 
 	halo1_engine::set_cheat_enabled(skull, skullSetPayload.Enabled);
+
+	response.header.type = InteropResponseType::SUCCESS;
+}
+
+void handle_response_set_halo2_skull_enabled(const InteropRequest& request, InteropResponse& response) {
+	Halo2SetSkullEnabledRequestPayload skullSetPayload;
+	memcpy_s(&skullSetPayload, sizeof(skullSetPayload), request.payload, sizeof(skullSetPayload));
+
+	auto skull = (halo2::skull)skullSetPayload.Skull;
+
+	halo2_engine::set_skull_enabled(skull, skullSetPayload.Enabled);
 
 	response.header.type = InteropResponseType::SUCCESS;
 }
@@ -250,6 +283,9 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 		break;
 	case InteropRequestType::KILL_MCCTAS:
 		handle_response_kill_mcctas(request, response);
+		break;
+	case InteropRequestType::SET_HALO2_SKULL_ENABLED:
+		handle_response_set_halo2_skull_enabled(request, response);
 		break;
 	case InteropRequestType::INVALID:
 	default:

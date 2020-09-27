@@ -47,7 +47,6 @@
                                     <RowDefinition Height="auto"></RowDefinition>
                                     <RowDefinition Height="auto"></RowDefinition>
                                     <RowDefinition Height="auto"></RowDefinition>
-                                    <RowDefinition Height="auto"></RowDefinition>
                                 </Grid.RowDefinitions>
                                 <Grid Grid.Row="0">
                                     <Grid.ColumnDefinitions>
@@ -73,7 +72,21 @@
                         </StackPanel>
                     </TabItem.Header>
                     <Grid>
-
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"></RowDefinition>
+                        </Grid.RowDefinitions>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Grid.Row="0">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="auto"></RowDefinition>
+                                    <RowDefinition Height="auto"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Text="Skulls: "></TextBlock>
+                                <Border Grid.Row="1" Margin="3" Background="GhostWhite" BorderThickness="1" BorderBrush="Black">
+                                    <WrapPanel x:Name="panelH2Skulls"></WrapPanel>
+                                </Border>
+                            </Grid>
+                        </ScrollViewer>
                     </Grid>
                 </TabItem>
                 <TabItem>

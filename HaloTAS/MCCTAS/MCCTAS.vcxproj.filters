@@ -411,6 +411,9 @@
     <ClInclude Include="speedometer.h">
       <Filter>Header Files\Overlay</Filter>
     </ClInclude>
+    <ClInclude Include="signatures.h">
+      <Filter>Header Files\Windows</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

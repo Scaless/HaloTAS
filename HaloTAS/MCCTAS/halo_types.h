@@ -50,7 +50,10 @@ namespace halo1 {
 		bool cheat_one_shot_kill;
 		bool padding_2;
 		bool cheat_bottomless_clip;
-		bool padding_3[7];
+	};
+
+	struct all_skulls {
+		bool padding_1;
 		bool skull_iron;
 		bool skull_fog;
 		bool skull_mythic;
@@ -102,5 +105,89 @@ namespace halo1 {
 		bool game_paused;
 		bool padding6[6];
 		int16_t death_counter_90;
+	};
+}
+
+namespace halo2 {
+	enum class skull : int32_t {
+		// Scoring
+		ANGER,
+		ASSASSINS,
+		BLACK_EYE,
+		BLIND,
+		CATCH,
+		EYE_PATCH,
+		FAMINE,
+		FOG,
+		IRON,
+		JACKED,
+		MASTERBLASTER,
+		MYTHIC,
+		RECESSION,
+		SO_ANGRY,
+		STREAKING,
+		SWARM,
+		THATS_JUST_WRONG,
+		THEY_COME_BACK,
+		THUNDERSTORM,
+
+		// Non-scoring
+		BANDANNA,
+		BONDED_PAIR,
+		BOOM,
+		ENVY,
+		FEATHER,
+		GHOST,
+		GRUNT_BIRTHDAY_PARTY,
+		GRUNT_FUNERAL,
+		IWHBYD,
+		MALFUNCTION,
+		PINATA,
+		PROPHET_BIRTHDAY_PARTY,
+		SCARAB,
+		SPUTNIK,
+
+		COUNT
+	};
+
+	struct all_skulls {
+		bool skull_envy;
+		bool skull_grunt_birthday_party;
+		bool skull_assassins;
+		bool skull_thunderstorm;
+		bool skull_famine;
+		bool skull_iwhbyd;
+		bool skull_blind;
+		bool skull_ghost;
+		bool skull_black_eye;
+		bool skull_catch;
+		bool skull_sputnik;
+		bool skull_iron;
+		bool skull_mythic;
+		bool skull_anger;
+		bool skull_thats_just_wrong;
+		bool skull_bandanna;
+		bool skull_boom;
+		bool skull_eye_patch;
+		bool skull_fog;
+		bool padding;
+		bool skull_grunt_funeral;
+		bool skull_pinata;
+		bool skull_recession;
+		bool skull_malfunction;
+		bool skull_streaking;
+		bool skull_jacked;
+		bool skull_scarab;
+		bool skull_swarm;
+		bool skull_feather;
+		bool skull_bonded_pair;
+		bool skull_masterblaster;
+		bool skull_so_angry;
+		bool skull_prophet_birthday_party;
+		bool skull_they_come_back;
+	};
+
+	struct h2snapshot {
+		bool skulls[to_underlying(skull::COUNT)];
 	};
 }
