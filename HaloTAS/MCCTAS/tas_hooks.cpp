@@ -281,7 +281,7 @@ tick_inputs CurrentTickInputs;
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags) {
 	std::call_once(gOverlayInitialized, tas::overlay::initialize, SwapChain);
 
-	tas::overlay::set_wireframe();
+	//tas::overlay::set_wireframe();
 	tas::overlay::render(InputCache);
 
 	return originalD3D11Present(SwapChain, SyncInterval, Flags);
@@ -289,7 +289,7 @@ HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags)
 
 void hkD3D11RSSetState(ID3D11DeviceContext* Ctx, ID3D11RasterizerState* pRasterizerState)
 {
-	tas::overlay::set_wireframe(Ctx, 0);
+	//tas::overlay::set_wireframe(Ctx, 0);
 }
 
 void hkD3D9SetRenderState(IDirect3DDevice9* Device, D3DRENDERSTATETYPE State, DWORD Value)
@@ -311,13 +311,13 @@ void hkD3D11Draw(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLoc
 
 void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
 {
-	tas::overlay::set_wireframe(Ctx, IndexCount);
+	//tas::overlay::set_wireframe(Ctx, IndexCount);
 	
 	if (tas::overlay::should_render(IndexCount)) {
 		originalD3D11DrawIndexed(Ctx, IndexCount, StartIndexLocation, BaseVertexLocation);
 	}
 
-	tas::overlay::set_normal(Ctx);
+	//tas::overlay::set_normal(Ctx);
 }
 
 struct input {
