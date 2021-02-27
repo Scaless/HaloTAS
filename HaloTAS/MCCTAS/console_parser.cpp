@@ -10,11 +10,13 @@ struct CommandSchemaParameter {
 };
 
 const std::unordered_map<std::string, ConsoleCommand> StrToCommand = {
+	{"help", ConsoleCommand::HELP},
 	{"mode", ConsoleCommand::MODE_SWITCH},
 	{"console_color", ConsoleCommand::CONSOLE_COLOR}
 };
 
 const std::unordered_map<ConsoleCommand, std::vector<CommandSchemaParameter>> SchemaTable = {
+	{ConsoleCommand::HELP, std::vector< CommandSchemaParameter> {} },
 	{ConsoleCommand::MODE_SWITCH,
 		std::vector<CommandSchemaParameter> {
 			{"new_mode", false, CommandSchemaParameterType::STRING }
@@ -163,6 +165,7 @@ bool ParsedCommand::is_global()
 {
 	switch (mCommand)
 	{
+	case ConsoleCommand::HELP:
 	case ConsoleCommand::MODE_SWITCH:
 		return true;
 	default:

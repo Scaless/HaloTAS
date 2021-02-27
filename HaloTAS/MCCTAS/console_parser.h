@@ -1,7 +1,7 @@
 #pragma once
 #include "pch.h"
 
-enum class ConsoleCommand { MODE_SWITCH, CONSOLE_COLOR };
+enum class ConsoleCommand { HELP, MODE_SWITCH, CONSOLE_COLOR };
 
 struct ParsedCommand {
 	ConsoleCommand mCommand;

@@ -17,14 +17,16 @@ void RealMain() {
 	consoleWindow->open();
 
 	const std::string startupMessage = "MCCTAS Started!\r\n"
-		"To close MCCTAS, press CTRL + C while this window is focused. MCC will continue running. "
-		"If you accidentally click into this window and highlight something, just press ESC to unfreeze the game.\r\n\r\n"
+		"To close MCCTAS, press CTRL + C while this window is focused. MCC will continue running.\r\n"
+		"If you accidentally highlight something in this window, focus this window and press ESC to unfreeze the game.\r\n"
+		"Press the tilde(~) key in-game to open the MCCTAS console. Enter the 'help' command for more information on using the console.\r\n\r\n"
 		"MCCTAS significantly modifies game behavior and is not approved for official speedruns.\r\n"
-		"If you see this console window open, MCCTAS is running.\r\n\r\n"
 		"Report bugs and suggest features on Github at: https://github.com/Scaless/HaloTAS. \r\n"
-		"Have fun! ~Scales"
+		"Have fun!\r\n~Scales\r\n"
 		;
+
 	tas_logger::warning("{}", startupMessage);
+	tas_logger::warning("KNOWN ISSUES: \r\n\t Changing graphics options crashes the game.");
 
 	dll_cache::initialize();
 

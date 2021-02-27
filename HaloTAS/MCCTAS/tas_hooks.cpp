@@ -402,24 +402,6 @@ void hkD3D11Draw(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLoc
 		//tas::overlay::set_wireframe(Ctx);
 	}
 	originalD3D11Draw(Ctx, VertexCount, StartVertexLocation);
-
-	if (GetAsyncKeyState(VK_RIGHT)) {
-		if (current_engine != nullptr && current_engine_type == GameEngineType::Halo1) {
-			engine_command_vptr(current_engine, "HS: ai 0");
-		}
-		else {
-			tas_logger::warning("Can't execute command, game_engine_ptr is null.");
-		}
-	}
-	if (GetAsyncKeyState(VK_LEFT)) {
-		if (current_engine != nullptr && current_engine_type == GameEngineType::Halo1) {
-			engine_command_vptr(current_engine, "HS: ai 1");
-		}
-		else {
-			tas_logger::warning("Can't execute command, game_engine_ptr is null.");
-		}
-	}
-
 }
 
 void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)

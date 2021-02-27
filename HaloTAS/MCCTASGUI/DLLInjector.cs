@@ -73,9 +73,12 @@ namespace MCCTASGUI
             if(fileVersionInfo.FileVersion != CURRENT_SUPPORTED_VERSION)
             {
                 string caption = "Injection Failed - Version Mismatch";
-                string message = $"The version of Master Chief Collection that is running ({fileVersionInfo.FileVersion}) does not match the version supported by MCCTAS ({CURRENT_SUPPORTED_VERSION}).";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
-                return;
+                string message = $"The version of Master Chief Collection that is running ({fileVersionInfo.FileVersion}) does not match the version supported by MCCTAS ({CURRENT_SUPPORTED_VERSION}). Launch Anyways?";
+                MessageBoxResult result = MessageBox.Show(message, caption, MessageBoxButton.YesNo);
+                if(result != MessageBoxResult.Yes)
+                {
+                    return;
+                }
             }
 
             // geting the handle of the process - with required privileges

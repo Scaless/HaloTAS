@@ -197,6 +197,16 @@ void tas_console::execute_global(const ParsedCommand& command)
 
 	switch (command.mCommand)
 	{
+	case ConsoleCommand::HELP: 
+	{
+		tas_logger::info(
+			"Available commands:\r\n"
+			"help      | <- You are here\r\n"
+			"mode XXX  | Switch the current console mode. Valid modes: 'tas', 'h1dev'\r\n"
+			"    'tas' - Console for entering TAS commands\r\n"
+			"    'h1dev' - Halo 1 developer console, requires a valid engine handle\r\n"
+		);
+	} break;
 	case ConsoleCommand::MODE_SWITCH:
 	{
 		auto newModeString = std::get<std::string>(command.mParameters[0]);
@@ -211,8 +221,8 @@ void tas_console::execute_global(const ParsedCommand& command)
 				mConsoleMode = console_mode::HALO1DEV;
 			}
 			else {
-				tas_logger::warning("Can't switch to h1dev because we don't have an engine handle! If you are in-game, go back to the MCC main menu and load back into the level. "
-				"If you are in the MCC menus, open the Missions screen of another game, then load back into the game you want."); 
+				tas_logger::warning("Can't switch to h1dev because we don't have an engine handle! If you are in-game, save&quit and load back into the level. "
+				"If you are in the MCC menus, open the Missions screen of a different game, then load back into the game you want."); 
 			}
 		}
 		if (newModeString == "tas") {

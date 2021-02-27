@@ -53,11 +53,6 @@ LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			{
 				gShowConsole = false;
 				gConsole.clear_buffer();
-
-				if (tas_hooks::get_loaded_engine() == GameEngineType::Halo1) {
-					tas_hooks::execute_halo1_command("game_speed 1");
-				}
-
 				ignore_next_tilde = true;
 				return true;
 			}
@@ -80,9 +75,6 @@ LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				}
 				else {
 					gShowConsole = !gShowConsole;
-					if (tas_hooks::get_loaded_engine() == GameEngineType::Halo1) {
-						tas_hooks::execute_halo1_command("game_speed 0");
-					}
 					return true;
 				}
 			}
