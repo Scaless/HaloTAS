@@ -3,9 +3,14 @@
 #include "tas_console.h"
 #include "halo1_engine.h"
 
+tas_console::tas_console()
+{
+	clear_history();
+}
+
 void tas_console::clear_buffer()
 {
-	ZeroMemory(mCommandBuffer, sizeof(mCommandBuffer));
+	mCommandBuffer.clear();
 }
 
 void tas_console::clear_history()
@@ -16,30 +21,27 @@ void tas_console::clear_history()
 
 void tas_console::history_cursor_up()
 {
-	mCurrentIndex = std::clamp<int>(mCurrentIndex - 1, 0, (int)mCommandHistory.size());
+	mCurrentIndex = std::clamp<int>(mCurrentIndex + 1, 0, (int)mCommandHistory.size());
+	/*int history_index = mCurrentIndex - 1;
+	if (mCurrentIndex >= 1 && mCommandHistory.size() > history_index) {
+		mCommandBuffer = mCommandHistory[history_index];
+	}*/
 }
 
 void tas_console::history_cursor_down()
 {
-	mCurrentIndex = std::clamp<int>(mCurrentIndex + 1, 0, (int)mCommandHistory.size());
+	mCurrentIndex = std::clamp<int>(mCurrentIndex - 1, 0, (int)mCommandHistory.size());
 }
 
-char* tas_console::buffer()
+void tas_console::execute(std::string& buffer)
 {
-	return mCommandBuffer;
-}
-
-size_t tas_console::buffer_size()
-{
-	return sizeof(mCommandBuffer);
-}
-
-void tas_console::execute()
-{
-	std::string command(mCommandBuffer);
+	std::string command(buffer);
 	if (command.length() <= 0) {
 		return;
 	}
+	// Remove newlines from enter press
+	command.erase(std::remove(command.begin(), command.end(), '\n'), command.end());
+	command.erase(std::remove(command.begin(), command.end(), '\r'), command.end());
 
 	mCommandHistory.push_back(command);
 
@@ -50,7 +52,7 @@ void tas_console::execute()
 	}
 	// Otherwise pass on to the specific mode
 	else {
-		switch (mMode)
+		switch (mConsoleMode)
 		{
 		case tas_console::console_mode::MCCTAS:
 		{
@@ -88,36 +90,38 @@ void tas_console::execute()
 
 void tas_console::render(int windowWidth)
 {
-	const float DISTANCE = 10.0f;
+	const float PADDING = 10.0f;
+	const float MARGIN = 2.0f;
+	const float CONSOLE_HEIGHT = 40.0f;
 
 	ImGuiIO& io = ImGui::GetIO();
 
-	int colorStyles = 0;
-	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0f, 0.0f, 1.0f, .05f)); colorStyles++;
-	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(ImColor(255, 0, 255))); colorStyles++;
-
+	int color_style_count = 0;
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, tasgui::FadedBackground); color_style_count++;
+	ImGui::PushStyleColor(ImGuiCol_Text, tasgui::Magenta); color_style_count++;
+	
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
 	ImVec2 window_pos_pivot = ImVec2(0.0f, 1.0f);
 
 	// History Window
-	ImVec2 history_window_pos = ImVec2(DISTANCE, io.DisplaySize.y - DISTANCE - 62);
+	ImVec2 history_window_pos = ImVec2(PADDING, io.DisplaySize.y - PADDING - CONSOLE_HEIGHT - MARGIN);
 	ImGui::SetNextWindowPos(history_window_pos, ImGuiCond_Always, window_pos_pivot);
 	ImGui::SetNextWindowBgAlpha(0.25f); // Transparent background
-
 	if (ImGui::Begin("MCCTAS Console History", nullptr, window_flags)) {
 		render_history();
 	}
 	ImGui::End();
 
 	// Console input window
-	ImVec2 console_window_pos = ImVec2(DISTANCE, io.DisplaySize.y - DISTANCE);
+	ImVec2 console_window_pos = ImVec2(PADDING, io.DisplaySize.y - PADDING);
 	ImGui::SetNextWindowPos(console_window_pos, ImGuiCond_Always, window_pos_pivot);
+	ImGui::SetNextWindowSize(ImVec2(windowWidth - PADDING * 2, CONSOLE_HEIGHT));
 	ImGui::SetNextWindowBgAlpha(0.25f); // Transparent background
 	if (ImGui::Begin("MCCTAS Console", nullptr, window_flags))
 	{
 		ImGui::AlignTextToFramePadding();
 		ImGui::SetNextItemWidth(100);
-		switch (mMode)
+		switch (mConsoleMode)
 		{
 		case tas_console::console_mode::MCCTAS:
 			ImGui::Text("mcctas(");
@@ -132,7 +136,8 @@ void tas_console::render(int windowWidth)
 			ImGui::Text("halo3(");
 			break;
 		default:
-			tas_logger::error("Invalid console mode set: {}", mMode);
+			tas_logger::error("Invalid console mode set: {}", mConsoleMode);
+			ImGui::Text("Invalid(");
 			ImGui::End();
 			return;
 		}
@@ -141,18 +146,19 @@ void tas_console::render(int windowWidth)
 		if (!ImGui::IsAnyItemActive())
 			ImGui::SetKeyboardFocusHere();
 
-		float consoleWidth = std::max<float>(static_cast<float>(windowWidth - 180), 720.0f);
-		ImGui::SetNextItemWidth(consoleWidth);
+		// Fill remaining space with console input
+		float command_line_width = std::max<float>(static_cast<float>(ImGui::GetContentRegionAvail().x), 720.0f);
+		ImGui::SetNextItemWidth(command_line_width);
 		ImGuiInputTextFlags command_line_flags = ImGuiInputTextFlags_EnterReturnsTrue;
-		if (ImGui::InputText("", mCommandBuffer, sizeof(mCommandBuffer), command_line_flags)) {
-			execute();
+		if (ImGui::InputText("", &mCommandBuffer, command_line_flags)) {
+			execute(mCommandBuffer);
 		}
 	}
 	ImGui::End();
 
 	// Cleanup
-	if (colorStyles)
-		ImGui::PopStyleColor(colorStyles);
+	if (color_style_count)
+		ImGui::PopStyleColor(color_style_count);
 }
 
 void tas_console::render_console()
@@ -169,7 +175,9 @@ void tas_console::render_history()
 	for (auto s = mCommandHistory.cbegin(); s != mCommandHistory.cend(); s = std::next(s)) {
 		ImGui::PushID(id);
 		if (ImGui::Button("<")) {
-			strcpy_s(mCommandBuffer, sizeof(mCommandBuffer), s->c_str());
+			if (mCurrentIndex >= 1 && mCommandHistory.size() > id) {
+				mCommandBuffer = mCommandHistory[id];
+			}
 		}
 		ImGui::SameLine();
 		ImGui::AlignTextToFramePadding();
@@ -193,20 +201,24 @@ void tas_console::execute_global(const ParsedCommand& command)
 	{
 		auto newModeString = std::get<std::string>(command.mParameters[0]);
 		if (newModeString == "h3dev") {
-			mMode = console_mode::HALO3DEV;
+			mConsoleMode = console_mode::HALO3DEV;
 		}
 		if (newModeString == "h2dev") {
-			mMode = console_mode::HALO2DEV;
+			mConsoleMode = console_mode::HALO2DEV;
 		}
 		if (newModeString == "h1dev") {
-			mMode = console_mode::HALO1DEV;
+			if (tas_hooks::get_loaded_engine() == GameEngineType::Halo1) {
+				mConsoleMode = console_mode::HALO1DEV;
+			}
+			else {
+				tas_logger::warning("Can't switch to h1dev because we don't have an engine handle! If you are in-game, go back to the MCC main menu and load back into the level. "
+				"If you are in the MCC menus, open the Missions screen of another game, then load back into the game you want."); 
+			}
 		}
 		if (newModeString == "tas") {
-			mMode = console_mode::MCCTAS;
+			mConsoleMode = console_mode::MCCTAS;
 		}
-	}
-	default:
-		break;
+	} break;
 	}
 }
 
@@ -217,17 +229,17 @@ void tas_console::execute_h1raw(const std::string& command)
 	tas_logger::info("Executed HALO1DEV command: {}", command);
 }
 
-void tas_console::execute_h1dev(const ParsedCommand& command)
-{
-	
-}
-
-void tas_console::execute_h2dev(const ParsedCommand& command)
+void tas_console::execute_h1dev(const ParsedCommand& /*command*/)
 {
 
 }
 
-void tas_console::execute_h3dev(const ParsedCommand& command)
+void tas_console::execute_h2dev(const ParsedCommand& /*command*/)
+{
+
+}
+
+void tas_console::execute_h3dev(const ParsedCommand& /*command*/)
 {
 
 }

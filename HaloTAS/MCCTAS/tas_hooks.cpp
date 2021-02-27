@@ -225,6 +225,7 @@ void tas_hooks::detach_all() {
 		patch.restore();
 	}
 	detach_global_hooks();
+	detach_temporary_hooks();
 }
 
 void tas_hooks::execute_halo1_command(const std::string& command)
@@ -239,6 +240,14 @@ void tas_hooks::execute_halo1_command(const std::string& command)
 	}
 	std::string engine_command = "HS: " + command;
 	engine_command_vptr(current_engine, engine_command.c_str());
+}
+
+GameEngineType tas_hooks::get_loaded_engine()
+{
+	if (!current_engine) {
+		return GameEngineType::None;
+	}
+	return current_engine_type;
 }
 
 void tas_hooks::init_global_hooks()
@@ -266,6 +275,13 @@ void tas_hooks::init_global_hooks()
 	originalLoadLibraryExA = LoadLibraryExA;
 	originalLoadLibraryExW = LoadLibraryExW;
 	originalFreeLibrary = FreeLibrary;
+}
+
+void tas_hooks::detach_temporary_hooks()
+{
+	for (auto& hook : gGameEngineHooks) {
+		hook.detach();
+	}
 }
 
 void post_lib_load_hooks_patches(std::wstring_view libPath) {

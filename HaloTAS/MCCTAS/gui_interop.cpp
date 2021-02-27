@@ -201,7 +201,7 @@ void handle_response_get_game_information(const InteropRequest& /*request*/, Int
 	gameInfoPayload.Halo4Loaded = h4DLL.has_value() ? TRUE : FALSE;
 
 	// TODO-SCALES: ???
-	gameInfoPayload.Halo1Information.Tick = 999;
+	/*gameInfoPayload.Halo1Information.Tick = 999;
 	gameInfoPayload.Halo2Information.Tick = 999;
 
 	if (gameInfoPayload.Halo1Loaded) {
@@ -218,7 +218,7 @@ void handle_response_get_game_information(const InteropRequest& /*request*/, Int
 		for (int i = 0; i < to_underlying(halo2::skull::COUNT); i++) {
 			gameInfoPayload.Halo2Information.SkullsEnabled[i] = h2Snapshot.skulls[i];
 		}
-	}
+	}*/
 
 	response.header.type = InteropResponseType::SUCCESS;
 	response.header.payload_size = sizeof(gameInfoPayload);

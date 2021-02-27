@@ -9,17 +9,26 @@ namespace {
 	const std::wstring HALOODST_DLL_WSTR = L"halo3odst.dll";
 	const std::wstring HALOREACH_DLL_WSTR = L"haloreach.dll";
 	const std::wstring HALO4_DLL_WSTR = L"halo4.dll";
-
-	enum class GameEngineType {
-		None,
-		Halo1,
-		Halo2,
-		Halo3,
-		HaloODST,
-		HaloReach,
-		Halo4
-	};
 }
+
+enum class GameEngineType {
+	None,
+	Halo1,
+	Halo2,
+	Halo3,
+	HaloODST,
+	HaloReach,
+	Halo4
+};
+static std::array<const std::string, 7> GameEngineTypeString = {
+	"None",
+	"Halo1",
+	"Halo2",
+	"Halo3",
+	"HaloODST",
+	"HaloReach",
+	"Halo4"
+};
 
 namespace mcc {
 	namespace function {

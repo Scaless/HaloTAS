@@ -37,6 +37,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_impl_dx11.h>
+#include <imgui/imgui_stdlib.h>
 
 #pragma warning(push)
 #pragma warning(disable: 26495 4201)
@@ -61,5 +62,6 @@
 #include "tas_utilities.h"
 #include "tas_logger.h"
 #include "halo_constants.h"
+#include "overlay_shared.h"
 
 #endif //PCH_H

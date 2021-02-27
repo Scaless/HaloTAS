@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "tas_overlay.h"
 #include "tas_console.h"
+#include "tas_hooks.h"
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -52,6 +53,11 @@ LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 			{
 				gShowConsole = false;
 				gConsole.clear_buffer();
+
+				if (tas_hooks::get_loaded_engine() == GameEngineType::Halo1) {
+					tas_hooks::execute_halo1_command("game_speed 1");
+				}
+
 				ignore_next_tilde = true;
 				return true;
 			}
@@ -74,6 +80,9 @@ LRESULT CALLBACK imgui_wndproc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				}
 				else {
 					gShowConsole = !gShowConsole;
+					if (tas_hooks::get_loaded_engine() == GameEngineType::Halo1) {
+						tas_hooks::execute_halo1_command("game_speed 0");
+					}
 					return true;
 				}
 			}
@@ -116,6 +125,26 @@ void reset_wndproc_handler()
 	if (gOriginalWndProcHandler) {
 		SetWindowLongPtr(gWindow, GWLP_WNDPROC, (LONG_PTR)gOriginalWndProcHandler);
 	}
+}
+
+void watermark_render() {
+	ImGui::SetNextWindowPos(ImVec2(0, 0), ImGuiCond_Always);
+	ImGui::SetNextWindowSize(ImVec2(-1, 20), ImGuiCond_Always);
+	ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, tasgui::Orange);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(2, 2));
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
+	if (ImGui::Begin("MCCTAS Watermark", nullptr, window_flags)) {
+		ImGui::Text("HaloTAS Is Running!");
+		
+		ImGui::SameLine();
+		GameEngineType current_engine = tas_hooks::get_loaded_engine();
+		std::string engine_text = " Current Engine: " + GameEngineTypeString[(int)current_engine];
+		ImGui::Text(engine_text.c_str());
+	}
+	ImGui::PopStyleColor();
+	ImGui::PopStyleVar();
+	ImGui::End();
 }
 
 void speedometer_render() {
@@ -277,6 +306,8 @@ namespace tas::overlay {
 		if (gShowSpeedometer) {
 			speedometer_render();
 		}
+
+		watermark_render();
 
 		ImGui::EndFrame();
 		ImGui::Render();

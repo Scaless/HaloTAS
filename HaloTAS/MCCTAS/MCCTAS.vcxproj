@@ -171,6 +171,7 @@
     <ClInclude Include="..\include\imgui\imgui_impl_dx11.h" />
     <ClInclude Include="..\include\imgui\imgui_impl_win32.h" />
     <ClInclude Include="..\include\imgui\imgui_internal.h" />
+    <ClInclude Include="..\include\imgui\imgui_stdlib.h" />
     <ClInclude Include="..\include\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\include\imgui\imstb_textedit.h" />
     <ClInclude Include="..\include\imgui\imstb_truetype.h" />
@@ -271,6 +272,7 @@
     <ClInclude Include="halo_constants.h" />
     <ClInclude Include="hook.h" />
     <ClInclude Include="kiero.h" />
+    <ClInclude Include="overlay_shared.h" />
     <ClInclude Include="patch.h" />
     <ClInclude Include="signatures.h" />
     <ClInclude Include="speedometer.h" />
@@ -303,6 +305,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\include\imgui\imgui_impl_win32.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui\imgui_stdlib.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>

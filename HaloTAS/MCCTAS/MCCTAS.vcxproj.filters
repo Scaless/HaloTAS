@@ -414,6 +414,12 @@
     <ClInclude Include="signatures.h">
       <Filter>Header Files\Windows</Filter>
     </ClInclude>
+    <ClInclude Include="overlay_shared.h">
+      <Filter>Header Files\Overlay</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\imgui\imgui_stdlib.h">
+      <Filter>Libraries\imgui</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -493,6 +499,9 @@
     </ClCompile>
     <ClCompile Include="speedometer.cpp">
       <Filter>Source Files\Overlay</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\imgui\imgui_stdlib.cpp">
+      <Filter>Libraries\imgui</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

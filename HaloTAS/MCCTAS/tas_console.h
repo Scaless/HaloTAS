@@ -8,23 +8,21 @@ class tas_console
 private:
 	enum class console_mode { MCCTAS, HALO1DEV, HALO2DEV, HALO3DEV };
 
-	char mCommandBuffer[1024] = "";
+	std::string mCommandBuffer;
 	std::vector<std::string> mCommandHistory;
 	int mVisibleHistoryLines = 4;
 	int mCurrentIndex = 0;
-	console_mode mMode = console_mode::MCCTAS;
+	console_mode mConsoleMode = console_mode::MCCTAS;
 
 public:
-	tas_console() = default;
+	tas_console();
 	~tas_console() = default;
 
 	void clear_buffer();
 	void clear_history();
 	void history_cursor_up();
 	void history_cursor_down();
-	char* buffer();
-	size_t buffer_size();
-	void execute();
+	void execute(std::string& buffer);
 	void render(int windowWidth);
 	void render_console();
 	void render_history();

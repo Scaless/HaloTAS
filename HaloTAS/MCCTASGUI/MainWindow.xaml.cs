@@ -35,8 +35,6 @@ namespace MCCTASGUI
             Application.Current.MainWindow = this;
             Application.Current.ShutdownMode = ShutdownMode.OnMainWindowClose;
 
-            tblkStatusConnected.Text = Directory.GetCurrentDirectory();
-
             btnInject.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
         }
 
@@ -61,6 +59,8 @@ namespace MCCTASGUI
                 Dispatcher.Invoke(() =>
                 {
                     tblkStatusConnected.Text = Status.Connected ? "CONNECTED" : "NOT CONNECTED";
+                    btnInject.Visibility = Status.Connected ? Visibility.Hidden : Visibility.Visible;
+
                     iconHalo1Loaded.Fill = Status.H1DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHalo2Loaded.Fill = Status.H2DLLLoaded ? Brushes.Green : Brushes.Red;
                     iconHalo3Loaded.Fill = Status.H3DLLLoaded ? Brushes.Green : Brushes.Red;
@@ -222,6 +222,11 @@ namespace MCCTASGUI
             {
                 // Something went wrong
             }
+        }
+
+        private void MenuFileClose(object sender, RoutedEventArgs e)
+        {
+            Close();
         }
     }
 }
