@@ -11,7 +11,7 @@ namespace MCCTASGUI
 {
     class DLLInjector
     {
-        const string CURRENT_SUPPORTED_VERSION = "1.1829.0.0";
+        const string CURRENT_SUPPORTED_VERSION = "1.2094.0.0";
 
         [DllImport("kernel32.dll")]
         static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
@@ -73,7 +73,7 @@ namespace MCCTASGUI
             if(fileVersionInfo.FileVersion != CURRENT_SUPPORTED_VERSION)
             {
                 string caption = "Injection Failed - Version Mismatch";
-                string message = $"The version of Master Chief Collection ({fileVersionInfo.FileVersion}) does not match the version supported by MCCTAS ({CURRENT_SUPPORTED_VERSION}).";
+                string message = $"The version of Master Chief Collection that is running ({fileVersionInfo.FileVersion}) does not match the version supported by MCCTAS ({CURRENT_SUPPORTED_VERSION}).";
                 MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }

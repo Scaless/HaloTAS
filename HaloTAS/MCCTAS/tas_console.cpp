@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "tas_hooks.h"
 #include "tas_console.h"
 #include "halo1_engine.h"
 
@@ -211,13 +212,14 @@ void tas_console::execute_global(const ParsedCommand& command)
 
 void tas_console::execute_h1raw(const std::string& command)
 {
-	halo1_engine::execute_command(command.c_str());
+	tas_hooks::execute_halo1_command(command);
+	//halo1_engine::execute_command(command.c_str());
 	tas_logger::info("Executed HALO1DEV command: {}", command);
 }
 
 void tas_console::execute_h1dev(const ParsedCommand& command)
 {
-
+	
 }
 
 void tas_console::execute_h2dev(const ParsedCommand& command)

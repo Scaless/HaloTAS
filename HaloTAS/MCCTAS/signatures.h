@@ -46,7 +46,7 @@ public:
 			int64_t startAddr = (int64_t)module_info.lpBaseOfDll;
 			int64_t endAddr = startAddr + module_info.SizeOfImage + scanBytesSize;
 
-			for (int64_t addr = startAddr; addr++; addr < endAddr) {
+			for (int64_t addr = startAddr; addr < endAddr; addr++) {
 
 				uint8_t* ptr = reinterpret_cast<uint8_t*>(addr);
 				for (int i = 0; i < scanBytesSize; i++) {

@@ -38,3 +38,6 @@ Debug/
 Release/
 obj/
 *.user
+
+# Jetbrains junk
+.idea/

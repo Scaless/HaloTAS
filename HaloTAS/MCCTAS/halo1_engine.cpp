@@ -3,6 +3,7 @@
 #include "windows_utilities.h"
 #include "dll_cache.h"
 #include "signatures.h"
+#include "tas_hooks.h"
 
 using namespace halo1;
 
@@ -221,11 +222,12 @@ void halo1_engine::execute_command(const char* command)
 	if (!is_engine_active())
 		return;
 
-	auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
+	/*auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
 		auto Exec = value_ptr<ExecuteCommand>(H1DLL.value(), halo1::function::OFFSET_H1_EXECUTE_COMMAND);
 		Exec(command, 0);
-	}
+	}*/
+	tas_hooks::execute_halo1_command(command);
 }
 
 void halo1_engine::set_checkpoint_flag()

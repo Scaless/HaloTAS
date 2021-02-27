@@ -10,8 +10,8 @@ private:
 	std::vector<uint8_t> mOriginalData;
 
 public:
-	patch(const std::wstring& patch_name, const std::wstring& module, int64_t offset, const std::vector<uint8_t>& patch)
-		: mPatchName(patch_name), mOffset(offset), mPatchData(patch), mModuleName(module)
+	patch(const std::wstring& patch_name, const std::wstring& module_name, int64_t offset, const std::vector<uint8_t>& patch)
+		: mPatchName(patch_name), mOffset(offset), mPatchData(patch), mModuleName(module_name)
 	{
 	}
 	~patch() = default;

@@ -10,14 +10,16 @@
 #include "speedometer.h"
 #include <d3d9.h>
 
-static std::once_flag gOverlayInitialized;
+std::once_flag gOverlayInitialized;
 // Global hooks should only apply to areas that will never be unloaded
-static std::vector<hook> gGlobalHooks;
+std::vector<hook> gGlobalHooks;
 // Runtime hooks & patches are applied and unapplied when dlls are loaded and unloaded
-static std::vector<hook> gRuntimeHooks;
-static std::vector<patch> gRuntimePatches;
+std::vector<hook> gRuntimeHooks;
+std::vector<patch> gRuntimePatches;
+// Applied dynamically when game engine is loaded
+std::vector<hook> gGameEngineHooks;
 
-static std::shared_ptr<speedometer> speedo = std::make_shared<speedometer>(5, 30);
+std::shared_ptr<speedometer> speedo = std::make_shared<speedometer>(5, 30);
 
 typedef HMODULE(*LoadLibraryA_t)(LPCSTR lpLibFileName);
 HMODULE hkLoadLibraryA(LPCSTR lpLibFileName);
@@ -67,7 +69,7 @@ typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, U
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 D3D11Present_t originalD3D11Present;
 
-typedef void (*D3D11RSSetState_t)(ID3D11Device* Ctx, ID3D11RasterizerState* pRasterizerState);
+typedef void (*D3D11RSSetState_t)(ID3D11DeviceContext* Ctx, ID3D11RasterizerState* pRasterizerState);
 void hkD3D11RSSetState(ID3D11DeviceContext* Ctx, ID3D11RasterizerState* pRasterizerState);
 D3D11RSSetState_t originalD3D11RSSetState;
 
@@ -83,7 +85,55 @@ typedef void (*D3D11DrawIndexed_t)(ID3D11DeviceContext* Ctx, UINT IndexCount,UIN
 void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount,UINT StartIndexLocation,INT  BaseVertexLocation);
 D3D11DrawIndexed_t originalD3D11DrawIndexed;
 
-const patch RuntimePatch_EnableH1DevConsole(L"EnableH1DevConsole", HALO1_DLL_WSTR, halo1::patch::OFFSET_ENABLE_DEV_CONSOLE, halo1::patch::PATCHBYTES_ENABLE_DEV_CONSOLE);
+struct GameEngine
+{
+	void* vptr[32];
+};
+
+struct GameHost
+{
+	void* vptr[64];
+};
+
+typedef HANDLE (*GameEnginePlayGame_t)(void* engine, GameHost** host, void* options);
+HANDLE hkGameEnginePlayGame(void* engine, GameHost** host, void* options);
+GameEnginePlayGame_t engine_play_game_vptr;
+
+typedef bool (*GameHostUpdateInput_t)(void* host, uint64_t param_a, MCCInput* input);
+bool hkGameHostUpdateInput(void* host, uint64_t param_a, MCCInput* input);
+GameHostUpdateInput_t originalGameHostUpdateInput;
+
+typedef int64_t(*H1EngineCommand_t)(void* engine, const char* command);
+H1EngineCommand_t engine_command_vptr;
+
+void* current_game_host = nullptr;
+void* current_engine = nullptr;
+GameEngineType current_engine_type = GameEngineType::None;
+
+typedef int64_t (*H1CreateGameEngine_t)(GameEngine*** out_engine_ptr);
+int64_t hkHalo1CreateGameEngine(GameEngine*** out_engine_ptr);
+H1CreateGameEngine_t originalH1CreateGameEngine;
+
+typedef int64_t (*H2CreateGameEngine_t)(GameEngine*** out_engine_ptr);
+int64_t hkHalo2CreateGameEngine(GameEngine*** out_engine_ptr);
+H2CreateGameEngine_t originalH2CreateGameEngine;
+
+typedef int64_t (*H3CreateGameEngine_t)(GameEngine*** out_engine_ptr);
+int64_t hkHalo3CreateGameEngine(GameEngine*** out_engine_ptr);
+H3CreateGameEngine_t originalH3CreateGameEngine;
+
+//TODO: not hooked up, engine could be invalid in the menus
+typedef void (*GameEngineDestructor_t)(GameEngine* engine);
+void hkGameEngineDestructor(GameEngine* engine);
+GameEngineDestructor_t originalGameEngineDestructor;
+
+typedef uint64_t (*Halo1Tick_t)(int64_t param_a, int64_t param_b);
+uint64_t hkHalo1Tick(int64_t param_a, int64_t param_b);
+Halo1Tick_t originalHalo1Tick;
+
+typedef void (*Halo1Tick2_t)(float delta);
+void hkHalo1TickDelta(float delta);
+Halo1Tick2_t originalHalo1Tick2;
 
 //const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
 const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_GET_NUMBER_OF_TICKS, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
@@ -91,29 +141,42 @@ const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick"
 //const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
 //const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
 
+const hook RuntimeHook_Halo1Tick(L"Halo1Tick", HALO1_DLL_WSTR, 0xc44320, (PVOID**)&originalHalo1Tick, hkHalo1Tick);
+const hook RuntimeHook_Halo1Tick2(L"Halo1Tick2", HALO1_DLL_WSTR, 0x0ac19a0, (PVOID**)&originalHalo1Tick2, hkHalo1TickDelta);
+
+const hook RuntimeHook_Halo1CreateGameEngine(L"hkH1CreateGameEngine", HALO1_DLL_WSTR, "CreateGameEngine", (PVOID**)&originalH1CreateGameEngine, hkHalo1CreateGameEngine);
+const hook RuntimeHook_Halo2CreateGameEngine(L"hkH2CreateGameEngine", HALO2_DLL_WSTR, "CreateGameEngine", (PVOID**)&originalH2CreateGameEngine, hkHalo2CreateGameEngine);
+const hook RuntimeHook_Halo3CreateGameEngine(L"hkH3CreateGameEngine", HALO3_DLL_WSTR, "CreateGameEngine", (PVOID**)&originalH3CreateGameEngine, hkHalo3CreateGameEngine);
+
 const hook GlobalHook_D3D9SetRenderState(L"hkD3D9SetRenderState", (PVOID**)&originalD3D9SetRenderState, hkD3D9SetRenderState);
 const hook GlobalHook_D3D11Draw(L"hkD3D11Draw", (PVOID**)&originalD3D11Draw, hkD3D11Draw);
 const hook GlobalHook_D3D11RSSetState(L"hkD3D11RSSetState", (PVOID**)&originalD3D11RSSetState, hkD3D11RSSetState);
 const hook GlobalHook_D3D11Present(L"hkD3D11Present", (PVOID**)&originalD3D11Present, hkD3D11Present);
 const hook GlobalHook_D3D11DrawIndexed(L"hkD3D11DrawIndexed", (PVOID**)&originalD3D11DrawIndexed, hkD3D11DrawIndexed);
+
 const hook GlobalHook_LoadLibraryA(L"hkLoadLibraryA", (PVOID**)&originalLoadLibraryA, hkLoadLibraryA);
 const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibraryW, hkLoadLibraryW);
 const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
 const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
+
 //const hook GlobalHook_MCCGetInput(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
 
 tas_hooks::tas_hooks()
 {
-	gRuntimePatches.push_back(RuntimePatch_EnableH1DevConsole);
 	//gRuntimeHooks.push_back(RuntimeHook_Halo1HandleInput);
-	gRuntimeHooks.push_back(RuntimeHook_Halo1GetNumberOfTicksToTick);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1GetNumberOfTicksToTick);
 	//gRuntimeHooks.push_back(RuntimeHook_Halo2Tick);
 	//gRuntimeHooks.push_back(RuntimeHook_Halo2TickLoop);
 	//gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
-	//gGlobalHooks.push_back(GlobalHook_D3D9SetRenderState);
-	//gGlobalHooks.push_back(GlobalHook_D3D11RSSetState);
+	gRuntimeHooks.push_back(RuntimeHook_Halo1Tick);
+	gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
+
+	gRuntimeHooks.push_back(RuntimeHook_Halo1CreateGameEngine);
+	gRuntimeHooks.push_back(RuntimeHook_Halo2CreateGameEngine);
+	gRuntimeHooks.push_back(RuntimeHook_Halo3CreateGameEngine);
+
 	gGlobalHooks.push_back(GlobalHook_D3D11Present);
 	gGlobalHooks.push_back(GlobalHook_D3D11Draw);
 	gGlobalHooks.push_back(GlobalHook_D3D11DrawIndexed);
@@ -122,6 +185,7 @@ tas_hooks::tas_hooks()
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExA);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExW);
 	gGlobalHooks.push_back(GlobalHook_FreeLibrary);
+
 	//gGlobalHooks.push_back(GlobalHook_MCCGetInput);
 
 	init_global_hooks();
@@ -161,6 +225,20 @@ void tas_hooks::detach_all() {
 		patch.restore();
 	}
 	detach_global_hooks();
+}
+
+void tas_hooks::execute_halo1_command(const std::string& command)
+{
+	if (!current_engine) {
+		tas_logger::warning("Can't execute command. Current engine is null, did you launch HaloTAS before you launched Halo 1?\n");
+		return;
+	}
+	if (current_engine_type != GameEngineType::Halo1) {
+		tas_logger::warning("Can't execute command. Commands are only supported in Halo 1.\n");
+		return;
+	}
+	std::string engine_command = "HS: " + command;
+	engine_command_vptr(current_engine, engine_command.c_str());
 }
 
 void tas_hooks::init_global_hooks()
@@ -289,6 +367,7 @@ HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags)
 
 void hkD3D11RSSetState(ID3D11DeviceContext* Ctx, ID3D11RasterizerState* pRasterizerState)
 {
+	originalD3D11RSSetState(Ctx, pRasterizerState);
 	//tas::overlay::set_wireframe(Ctx, 0);
 }
 
@@ -307,6 +386,24 @@ void hkD3D11Draw(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLoc
 		//tas::overlay::set_wireframe(Ctx);
 	}
 	originalD3D11Draw(Ctx, VertexCount, StartVertexLocation);
+
+	if (GetAsyncKeyState(VK_RIGHT)) {
+		if (current_engine != nullptr && current_engine_type == GameEngineType::Halo1) {
+			engine_command_vptr(current_engine, "HS: ai 0");
+		}
+		else {
+			tas_logger::warning("Can't execute command, game_engine_ptr is null.");
+		}
+	}
+	if (GetAsyncKeyState(VK_LEFT)) {
+		if (current_engine != nullptr && current_engine_type == GameEngineType::Halo1) {
+			engine_command_vptr(current_engine, "HS: ai 1");
+		}
+		else {
+			tas_logger::warning("Can't execute command, game_engine_ptr is null.");
+		}
+	}
+
 }
 
 void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
@@ -648,53 +745,6 @@ int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
 		speedo->push_back(*currentCameraPosition);
 	}
 
-	/*if (GetAsyncKeyState(VK_RIGHT)) {
-		originalReturn = 1;
-	}*/
-
-	bool superhot = false;
-	if (superhot) {
-		//                                        W                         A                         S                         D
-		bool superhotKeyDown = GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41) || GetAsyncKeyState(0x53) || GetAsyncKeyState(0x44)
-			//                  SHIFT                         LEFT MOUSE                      RIGHT MOUSE
-			|| GetAsyncKeyState(VK_SHIFT) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON);
-
-		auto now = std::chrono::system_clock::now();
-		static auto lastNow = now;
-
-		int slowdownTicksPerSecond = 2;
-		float slowdownMilliseconds = 1000.0f / slowdownTicksPerSecond;
-
-		static auto slowTimer = std::chrono::system_clock::now();
-		if (superhotKeyDown) {
-			auto originalReturn = originalH1GetNumberOfTicksToTick(a1, a2);
-			slowTimer = std::chrono::system_clock::now();
-			lastNow = now;
-			return originalReturn;
-		}
-		else {
-			auto msdiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - slowTimer);
-
-			auto lastDiff = std::chrono::duration_cast<std::chrono::milliseconds>(now - lastNow);
-			lastNow = now;
-
-			//lastDiff += std::chrono::milliseconds(1);
-
-			tas_logger::info("{}", lastDiff.count());
-
-			float deltaRealTime = lastDiff.count() / 1000.0f;
-			float deltaTickTime = deltaRealTime * (slowdownTicksPerSecond / 30.0f);
-			auto originalReturn = originalH1GetNumberOfTicksToTick(deltaTickTime, 0);
-			if (msdiff.count() > slowdownMilliseconds) {
-				if (originalReturn) {
-					slowTimer = now;
-				}
-				return originalReturn;
-			}
-			return 0;
-		}
-	}
-
 	return originalReturn;
 }
 
@@ -733,4 +783,199 @@ void hkH3Tick()
 {
 	//tas_logger::info("    H3 Tick");
 	originalH3Tick();
+}
+
+// Stolen from BCS :)
+constexpr size_t k_game_variant_buffer_size = 0x1CC00;
+constexpr size_t k_map_variant_buffer_size = 0xE800;
+struct s_peer_context
+{
+	long long secure_address;
+};
+struct s_player_context_v1
+{
+	long long xbox_user_id;
+	long team;
+	long player_assigned_team;
+	long long secure_address;
+};
+struct s_player_context_v2 : public s_player_context_v1
+{
+	long __unknown18;
+	long __unknown1C;
+};
+struct s_game_options_v3
+{
+public:
+	bool visual_remaster : 1;
+	bool music_remaster : 1;
+	bool sfx_remaster : 1;
+	bool is_host : 1;
+
+	// SUCK IT!
+	unsigned char launch_flags : 4;
+private:
+	char __padding0[3];
+	char __padding1[6];
+public:
+	unsigned __int8 tick_length;
+private:
+	__int8 : 8;
+public:
+	long game_mode;
+	long map_id;
+
+	long campaign_difficulty_level;
+private:
+	char __padding2[4];
+public:
+	unsigned short campaign_insertion_point;
+	short infinity_mission_id;
+	unsigned long long launcher_skull_mask;
+
+	s_peer_context party;
+	s_peer_context local;
+
+	s_peer_context peers[17];
+	uint64_t peer_count;
+
+	s_player_context_v2 players[16];
+	uint64_t player_count;
+	s_peer_context host;
+
+	char game_variant_buffer[k_game_variant_buffer_size];
+	char map_variant_buffer[k_map_variant_buffer_size];
+
+	uint64_t game_state_header_size;
+	char* game_state_header;
+	const char* saved_film_path;
+	wchar_t* custom_engine_name;
+};
+
+HANDLE hkGameEnginePlayGame(void* engine, GameHost** host, void* options) {
+
+	s_game_options_v3* opt = static_cast<s_game_options_v3*>(options);
+
+	tas_logger::info("hkGameEnginePlayGame");
+	tas_logger::info("\tmap_id: {}", opt->map_id);
+	tas_logger::info("\tcampaign_difficulty_level: {}", opt->campaign_difficulty_level);
+	tas_logger::info("\tpeer_count: {}", opt->peer_count);
+	tas_logger::info("\tplayer_count: {}", opt->player_count);
+
+	HANDLE result = engine_play_game_vptr(engine, host, options);
+
+	current_game_host = host;
+
+	originalGameHostUpdateInput = static_cast<GameHostUpdateInput_t>((*host)->vptr[30]);
+
+	hook RuntimeHook_Halo1GameHostUpdateInput(L"hkDynamicHalo1GameHostUpdateInput", (PVOID**)&originalGameHostUpdateInput, hkGameHostUpdateInput);
+	RuntimeHook_Halo1GameHostUpdateInput.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo1GameHostUpdateInput);
+
+	return result;
+}
+
+bool hkGameHostUpdateInput(void* host, uint64_t param_a, MCCInput* input) {
+	tas_logger::info("hkGameHostUpdateInput");
+	auto result = originalGameHostUpdateInput(host, param_a, input);
+	return result;
+}
+
+int64_t hkHalo1CreateGameEngine(GameEngine*** out_engine_ptr)
+{
+	int64_t result = originalH1CreateGameEngine(out_engine_ptr);
+	tas_logger::info("hkHalo1CreateGameEngine: Engine Created");
+
+	current_engine = *out_engine_ptr;
+	current_engine_type = GameEngineType::Halo1;
+
+	originalGameEngineDestructor = static_cast<GameEngineDestructor_t>((**out_engine_ptr)->vptr[0]);
+	engine_play_game_vptr = static_cast<GameEnginePlayGame_t>((**out_engine_ptr)->vptr[2]);
+	engine_command_vptr = static_cast<H1EngineCommand_t>((**out_engine_ptr)->vptr[9]);
+
+	hook RuntimeHook_Halo1GameEnginePlayGame(L"hkDynamicHalo1GameEnginePlayGame", (PVOID**)&engine_play_game_vptr, hkGameEnginePlayGame);
+	RuntimeHook_Halo1GameEnginePlayGame.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo1GameEnginePlayGame);
+
+	hook RuntimeHook_Halo1GameEngineDestructor(L"hkDynamicHalo1GameEngineDestructor", (PVOID**)&originalGameEngineDestructor, hkGameEngineDestructor);
+	RuntimeHook_Halo1GameEngineDestructor.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo1GameEngineDestructor);
+
+	return result;
+}
+
+int64_t hkHalo2CreateGameEngine(GameEngine*** out_engine_ptr)
+{
+	int64_t result = originalH2CreateGameEngine(out_engine_ptr);
+	tas_logger::info("hkHalo2CreateGameEngine: Engine Created");
+
+	originalGameEngineDestructor = static_cast<GameEngineDestructor_t>((**out_engine_ptr)->vptr[0]);
+	engine_play_game_vptr = static_cast<GameEnginePlayGame_t>((**out_engine_ptr)->vptr[2]);
+
+	hook RuntimeHook_Halo2GameEnginePlayGame(L"hkDynamicHalo2GameEnginePlayGame", (PVOID**)&engine_play_game_vptr, hkGameEnginePlayGame);
+	RuntimeHook_Halo2GameEnginePlayGame.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo2GameEnginePlayGame);
+
+	hook RuntimeHook_Halo2GameEngineDestructor(L"hkDynamicHalo2GameEngineDestructor", (PVOID**)&originalGameEngineDestructor, hkGameEngineDestructor);
+	RuntimeHook_Halo2GameEngineDestructor.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo2GameEngineDestructor);
+
+	current_engine = *out_engine_ptr;
+	current_engine_type = GameEngineType::Halo2;
+	engine_command_vptr = nullptr;
+
+	return result;
+}
+
+int64_t hkHalo3CreateGameEngine(GameEngine*** out_engine_ptr)
+{
+	int64_t result = originalH3CreateGameEngine(out_engine_ptr);
+	tas_logger::info("hkHalo3CreateGameEngine: Engine Created");
+
+	originalGameEngineDestructor = static_cast<GameEngineDestructor_t>((**out_engine_ptr)->vptr[0]);
+	engine_play_game_vptr = static_cast<GameEnginePlayGame_t>((**out_engine_ptr)->vptr[2]);
+
+	hook RuntimeHook_Halo3GameEnginePlayGame(L"hkDynamicHalo3GameEnginePlayGame", (PVOID**)&engine_play_game_vptr, hkGameEnginePlayGame);
+	RuntimeHook_Halo3GameEnginePlayGame.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo3GameEnginePlayGame);
+
+	hook RuntimeHook_Halo3GameEngineDestructor(L"hkDynamicHalo3GameEngineDestructor", (PVOID**)&originalGameEngineDestructor, hkGameEngineDestructor);
+	RuntimeHook_Halo3GameEngineDestructor.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo3GameEngineDestructor);
+
+	current_engine = *out_engine_ptr;
+	current_engine_type = GameEngineType::Halo3;
+	engine_command_vptr = nullptr;
+
+	return result;
+}
+
+void hkGameEngineDestructor(GameEngine* engine)
+{
+	tas_logger::info("hkGameEngineDestructor");
+	originalGameEngineDestructor(engine);
+
+	for (hook& hk : gGameEngineHooks) {
+		hk.detach();
+	}
+	gGameEngineHooks.clear();
+
+	current_engine = nullptr;
+	current_engine_type = GameEngineType::None;
+	engine_command_vptr = nullptr;
+}
+
+uint64_t hkHalo1Tick(int64_t param_a, int64_t param_b) {
+	//tas_logger::info("H1Tick: {}, {}", param_a, param_b);
+	return originalHalo1Tick(param_a, param_b);
+}
+
+void hkHalo1TickDelta(float delta) {
+	//tas_logger::info("hkHalo1TickDelta: {}", delta);
+
+	/*bool slomoKeyDown = GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41) || GetAsyncKeyState(0x53) || GetAsyncKeyState(0x44) || GetAsyncKeyState(VK_SHIFT) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON);*/
+
+	//originalHalo1Tick2(delta * (!slomoKeyDown ? .2f : 1.0f));
+	originalHalo1Tick2(delta);
+	
 }

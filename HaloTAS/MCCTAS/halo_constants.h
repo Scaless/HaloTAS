@@ -9,6 +9,16 @@ namespace {
 	const std::wstring HALOODST_DLL_WSTR = L"halo3odst.dll";
 	const std::wstring HALOREACH_DLL_WSTR = L"haloreach.dll";
 	const std::wstring HALO4_DLL_WSTR = L"halo4.dll";
+
+	enum class GameEngineType {
+		None,
+		Halo1,
+		Halo2,
+		Halo3,
+		HaloODST,
+		HaloReach,
+		Halo4
+	};
 }
 
 namespace mcc {
@@ -46,15 +56,6 @@ namespace halo1 {
 
 		// SCAN: 48 8B C4 53 57 41 54 41 57 48 81 EC A8 00 00 00
 		inline const uint64_t OFFSET_H1_GET_NUMBER_OF_TICKS = 0x6F5D90;
-
-		//SCAN: 40 53 56 48 81 EC 38 09 00 00
-		inline const uint64_t OFFSET_H1_EXECUTE_COMMAND = 0x7EEA70;
-	}
-
-	namespace patch {
-		// SCAN: B2 05 41 ?? ?? ?? E8 ?? ?? ?? ?? 84 c0 74 ?? b0 01 48 ?? ?? 28 c3 32 c0 48 ?? ?? 28 C3
-		inline const uint64_t OFFSET_ENABLE_DEV_CONSOLE = 0x7811BF;
-		inline const auto PATCHBYTES_ENABLE_DEV_CONSOLE = std::vector<uint8_t>{ 0xB0, 0x01 };
 	}
 
 	namespace data {
