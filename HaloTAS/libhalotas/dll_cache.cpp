@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "dll_cache.h"
 
 void dll_cache::initialize()
@@ -28,8 +27,6 @@ void dll_cache::initialize()
 			}
 		}
 	}
-
-	tas_logger::trace("dll_cache initialized with {} DLLs.", instance.mCache.size());
 }
 
 bool dll_cache::add_to_cache(const std::wstring& dllName, HMODULE handle)

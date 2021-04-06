@@ -25,6 +25,7 @@ public:
 	void execute(std::string& buffer);
 	void render(int windowWidth);
 	void render_console();
+	void render_console_output();
 	void render_history();
 
 private:

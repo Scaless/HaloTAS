@@ -103,6 +103,16 @@ void tas_console::render(int windowWidth)
 	ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
 	ImVec2 window_pos_pivot = ImVec2(0.0f, 1.0f);
 
+	// Console Output Window
+	ImVec2 console_output_window_pos = ImVec2(PADDING, io.DisplaySize.y - PADDING - CONSOLE_HEIGHT - MARGIN - 300 - MARGIN);
+	ImGui::SetNextWindowPos(console_output_window_pos, ImGuiCond_Always, window_pos_pivot);
+	ImGui::SetNextWindowBgAlpha(0.5f); // Transparent background
+	if (ImGui::Begin("MCCTAS Console Output", nullptr, window_flags)) {
+		render_console_output();
+	}
+	ImGui::End();
+
+
 	// History Window
 	ImVec2 history_window_pos = ImVec2(PADDING, io.DisplaySize.y - PADDING - CONSOLE_HEIGHT - MARGIN);
 	ImGui::SetNextWindowPos(history_window_pos, ImGuiCond_Always, window_pos_pivot);
@@ -164,6 +174,29 @@ void tas_console::render(int windowWidth)
 void tas_console::render_console()
 {
 
+}
+
+void tas_console::render_console_output()
+{
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+	ImGui::BeginChild("ScrollingRegion", ImVec2(720, 300), false, flags);
+
+	auto new_vsprintf = tas_hooks::get_sprintf_values();
+
+	for (auto& s : new_vsprintf) {
+		if (s.find("mode") != std::string::npos) { continue; }
+		if (s.find("HaloTAS") != std::string::npos) { continue; }
+		if (s.find("MCCTAS") != std::string::npos) { continue; }
+		if (s.find("mcctas") != std::string::npos) { continue; }
+		if (s.find("Current Engine") != std::string::npos) { continue; }
+		if (s.find("halo1(") != std::string::npos) { continue; }
+		if (s.find("unit_get_health (player0)") != std::string::npos) { continue; }
+
+		tas_logger::warning(s.c_str());
+		//ImGui::Text(s.c_str());
+	}
+
+	ImGui::EndChild();
 }
 
 void tas_console::render_history()

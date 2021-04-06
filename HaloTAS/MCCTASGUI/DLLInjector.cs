@@ -56,8 +56,6 @@ namespace MCCTASGUI
                 return;
             }
 
-            // the target process - I'm using a dummy process for this
-            // if you don't have one, open Task Manager and choose wisely
             Process targetProcess = Process.GetProcessesByName("MCC-Win64-Shipping").FirstOrDefault();
 
             if(targetProcess == null)

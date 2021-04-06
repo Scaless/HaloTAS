@@ -12,6 +12,7 @@ public:
 	void detach_all();
 
 	static void execute_halo1_command(const std::string & command);
+	static std::vector<std::string> get_sprintf_values();
 	static GameEngineType get_loaded_engine();
 
 private:

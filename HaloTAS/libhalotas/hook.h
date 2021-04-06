@@ -1,5 +1,8 @@
 #pragma once
-#include "pch.h"
+#include <string>
+#include <cinttypes>
+#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#include <windows.h>
 
 class hook {
 private:

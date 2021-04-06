@@ -123,9 +123,6 @@
     <ClInclude Include="patch.h">
       <Filter>Header Files\Hooks</Filter>
     </ClInclude>
-    <ClInclude Include="hook.h">
-      <Filter>Header Files\Hooks</Filter>
-    </ClInclude>
     <ClInclude Include="tas_overlay.h">
       <Filter>Header Files\Overlay</Filter>
     </ClInclude>
@@ -396,9 +393,6 @@
     <ClInclude Include="console_parser.h">
       <Filter>Header Files\Overlay</Filter>
     </ClInclude>
-    <ClInclude Include="dll_cache.h">
-      <Filter>Header Files\Windows</Filter>
-    </ClInclude>
     <ClInclude Include="global.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
@@ -473,9 +467,6 @@
     <ClCompile Include="patch.cpp">
       <Filter>Source Files\Hooks</Filter>
     </ClCompile>
-    <ClCompile Include="hook.cpp">
-      <Filter>Source Files\Hooks</Filter>
-    </ClCompile>
     <ClCompile Include="tas_overlay.cpp">
       <Filter>Source Files\Overlay</Filter>
     </ClCompile>
@@ -484,9 +475,6 @@
     </ClCompile>
     <ClCompile Include="console_parser.cpp">
       <Filter>Source Files\Overlay</Filter>
-    </ClCompile>
-    <ClCompile Include="dll_cache.cpp">
-      <Filter>Source Files\Windows</Filter>
     </ClCompile>
     <ClCompile Include="global.cpp">
       <Filter>Source Files\Utilities</Filter>

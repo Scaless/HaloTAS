@@ -41,6 +41,33 @@ typedef BOOL(*FreeLibrary_t)(HMODULE hLibModule);
 BOOL hkFreeLibrary(HMODULE hLibModule);
 FreeLibrary_t originalFreeLibrary;
 
+std::mutex sprintf_lock;
+std::vector<std::string> sprintf_values;
+
+typedef int (*sprintf_t)(char* str, const char* format, ...);
+int hksprintf(char* str, const char* format, ...);
+sprintf_t originalsprintf;
+
+typedef int (*snprintf_t)(char* s, size_t n, const char* format, ...);
+int hksnprintf(char* s, size_t n, const char* format, ...);
+snprintf_t originalsnprintf;
+
+typedef int (*vsnprintf_t)(char* s, size_t n, const char* format, va_list args);
+int hkvsnprintf(char* s, size_t n, const char* format, va_list args);
+vsnprintf_t originalvsnprintf;
+
+typedef decltype(__stdio_common_vsprintf)* stdio_vsprintf_t;
+int hkstdio_vsprintf(int64_t Options, char* Buffer, size_t BufferCount, const char* Format, _locale_t Locale, va_list Args);
+stdio_vsprintf_t originalstdio_vsprintf;
+
+typedef decltype(__stdio_common_vswprintf)* stdio_vswprintf_t;
+int hkstdio_vswprintf(int64_t Options, wchar_t* Buffer, size_t BufferCount, const wchar_t* Format, _locale_t Locale, va_list Args);
+stdio_vswprintf_t originalstdio_vswprintf;
+
+typedef decltype(__stdio_common_vsnprintf_s)* stdio_vsnprintf_s_t;
+int hkstdio_vsnprintf_s(int64_t Options, char* Buffer, size_t BufferCount, size_t MaxCount, const char* Format, _locale_t Locale, va_list Args);
+stdio_vsnprintf_s_t originalstdio_vsnprintf_s;
+
 typedef uint8_t(*MCCGetInput_t)(int64_t, int64_t, MCCInput*);
 uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* inputTable);
 MCCGetInput_t originalMCCInput;
@@ -81,8 +108,8 @@ typedef void (*D3D11Draw_t)(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT Sta
 void hkD3D11Draw(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLocation);
 D3D11Draw_t originalD3D11Draw;
 
-typedef void (*D3D11DrawIndexed_t)(ID3D11DeviceContext* Ctx, UINT IndexCount,UINT StartIndexLocation,INT  BaseVertexLocation);
-void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount,UINT StartIndexLocation,INT  BaseVertexLocation);
+typedef void (*D3D11DrawIndexed_t)(ID3D11DeviceContext* Ctx, UINT IndexCount, UINT StartIndexLocation, INT  BaseVertexLocation);
+void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount, UINT StartIndexLocation, INT  BaseVertexLocation);
 D3D11DrawIndexed_t originalD3D11DrawIndexed;
 
 struct GameEngine
@@ -95,13 +122,17 @@ struct GameHost
 	void* vptr[64];
 };
 
-typedef HANDLE (*GameEnginePlayGame_t)(void* engine, GameHost** host, void* options);
+typedef HANDLE(*GameEnginePlayGame_t)(void* engine, GameHost** host, void* options);
 HANDLE hkGameEnginePlayGame(void* engine, GameHost** host, void* options);
 GameEnginePlayGame_t engine_play_game_vptr;
 
 typedef bool (*GameHostUpdateInput_t)(void* host, uint64_t param_a, MCCInput* input);
 bool hkGameHostUpdateInput(void* host, uint64_t param_a, MCCInput* input);
 GameHostUpdateInput_t originalGameHostUpdateInput;
+
+typedef int (*GameHostConsolePrint_t)(void* host, char* buffer);
+int hkGameHostConsolePrint(void* host, char* buffer);
+GameHostConsolePrint_t originalGameHostConsolePrint;
 
 typedef int64_t(*H1EngineCommand_t)(void* engine, const char* command);
 H1EngineCommand_t engine_command_vptr;
@@ -110,15 +141,15 @@ void* current_game_host = nullptr;
 void* current_engine = nullptr;
 GameEngineType current_engine_type = GameEngineType::None;
 
-typedef int64_t (*H1CreateGameEngine_t)(GameEngine*** out_engine_ptr);
+typedef int64_t(*H1CreateGameEngine_t)(GameEngine*** out_engine_ptr);
 int64_t hkHalo1CreateGameEngine(GameEngine*** out_engine_ptr);
 H1CreateGameEngine_t originalH1CreateGameEngine;
 
-typedef int64_t (*H2CreateGameEngine_t)(GameEngine*** out_engine_ptr);
+typedef int64_t(*H2CreateGameEngine_t)(GameEngine*** out_engine_ptr);
 int64_t hkHalo2CreateGameEngine(GameEngine*** out_engine_ptr);
 H2CreateGameEngine_t originalH2CreateGameEngine;
 
-typedef int64_t (*H3CreateGameEngine_t)(GameEngine*** out_engine_ptr);
+typedef int64_t(*H3CreateGameEngine_t)(GameEngine*** out_engine_ptr);
 int64_t hkHalo3CreateGameEngine(GameEngine*** out_engine_ptr);
 H3CreateGameEngine_t originalH3CreateGameEngine;
 
@@ -127,7 +158,7 @@ typedef void (*GameEngineDestructor_t)(GameEngine* engine);
 void hkGameEngineDestructor(GameEngine* engine);
 GameEngineDestructor_t originalGameEngineDestructor;
 
-typedef uint64_t (*Halo1Tick_t)(int64_t param_a, int64_t param_b);
+typedef uint64_t(*Halo1Tick_t)(int64_t param_a, int64_t param_b);
 uint64_t hkHalo1Tick(int64_t param_a, int64_t param_b);
 Halo1Tick_t originalHalo1Tick;
 
@@ -135,14 +166,25 @@ typedef void (*Halo1Tick2_t)(float delta);
 void hkHalo1TickDelta(float delta);
 Halo1Tick2_t originalHalo1Tick2;
 
+typedef uint64_t(__fastcall *CarrierFreezeOuter)(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7);
+uint64_t __fastcall hkCarrierFreezeOuter(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7);
+CarrierFreezeOuter originalCarrierFreezeOuter;
+
+typedef bool (__fastcall *CarrierFreezeInner)(int64_t p1, int32_t p2, uint64_t p3, uint64_t p4, float* p5, float* p6, uint64_t* p7);
+bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64_t p4, float* p5, float* p6, uint64_t* p7);
+CarrierFreezeInner originalCarrierFreezeInner;
+
 //const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
-const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_GET_NUMBER_OF_TICKS, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
+//const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_GET_NUMBER_OF_TICKS, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
 //const hook RuntimeHook_Halo2Tick(L"hkHalo2Tick", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK, (PVOID**)&originalH2Tick, hkH2Tick);
 //const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
 //const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
 
-const hook RuntimeHook_Halo1Tick(L"Halo1Tick", HALO1_DLL_WSTR, 0xc44320, (PVOID**)&originalHalo1Tick, hkHalo1Tick);
-const hook RuntimeHook_Halo1Tick2(L"Halo1Tick2", HALO1_DLL_WSTR, 0x0ac19a0, (PVOID**)&originalHalo1Tick2, hkHalo1TickDelta);
+const hook RuntimeHook_Halo1CarrierFreezeOuter(L"CarrierFreezeOuter", HALO1_DLL_WSTR, 0xd4c1d0, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter);
+const hook RuntimeHook_Halo1CarrierFreezeInner(L"CarrierFreezeInner", HALO1_DLL_WSTR, 0xc8a470, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner);
+
+//const hook RuntimeHook_Halo1Tick(L"Halo1Tick", HALO1_DLL_WSTR, 0xc44320, (PVOID**)&originalHalo1Tick, hkHalo1Tick);
+//const hook RuntimeHook_Halo1Tick2(L"Halo1Tick2", HALO1_DLL_WSTR, 0x0ac19a0, (PVOID**)&originalHalo1Tick2, hkHalo1TickDelta);
 
 const hook RuntimeHook_Halo1CreateGameEngine(L"hkH1CreateGameEngine", HALO1_DLL_WSTR, "CreateGameEngine", (PVOID**)&originalH1CreateGameEngine, hkHalo1CreateGameEngine);
 const hook RuntimeHook_Halo2CreateGameEngine(L"hkH2CreateGameEngine", HALO2_DLL_WSTR, "CreateGameEngine", (PVOID**)&originalH2CreateGameEngine, hkHalo2CreateGameEngine);
@@ -160,6 +202,15 @@ const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoad
 const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
 
+//const hook GlobalHook_sprintf(L"hksprintf", (PVOID**)&originalsprintf, hksprintf);
+//const hook GlobalHook_snprintf(L"hksnprintf", (PVOID**)&originalsnprintf, hksnprintf);
+//const hook GlobalHook_vsnprintf(L"hkvsnprintf", (PVOID**)&originalvsnprintf, hkvsnprintf);
+//const hook GlobalHook_stdio_vsprintf(L"hkstdio_vsprintf", (PVOID**)&originalstdio_vsprintf, hkstdio_vsprintf);
+//const hook GlobalHook_stdio_vswprintf(L"hkstdio_vswprintf", (PVOID**)&originalstdio_vswprintf, hkstdio_vswprintf);
+//const hook GlobalHook_stdio_vsnprintf_s(L"hkstdio_vsnprintf_s", (PVOID**)&originalstdio_vsnprintf_s, hkstdio_vsnprintf_s);
+
+//const hook GlobalHook_stdio_vsprintf(L"hkstdio_vsprintf", L"API-MS-WIN-CRT-STDIO-L1-1-0.DLL", "_stdio_common_vsprintf", (PVOID**)&originalstdio_vsprintf, hkstdio_vsprintf);
+
 //const hook GlobalHook_MCCGetInput(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
 
 tas_hooks::tas_hooks()
@@ -170,8 +221,11 @@ tas_hooks::tas_hooks()
 	//gRuntimeHooks.push_back(RuntimeHook_Halo2TickLoop);
 	//gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
-	gRuntimeHooks.push_back(RuntimeHook_Halo1Tick);
-	gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
+
+	gRuntimeHooks.push_back(RuntimeHook_Halo1CarrierFreezeOuter);
+	gRuntimeHooks.push_back(RuntimeHook_Halo1CarrierFreezeInner);
 
 	gRuntimeHooks.push_back(RuntimeHook_Halo1CreateGameEngine);
 	gRuntimeHooks.push_back(RuntimeHook_Halo2CreateGameEngine);
@@ -185,6 +239,13 @@ tas_hooks::tas_hooks()
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExA);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExW);
 	gGlobalHooks.push_back(GlobalHook_FreeLibrary);
+
+	//gGlobalHooks.push_back(GlobalHook_sprintf);
+	//gGlobalHooks.push_back(GlobalHook_snprintf);
+	//gGlobalHooks.push_back(GlobalHook_vsnprintf);
+	//gGlobalHooks.push_back(GlobalHook_stdio_vsprintf);
+	//gGlobalHooks.push_back(GlobalHook_stdio_vswprintf);
+	//gGlobalHooks.push_back(GlobalHook_stdio_vsnprintf_s);
 
 	//gGlobalHooks.push_back(GlobalHook_MCCGetInput);
 
@@ -240,6 +301,14 @@ void tas_hooks::execute_halo1_command(const std::string& command)
 	}
 	std::string engine_command = "HS: " + command;
 	engine_command_vptr(current_engine, engine_command.c_str());
+
+	originalGameHostConsolePrint(current_game_host, (char*)engine_command.c_str());
+}
+
+std::vector<std::string> tas_hooks::get_sprintf_values()
+{
+	std::scoped_lock lock(sprintf_lock);
+	return std::move(sprintf_values);
 }
 
 GameEngineType tas_hooks::get_loaded_engine()
@@ -275,6 +344,13 @@ void tas_hooks::init_global_hooks()
 	originalLoadLibraryExA = LoadLibraryExA;
 	originalLoadLibraryExW = LoadLibraryExW;
 	originalFreeLibrary = FreeLibrary;
+
+	//originalsprintf = sprintf;
+	//originalsnprintf = snprintf;
+	//originalvsnprintf = vsnprintf;
+	//originalstdio_vsprintf = __stdio_common_vsprintf;
+	//originalstdio_vswprintf = __stdio_common_vswprintf;
+	//originalstdio_vsnprintf_s = __stdio_common_vsnprintf_s;
 }
 
 void tas_hooks::detach_temporary_hooks()
@@ -368,6 +444,84 @@ BOOL hkFreeLibrary(HMODULE hLibModule) {
 
 	return originalFreeLibrary(hLibModule);
 }
+//
+//int hksprintf(char* str, const char* format, ...)
+//{
+//	va_list args;
+//	va_start(args, format);
+//	int result = vsprintf(str, format, args);
+//	va_end(args);
+//
+//	if (result >= 0) {
+//		std::scoped_lock lock(sprintf_lock);
+//		sprintf_values.push_back(std::string(str));
+//	}
+//
+//	return result;
+//}
+//
+//int hksnprintf(char* s, size_t n, const char* format, ...)
+//{
+//	va_list args;
+//	va_start(args, format);
+//	int result = vsnprintf(s, n, format, args);
+//	va_end(args);
+//
+//	if (result >= 0) {
+//		std::scoped_lock lock(sprintf_lock);
+//		sprintf_values.push_back(std::string(s));
+//	}
+//
+//	return result;
+//}
+//
+//int hkvsnprintf(char* s, size_t n, const char* format, va_list args)
+//{
+//	int result = originalvsnprintf(s, n, format, args);
+//
+//	if (result >= 0) {
+//		std::scoped_lock lock(sprintf_lock);
+//		sprintf_values.push_back(std::string(s));
+//	}
+//
+//	return result;
+//}
+//
+//int hkstdio_vsprintf(int64_t Options, char* Buffer, size_t BufferCount, const char* Format, _locale_t Locale, va_list Args)
+//{
+//	int result = originalstdio_vsprintf(Options, Buffer, BufferCount, Format, Locale, Args);
+//
+//	if (result >= 0) {
+//		std::scoped_lock lock(sprintf_lock);
+//		sprintf_values.push_back(std::string(Buffer));
+//	}
+//
+//	return result;
+//}
+//
+//int hkstdio_vswprintf(int64_t Options, wchar_t* Buffer, size_t BufferCount, const wchar_t* Format, _locale_t Locale, va_list Args) {
+//	int result = originalstdio_vswprintf(Options, Buffer, BufferCount, Format, Locale, Args);
+//
+//	if (result >= 0) {
+//		std::scoped_lock lock(sprintf_lock);
+//		//sprintf_values.push_back(std::string(Buffer));
+//		tas_logger::warning(Buffer);
+//	}
+//
+//	return result;
+//}
+//
+//int hkstdio_vsnprintf_s(int64_t Options, char* Buffer, size_t BufferCount, size_t MaxCount, const char* Format, _locale_t Locale, va_list Args) {
+//	int result = originalstdio_vsnprintf_s(Options, Buffer, BufferCount, MaxCount, Format, Locale, Args);
+//
+//	if (result >= 0) {
+//		std::scoped_lock lock(sprintf_lock);
+//		//sprintf_values.push_back(std::string(Buffer));
+//		tas_logger::warning(Buffer);
+//	}
+//
+//	return result;
+//}
 
 tas_input InputCache;
 tick_inputs CurrentTickInputs;
@@ -407,7 +561,7 @@ void hkD3D11Draw(ID3D11DeviceContext* Ctx, UINT VertexCount, UINT StartVertexLoc
 void hkD3D11DrawIndexed(ID3D11DeviceContext* Ctx, UINT IndexCount, UINT StartIndexLocation, INT BaseVertexLocation)
 {
 	//tas::overlay::set_wireframe(Ctx, IndexCount);
-	
+
 	if (tas::overlay::should_render(IndexCount)) {
 		originalD3D11DrawIndexed(Ctx, IndexCount, StartIndexLocation, BaseVertexLocation);
 	}
@@ -700,7 +854,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 		lasttick = tick;
 	}
 	*/
-	
+
 	// DEFAULT
 	return OriginalReturn;
 }
@@ -865,10 +1019,15 @@ HANDLE hkGameEnginePlayGame(void* engine, GameHost** host, void* options) {
 	current_game_host = host;
 
 	originalGameHostUpdateInput = static_cast<GameHostUpdateInput_t>((*host)->vptr[30]);
+	originalGameHostConsolePrint = static_cast<GameHostConsolePrint_t>((*host)->vptr[41]);
 
 	hook RuntimeHook_Halo1GameHostUpdateInput(L"hkDynamicHalo1GameHostUpdateInput", (PVOID**)&originalGameHostUpdateInput, hkGameHostUpdateInput);
 	RuntimeHook_Halo1GameHostUpdateInput.attach();
 	gGameEngineHooks.push_back(RuntimeHook_Halo1GameHostUpdateInput);
+
+	hook RuntimeHook_Halo1GameHostConsolePrint(L"hkGameHostConsolePrint", (PVOID**)&originalGameHostConsolePrint, hkGameHostConsolePrint);
+	RuntimeHook_Halo1GameHostConsolePrint.attach();
+	gGameEngineHooks.push_back(RuntimeHook_Halo1GameHostConsolePrint);
 
 	return result;
 }
@@ -877,6 +1036,12 @@ bool hkGameHostUpdateInput(void* host, uint64_t param_a, MCCInput* input) {
 	tas_logger::info("hkGameHostUpdateInput");
 	auto result = originalGameHostUpdateInput(host, param_a, input);
 	return result;
+}
+
+int hkGameHostConsolePrint(void* host, char* buffer)
+{
+	tas_logger::info(buffer);
+	return originalGameHostConsolePrint(host, buffer);
 }
 
 int64_t hkHalo1CreateGameEngine(GameEngine*** out_engine_ptr)
@@ -975,5 +1140,27 @@ void hkHalo1TickDelta(float delta) {
 
 	//originalHalo1Tick2(delta * (!slomoKeyDown ? .2f : 1.0f));
 	originalHalo1Tick2(delta);
-	
+
 }
+
+// This seems to be a timing issue that is causing the infinite loop / freeze.
+// The solution I have here is to keep a counter of loop iterations that will reset when we successfully complete the outer function.
+// If we reach an excessive amount of iterations (10k) in the inner loop, stall the thread so that whatever mechanism is out of sync has time to do its thing.
+// This should not affect any normal code paths, the only time this should trigger is during an abnormal freeze.
+// Compiler optimizations with these hooked functions cause a crash on release mode, not sure why. 
+#pragma optimize("", off)
+int64_t FreezeCounter = 0;
+uint64_t __fastcall hkCarrierFreezeOuter(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7)
+{
+	FreezeCounter = 0;
+	return originalCarrierFreezeOuter(p1, p2, p3, p4, p5, p6, p7);
+}
+bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64_t p4, float* p5, float* p6, uint64_t* p7)
+{
+	FreezeCounter++;
+	if (FreezeCounter > 10'000) {
+		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+	}
+	return originalCarrierFreezeInner(p1, p2, p3, p4, p5, p6, p7);
+}
+#pragma optimize("", on)

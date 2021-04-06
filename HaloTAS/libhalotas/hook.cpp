@@ -1,5 +1,8 @@
-#include "pch.h"
 #include "hook.h"
+
+#include <Psapi.h>
+#include <winternl.h>
+#include <Dbghelp.h>
 #include <detours/detours.h>
 
 void detours_error(LONG detourResult) {
@@ -71,12 +74,10 @@ void hook::attach()
 	}
 	default:
 	{
-		tas_logger::warning(L"Failed to install hook with invalid install type ({})", to_underlying(mInstallType));
 		return;
 	}
 	}
 
-	tas_logger::debug(L"Installed hook: {}", mHookName);
 	mInstalled = true;
 }
 
@@ -94,7 +95,6 @@ void hook::detach()
 	DetourDetach(&(PVOID&)*mOriginalFunction, mReplacedFunction);
 	DetourTransactionCommit();
 
-	tas_logger::debug(L"Uninstalled hook: {}", mHookName);
 	mInstalled = false;
 }
 
