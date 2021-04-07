@@ -152,8 +152,8 @@ void PatcherMain()
 	// 2241: 0xd47650
 	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd47650, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
-	// 2241: 0xc8a470
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc8a470, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
+	// 2241: 0xc90ca0
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc90ca0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 
 	attach_runtime_hooks();
 
