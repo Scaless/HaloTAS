@@ -341,6 +341,11 @@
     <ClCompile Include="windows_pipe_server.cpp" />
     <ClCompile Include="windows_utilities.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\libhalotas\libhalotas.vcxproj">
+      <Project>{da7a77e5-ae7b-4b09-ab7a-fca7cdb16484}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />

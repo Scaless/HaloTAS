@@ -2,10 +2,10 @@
 #include "tas_hooks.h"
 #include "windows_utilities.h"
 #include "patch.h"
-#include "hook.h"
+#include "../libhalotas/hook.h"
+#include "../libhalotas/dll_cache.h"
 #include "tas_overlay.h"
 #include "tas_input.h"
-#include "dll_cache.h"
 #include "halo1_engine.h"
 #include "speedometer.h"
 #include <d3d9.h>
@@ -166,22 +166,11 @@ typedef void (*Halo1Tick2_t)(float delta);
 void hkHalo1TickDelta(float delta);
 Halo1Tick2_t originalHalo1Tick2;
 
-typedef uint64_t(__fastcall *CarrierFreezeOuter)(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7);
-uint64_t __fastcall hkCarrierFreezeOuter(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7);
-CarrierFreezeOuter originalCarrierFreezeOuter;
-
-typedef bool (__fastcall *CarrierFreezeInner)(int64_t p1, int32_t p2, uint64_t p3, uint64_t p4, float* p5, float* p6, uint64_t* p7);
-bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64_t p4, float* p5, float* p6, uint64_t* p7);
-CarrierFreezeInner originalCarrierFreezeInner;
-
 //const hook RuntimeHook_Halo1HandleInput(L"hkHalo1HandleInput", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_HANDLE_INPUT, (PVOID**)&originalHalo1HandleInput, hkHalo1HandleInput);
 //const hook RuntimeHook_Halo1GetNumberOfTicksToTick(L"hkH1GetNumberOfTicksToTick", HALO1_DLL_WSTR, halo1::function::OFFSET_H1_GET_NUMBER_OF_TICKS, (PVOID**)&originalH1GetNumberOfTicksToTick, hkH1GetNumberOfTicksToTick);
 //const hook RuntimeHook_Halo2Tick(L"hkHalo2Tick", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK, (PVOID**)&originalH2Tick, hkH2Tick);
 //const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
 //const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
-
-const hook RuntimeHook_Halo1CarrierFreezeOuter(L"CarrierFreezeOuter", HALO1_DLL_WSTR, 0xd4c1d0, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter);
-const hook RuntimeHook_Halo1CarrierFreezeInner(L"CarrierFreezeInner", HALO1_DLL_WSTR, 0xc8a470, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner);
 
 //const hook RuntimeHook_Halo1Tick(L"Halo1Tick", HALO1_DLL_WSTR, 0xc44320, (PVOID**)&originalHalo1Tick, hkHalo1Tick);
 //const hook RuntimeHook_Halo1Tick2(L"Halo1Tick2", HALO1_DLL_WSTR, 0x0ac19a0, (PVOID**)&originalHalo1Tick2, hkHalo1TickDelta);
@@ -223,9 +212,6 @@ tas_hooks::tas_hooks()
 
 	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick);
 	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
-
-	gRuntimeHooks.push_back(RuntimeHook_Halo1CarrierFreezeOuter);
-	gRuntimeHooks.push_back(RuntimeHook_Halo1CarrierFreezeInner);
 
 	gRuntimeHooks.push_back(RuntimeHook_Halo1CreateGameEngine);
 	gRuntimeHooks.push_back(RuntimeHook_Halo2CreateGameEngine);
@@ -1142,25 +1128,3 @@ void hkHalo1TickDelta(float delta) {
 	originalHalo1Tick2(delta);
 
 }
-
-// This seems to be a timing issue that is causing the infinite loop / freeze.
-// The solution I have here is to keep a counter of loop iterations that will reset when we successfully complete the outer function.
-// If we reach an excessive amount of iterations (10k) in the inner loop, stall the thread so that whatever mechanism is out of sync has time to do its thing.
-// This should not affect any normal code paths, the only time this should trigger is during an abnormal freeze.
-// Compiler optimizations with these hooked functions cause a crash on release mode, not sure why. 
-#pragma optimize("", off)
-int64_t FreezeCounter = 0;
-uint64_t __fastcall hkCarrierFreezeOuter(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7)
-{
-	FreezeCounter = 0;
-	return originalCarrierFreezeOuter(p1, p2, p3, p4, p5, p6, p7);
-}
-bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64_t p4, float* p5, float* p6, uint64_t* p7)
-{
-	FreezeCounter++;
-	if (FreezeCounter > 10'000) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
-	}
-	return originalCarrierFreezeInner(p1, p2, p3, p4, p5, p6, p7);
-}
-#pragma optimize("", on)
