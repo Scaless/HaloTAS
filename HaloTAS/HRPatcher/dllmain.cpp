@@ -150,10 +150,12 @@ void PatcherMain()
 
 	// 2094: 0xd4c1d0
 	// 2241: 0xd47650
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd47650, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
+	// 2282: 0xd47680
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd47680, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
 	// 2241: 0xc90ca0
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc90ca0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
+	// 2282: 0xc90cd0
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc90cd0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 
 	attach_runtime_hooks();
 
@@ -163,7 +165,7 @@ void PatcherMain()
 	}
 }
 
-// This thread is created by the dll when loaded into the process, see RealMain() for the actual event loop.
+// This thread is created by the dll when loaded into the process, see PatcherMain() for the actual event loop.
 // Do NOT put any allocations in this function because the call to FreeLibraryAndExitThread()
 // will occur before they fall out of scope and will not be cleaned up properly! This is very
 // important for being able to hotload the DLL multiple times without restarting the game.
