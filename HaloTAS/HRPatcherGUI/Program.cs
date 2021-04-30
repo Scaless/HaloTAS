@@ -9,6 +9,8 @@ using System.Diagnostics;
 using Newtonsoft.Json;
 using System.Net.Http;
 using System.IO;
+using System.Security.Cryptography;
+using System.Windows.Forms;
 
 namespace HRPatcherGUI
 {
@@ -17,34 +19,30 @@ namespace HRPatcherGUI
     {
         public string version { get; set; }
         public string file { get; set; }
+        public string sha1 { get; set; }
     }
 
     public class MCCPatcherVersions
     {
         public List<Version> versions { get; set; }
+        public int current_patcher_version { get; set; }
+        public string current_patcher_link { get; set; }
     }
 
-    class Program
+    static class Program
     {
         [DllImport("kernel32.dll")]
         static extern IntPtr OpenProcess(int dwDesiredAccess, bool bInheritHandle, int dwProcessId);
-
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         static extern IntPtr GetModuleHandle(string lpModuleName);
-
         [DllImport("kernel32", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
         static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
-
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true)]
-        static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress,
-            uint dwSize, uint flAllocationType, uint flProtect);
-
+        static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, out UIntPtr lpNumberOfBytesWritten);
-
         [DllImport("kernel32.dll")]
-        static extern IntPtr CreateRemoteThread(IntPtr hProcess,
-            IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+        static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
 
         // privileges
         const int PROCESS_CREATE_THREAD = 0x0002;
@@ -80,7 +78,7 @@ namespace HRPatcherGUI
             {
                 string caption = "Injection Failed - EAC is running";
                 string message = "The EasyAntiCheat process is running. Patches cannot be applied with EAC enabled, please re-launch the game with EAC disabled.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return false;
             }
 
@@ -89,7 +87,7 @@ namespace HRPatcherGUI
             {
                 string caption = "Injection Failed - MCC not running";
                 string message = "Couldn't find MCC-Win64-Shipping.exe. Are you sure the game is running?";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return false;
             }
 
@@ -106,7 +104,7 @@ namespace HRPatcherGUI
             {
                 string caption = $"Injection Failed - {DLLName} Not Found";
                 string message = $"Couldn't find {DLLName}. It should be in the folder alongside this program.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return false;
             }
 
@@ -126,92 +124,174 @@ namespace HRPatcherGUI
             return true;
         }
 
-        static async Task Main(string[] args)
+        public static string GetFileSHA1(string FileName)
         {
+            try
+            {
+                using (var sha1 = new SHA1CryptoServiceProvider())
+                {
+                    byte[] file = File.ReadAllBytes(FileName);
+                    return BitConverter.ToString(sha1.ComputeHash(file)).Replace("-", "");
+                }
+            }
+            catch (Exception)
+            {
+            }
+            return "";
+        }
+
+        public static bool FileExistsWithSHA1(string FileName, String Hash)
+        {
+            if (File.Exists(FileName))
+            {
+                string sha1 = GetFileSHA1(FileName);
+                if (sha1 == Hash)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        const int CurrentPatcherVersion = 2;
+
+        [STAThread]
+        static void Main(string[] args)
+        {
+            
+            foreach(var arg in args)
+            {
+                if(arg == "-offline")
+                {
+                    System.Windows.Forms.OpenFileDialog file_browser = new System.Windows.Forms.OpenFileDialog();
+                    file_browser.Filter = "DLLs (*.dll)|*.dll|All files (*.*)|*.*";
+                    file_browser.CheckFileExists = true;
+                    if(file_browser.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                    {
+                        foreach (var path in file_browser.SafeFileNames)
+                        {
+                            Inject(path);
+
+                            string caption = "DLL Injected";
+                            string message = $"The DLL {path} was injected into MCC.";
+                            System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
+                        }
+                    }
+                    return;
+                }
+            }
+
             const string patch_file_url_root = "https://github.com/Scaless/HRPatcherReleases/raw/main/";
             const string manifest_url = "https://raw.githubusercontent.com/Scaless/HRPatcherReleases/main/manifest.json";
 
-            HttpClient client = new HttpClient();
-            HttpResponseMessage manifest_response = await client.GetAsync(manifest_url);
-            if (!manifest_response.IsSuccessStatusCode)
-            {
-                string caption = "HRPatcher Manifest Could Not Be Downloaded";
-                string message = "Couldn't download the patch manifest. No patches were applied.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
-                return;
-            }
-
-            MCCPatcherVersions PatcherVersions = JsonConvert.DeserializeObject<MCCPatcherVersions>(await manifest_response.Content.ReadAsStringAsync());
-            if (PatcherVersions == null)
-            {
-                string caption = "HRPatcher Manifest Corrupted";
-                string message = "Failed to read the patch manifest. No patches were applied.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
-                return;
-            }
-
+            // Get Running MCC Version
             string running_mcc = GetRunningMCCVersion();
             if (string.IsNullOrWhiteSpace(running_mcc))
             {
                 string caption = "Couldn't Determine MCC Version";
                 string message = "Failed to get the version of MCC. Is MCC running with EAC disabled? No patches were applied.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }
 
+            // HTTP Get current manifest
+            HttpClient client = new HttpClient();
+            HttpResponseMessage manifest_response = client.GetAsync(manifest_url).Result;
+            if (!manifest_response.IsSuccessStatusCode)
+            {
+                string caption = "HRPatcher Manifest Could Not Be Downloaded";
+                string message = "Couldn't download the patch manifest. No patches were applied.";
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
+                return;
+            }
+
+            // Parse Manifest
+            MCCPatcherVersions PatcherVersions = JsonConvert.DeserializeObject<MCCPatcherVersions>(manifest_response.Content.ReadAsStringAsync().Result);
+            if (PatcherVersions == null)
+            {
+                string caption = "HRPatcher Manifest Corrupted";
+                string message = "Failed to read the patch manifest. No patches were applied.";
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
+                return;
+            }
+
+            // Check patcher version
+            if (PatcherVersions.current_patcher_version != CurrentPatcherVersion)
+            {
+                string caption = "HRPatcher Update Available";
+                string message = "A new version of HRPatcher is available. Click Yes to open a link to the new version in your browser," +
+                    " No to attempt patching with the current version, or Cancel to stop patching.";
+                var update_user_result = System.Windows.MessageBox.Show(message, caption, MessageBoxButton.YesNoCancel, MessageBoxImage.Information, MessageBoxResult.Yes);
+                if (update_user_result == MessageBoxResult.Yes)
+                {
+                    Process.Start(PatcherVersions.current_patcher_link);
+                    return;
+                }
+                if (update_user_result == MessageBoxResult.Cancel)
+                {
+                    return;
+                }
+            }
+
+            // Check if this version is in the manifest
             var found_version = PatcherVersions.versions.FirstOrDefault(x => x.version == running_mcc);
             if (found_version == null)
             {
                 string caption = $"No Patcher Available For MCC Version {running_mcc}";
                 string message = $"There are no patches available for the version of MCC currently running ({running_mcc}). No patches were applied.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }
 
-            string patch_url = patch_file_url_root + found_version.file;
-            HttpResponseMessage patch_response = await client.GetAsync(patch_url);
-            if (!patch_response.IsSuccessStatusCode)
+            // Check if there is an existing file that matches the manifest
+            if(!FileExistsWithSHA1(found_version.file, found_version.sha1))
             {
-                string caption = "HRPatcher Patch File Could Not Be Downloaded";
-                string message = "Couldn't download the patch file. No patches were applied.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
-                return;
+                // Download the patch file if it doesnt exist
+                string patch_url = patch_file_url_root + found_version.file;
+                HttpResponseMessage patch_response = client.GetAsync(patch_url).Result;
+                if (!patch_response.IsSuccessStatusCode)
+                {
+                    string caption = "HRPatcher Patch File Could Not Be Downloaded";
+                    string message = "Couldn't download the patch file. No patches were applied.";
+                    System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
+                    return;
+                }
+                try
+                {
+                    using (Stream output = File.OpenWrite(found_version.file))
+                        patch_response.Content.CopyToAsync(output).Wait();
+                }
+                catch (Exception e)
+                {
+                    string caption = "HRPatcher Patch File Failed To Save";
+                    string message = $"Couldn't save the patch file to disk. No patches were applied. ::: {e}";
+                    System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
+                    return;
+                }
             }
 
-            try
-            {
-                using (Stream output = File.OpenWrite(found_version.file))
-                    await patch_response.Content.CopyToAsync(output);
-            }
-            catch (Exception e)
-            {
-                string caption = "HRPatcher Patch File Failed To Save";
-                string message = $"Couldn't save the patch file to disk. No patches were applied. ::: {e}";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
-                return;
-            }
-
-            // Validate file was saved correctly
-            if (!System.IO.File.Exists(found_version.file))
+            // Final Validation that file was saved correctly
+            if (!File.Exists(found_version.file))
             {
                 string caption = "HRPatcher Patch File Failed To Save";
                 string message = "Couldn't save the patch file to disk. No patches were applied.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }
 
+            // Inject
             if (Inject(found_version.file))
             {
                 string caption = "HRPatcher: Patch Applied!";
-                string message = $"Patching was successful. To stop patches from being active, close out of the game completely and relaunch MCC.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                string message = $"Patching was successful. Patches will be active until you close out of MCC completely.";
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             } 
             else
             {
                 string caption = "HRPatcher: Inject Failed";
                 string message = $"Injection failed. No patches were applied.";
-                MessageBox.Show(message, caption, MessageBoxButton.OK);
+                System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return;
             }
         }
