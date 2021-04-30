@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <filesystem>
 #include <thread>
+#include <vector>
+#include <algorithm>
 #include "../libhalotas/hook.h"
 #include "../libhalotas/dll_cache.h"
 
@@ -26,6 +28,7 @@ typedef BOOL(*FreeLibrary_t)(HMODULE hLibModule);
 BOOL hkFreeLibrary(HMODULE hLibModule);
 FreeLibrary_t originalFreeLibrary;
 
+// H1 Carrier Crash
 typedef uint64_t(__fastcall* CarrierFreezeOuter)(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7);
 uint64_t __fastcall hkCarrierFreezeOuter(int64_t p1, char p2, uint64_t p3, float p4, uint64_t p5, float p6, float* p7);
 CarrierFreezeOuter originalCarrierFreezeOuter;
@@ -34,6 +37,22 @@ typedef bool(__fastcall* CarrierFreezeInner)(int64_t p1, int32_t p2, uint64_t p3
 bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64_t p4, float* p5, float* p6, uint64_t* p7);
 CarrierFreezeInner originalCarrierFreezeInner;
 
+// H2 BSP Crash
+typedef void(*BSPClearPointerTable)();
+void hkBSPClearPointerTable();
+BSPClearPointerTable originalBSPClearPointerTable;
+
+typedef uint64_t(*BSPGetPointer)(int index);
+uint64_t hkBSPGetPointer(int index);
+BSPGetPointer originalBSPGetPointer;
+
+typedef int(*BSPAddPointer)(uint64_t new_param);
+int hkBSPAddPointer(uint64_t new_param);
+BSPAddPointer originalBSPAddPointer;
+
+void CopyExistingPointerTable();
+
+// Hooks
 std::vector<hook> gGlobalHooks;
 std::vector<hook> gRuntimeHooks;
 
@@ -148,6 +167,9 @@ void PatcherMain()
 	init_global_hooks();
 	attach_global_hooks();
 
+	/// HALO 1
+	///////////////////////////////
+	// 
 	// 2094: 0xd4c1d0
 	// 2241: 0xd47650
 	// 2282: 0xd47680
@@ -156,6 +178,18 @@ void PatcherMain()
 	// 2241: 0xc90ca0
 	// 2282: 0xc90cd0
 	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc90cd0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
+
+	/// HALO 2
+	///////////////////////////////
+
+	// 2282: 0x6df770
+	gRuntimeHooks.push_back(hook(L"hkBSPClearPointerTable", L"halo2.dll", 0x6df770, (PVOID**)&originalBSPClearPointerTable, hkBSPClearPointerTable));
+	// 2282: 0x6df7a0
+	gRuntimeHooks.push_back(hook(L"hkBSPGetPointer", L"halo2.dll", 0x6df7a0, (PVOID**)&originalBSPGetPointer, hkBSPGetPointer));
+	// 2282: 0x6df7b0
+	gRuntimeHooks.push_back(hook(L"hkBSPAddPointer", L"halo2.dll", 0x6df7b0, (PVOID**)&originalBSPAddPointer, hkBSPAddPointer));
+	// Copy the existing pointer table to our bigger buffer
+	CopyExistingPointerTable();
 
 	attach_runtime_hooks();
 
@@ -194,6 +228,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
 	return TRUE;
 }
 
+/// <summary>
+/// Halo 1 Carrier Crashes
+/// </summary>
+/// 
 // This seems to be a timing issue that is causing the infinite loop / freeze.
 // The solution I have here is to keep a counter of loop iterations that will reset when we successfully complete the outer function.
 // If we reach an excessive amount of iterations (10k) in the inner loop, stall the thread so that whatever mechanism is out of sync has time to do its thing.
@@ -213,5 +251,70 @@ bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64
 		std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}
 	return originalCarrierFreezeInner(p1, p2, p3, p4, p5, p6, p7);
+}
+#pragma optimize("", on)
+
+/// <summary>
+/// Halo 2 "BSP Crashes"
+/// </summary>
+/// 
+/// The basic problem causing this crash is a buffer overrun. There exists a table of tag pointers that 
+/// has an increasing counter (Tag_Pointer_Table_Current_Index). This index is reset only once when the level is first loaded,
+/// after that point it increases with no upper bound until eventually overrunning and corrupting memory it does not control.
+/// 
+/// The memory layout looks something like this:
+/// [Tag Pointer Table][BSP Debug Flag][Scenario Header] ... [Tag_Pointer_Table_Current_Index]
+/// 
+/// Despite generally being called a "BSP Crash", the cause has nothing to do with BSPs. The tag pointer table simply
+/// overruns and incidentally sets the flag that causes the BSP debug string to show on screen. Immediately after that in 
+/// memory is the scenario data which is critical for running the level. Once scenario data is corrupted, the crash occurs.
+/// 
+/// The solution given below is to redirect the tag pointers into a new table that has expandable storage.
+
+std::vector<uint64_t> PointerTable;
+
+int32_t* GetNativePointerIndex()
+{
+	auto dll = dll_cache::get_module_handle(L"halo2.dll");
+	if (dll.has_value()) {
+		char* module_ptr = (char*)dll.value();
+		return (int32_t*)(module_ptr + 0xCD8098);
+	}
+	else {
+		// If we somehow call into this function when we don't have a value, we're fucked anyways so just return a nullptr to crash out
+		return nullptr;
+	}
+}
+
+void CopyExistingPointerTable()
+{
+	auto dll = dll_cache::get_module_handle(L"halo2.dll");
+	if (dll.has_value())
+	{
+		PointerTable.resize(*GetNativePointerIndex());
+		uint64_t* existing_table_start = (uint64_t*)(((char*)dll.value()) + 0xE22370);
+		memcpy_s(PointerTable.data(), PointerTable.size() * sizeof(uint64_t), existing_table_start, *GetNativePointerIndex() * sizeof(uint64_t));
+	}
+}
+
+#pragma optimize("", off)
+void hkBSPClearPointerTable()
+{
+	PointerTable.clear();
+	PointerTable.push_back(0);
+	*GetNativePointerIndex() = 1;
+}
+
+uint64_t hkBSPGetPointer(int index)
+{
+	return PointerTable[index];
+}
+
+int hkBSPAddPointer(uint64_t new_param)
+{
+	int current_index = *GetNativePointerIndex();
+	PointerTable.push_back(new_param);
+	(*GetNativePointerIndex())++;
+	return current_index;
 }
 #pragma optimize("", on)
