@@ -38,16 +38,16 @@ bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64
 CarrierFreezeInner originalCarrierFreezeInner;
 
 // H2 BSP Crash
-typedef void(*BSPClearPointerTable)();
-void hkBSPClearPointerTable();
+typedef void*(*BSPClearPointerTable)();
+void* hkBSPClearPointerTable();
 BSPClearPointerTable originalBSPClearPointerTable;
 
-typedef uint64_t(*BSPGetPointer)(int index);
-uint64_t hkBSPGetPointer(int index);
+typedef int64_t(*BSPGetPointer)(int64_t index);
+int64_t hkBSPGetPointer(int64_t index);
 BSPGetPointer originalBSPGetPointer;
 
-typedef int(*BSPAddPointer)(uint64_t new_param);
-int hkBSPAddPointer(uint64_t new_param);
+typedef int64_t(*BSPAddPointer)(int64_t new_param);
+int64_t hkBSPAddPointer(int64_t new_param);
 BSPAddPointer originalBSPAddPointer;
 
 void CopyExistingPointerTable();
@@ -271,7 +271,7 @@ bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64
 /// 
 /// The solution given below is to redirect the tag pointers into a new table that has expandable storage.
 
-std::vector<uint64_t> PointerTable;
+std::vector<int64_t> PointerTable;
 
 int32_t* GetNativePointerIndex()
 {
@@ -298,21 +298,22 @@ void CopyExistingPointerTable()
 }
 
 #pragma optimize("", off)
-void hkBSPClearPointerTable()
+void* hkBSPClearPointerTable()
 {
 	PointerTable.clear();
 	PointerTable.push_back(0);
 	*GetNativePointerIndex() = 1;
+	return PointerTable.data();
 }
 
-uint64_t hkBSPGetPointer(int index)
+int64_t hkBSPGetPointer(int64_t index)
 {
 	return PointerTable[index];
 }
 
-int hkBSPAddPointer(uint64_t new_param)
+int64_t hkBSPAddPointer(int64_t new_param)
 {
-	int current_index = *GetNativePointerIndex();
+	int64_t current_index = *GetNativePointerIndex();
 	PointerTable.push_back(new_param);
 	(*GetNativePointerIndex())++;
 	return current_index;
