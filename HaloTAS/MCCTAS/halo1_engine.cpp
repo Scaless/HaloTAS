@@ -71,9 +71,9 @@ void halo1_engine::get_game_information(h1snapshot& snapshot)
 	snapshot.skulls[to_underlying(cheat::CHEAT_DEATHLESS_PLAYER)] = cheats->cheat_deathless_player;
 	snapshot.skulls[to_underlying(cheat::CHEAT_BUMP_POSESSION)] = cheats->cheat_bump_possession;
 	snapshot.skulls[to_underlying(cheat::CHEAT_SUPER_JUMP)] = cheats->cheat_super_jump;
-	snapshot.skulls[to_underlying(cheat::CHEAT_REFLECT_DAMAGE_HITS)] = cheats->cheat_reflect_damage_hits;
+	snapshot.skulls[to_underlying(cheat::CHEAT_REFLECT_DAMAGE_HITS)] = cheats->cheat_reflexive_damage_effects;
 	snapshot.skulls[to_underlying(cheat::CHEAT_MEDUSA)] = cheats->cheat_medusa;
-	snapshot.skulls[to_underlying(cheat::CHEAT_ONE_SHOT_KILL)] = cheats->cheat_one_shot_kill;
+	snapshot.skulls[to_underlying(cheat::CHEAT_ONE_SHOT_KILL)] = cheats->cheat_omnipotent;
 	snapshot.skulls[to_underlying(cheat::CHEAT_BOTTOMLESS_CLIP)] = cheats->cheat_bottomless_clip;
 
 	snapshot.skulls[to_underlying(cheat::SKULL_ANGER)] = skulls->skull_anger;
@@ -131,13 +131,13 @@ void halo1_engine::set_cheat_enabled(halo1::cheat cheat, bool enabled)
 		cheats->cheat_super_jump = enabled;
 		break;
 	case cheat::CHEAT_REFLECT_DAMAGE_HITS:
-		cheats->cheat_reflect_damage_hits = enabled;
+		cheats->cheat_reflexive_damage_effects = enabled;
 		break;
 	case cheat::CHEAT_MEDUSA:
 		cheats->cheat_medusa = enabled;
 		break;
 	case cheat::CHEAT_ONE_SHOT_KILL:
-		cheats->cheat_one_shot_kill = enabled;
+		cheats->cheat_omnipotent = enabled;
 		break;
 	case cheat::CHEAT_BOTTOMLESS_CLIP:
 		cheats->cheat_bottomless_clip = enabled;
