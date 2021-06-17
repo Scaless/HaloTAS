@@ -34,17 +34,6 @@ void RealMain() {
 	auto hooks = std::make_unique<tas_hooks>();
 	hooks->attach_all();
 
-	//const char* save_text = "non compressed save";
-	//void* checkpoint_copy = new std::byte[0x4BA014];
-	//memcpy(checkpoint_copy, save_text, 0x14);
-	//memcpy((std::byte*)checkpoint_copy + 0x14, (void*)0x1D892460000, 0x4BA000);
-	
-	//memcpy((void*)0x1D802049084, (void*)0x1D892460000, 0x4BA000);
-	//printf("%p", checkpoint_copy);
-
-	//memcpy((void*)0x2678A420000, (void*)0x7FF444FA2024, 0x4BA000);
-	//memset((void*)0x7FFD94DBFC2C, 0, 1);
-
 	// Most of the cool stuff happens in other threads.
 	// This loop is just to keep stuff alive.
 	while (!global::is_kill_set()) {
@@ -52,8 +41,6 @@ void RealMain() {
 	}
 
 	hooks->detach_all();
-
-	//delete checkpoint_copy;
 
 	tas_logger::info("MCCTAS Stopped!");
 	tas_logger::flush_and_exit();

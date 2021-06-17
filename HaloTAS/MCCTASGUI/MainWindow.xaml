@@ -37,7 +37,7 @@
                             <Ellipse x:Name="iconHalo1Loaded" Width="8" Height="8" Fill="Red" Stroke="Black" StrokeThickness="1" Margin="4,0,0,0"></Ellipse>
                         </StackPanel>
                     </TabItem.Header>
-                    <Grid Visibility="Hidden">
+                    <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"></RowDefinition>
                         </Grid.RowDefinitions>

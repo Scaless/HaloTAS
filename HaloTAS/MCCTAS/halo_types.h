@@ -42,13 +42,14 @@ namespace halo1 {
 
 	struct all_cheats {
 		bool cheat_deathless_player;
-		bool padding_1[2];
+		bool cheat_jetpack;
+		bool cheat_infinite_ammo; // Forcibly set to 0 every frame (not tick)
 		bool cheat_bump_possession;
 		bool cheat_super_jump;
-		bool cheat_reflect_damage_hits;
+		bool cheat_reflexive_damage_effects;
 		bool cheat_medusa;
-		bool cheat_one_shot_kill;
-		bool padding_2;
+		bool cheat_omnipotent; // one shot kill
+		bool padding_2; // ???
 		bool cheat_bottomless_clip;
 	};
 

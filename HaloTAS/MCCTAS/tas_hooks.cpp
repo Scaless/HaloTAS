@@ -173,7 +173,9 @@ Halo1Tick2_t originalHalo1Tick2;
 //const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
 
 //const hook RuntimeHook_Halo1Tick(L"Halo1Tick", HALO1_DLL_WSTR, 0xc44320, (PVOID**)&originalHalo1Tick, hkHalo1Tick);
-//const hook RuntimeHook_Halo1Tick2(L"Halo1Tick2", HALO1_DLL_WSTR, 0x0ac19a0, (PVOID**)&originalHalo1Tick2, hkHalo1TickDelta);
+const hook RuntimeHook_Halo1Tick2(L"Halo1Tick2", HALO1_DLL_WSTR, 0x0abf710, (PVOID**)&originalHalo1Tick2, hkHalo1TickDelta);
+// 0x0ac19a0
+// 0x0abf710
 
 const hook RuntimeHook_Halo1CreateGameEngine(L"hkH1CreateGameEngine", HALO1_DLL_WSTR, "CreateGameEngine", (PVOID**)&originalH1CreateGameEngine, hkHalo1CreateGameEngine);
 const hook RuntimeHook_Halo2CreateGameEngine(L"hkH2CreateGameEngine", HALO2_DLL_WSTR, "CreateGameEngine", (PVOID**)&originalH2CreateGameEngine, hkHalo2CreateGameEngine);
@@ -211,7 +213,7 @@ tas_hooks::tas_hooks()
 	//gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
 	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick);
-	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
+	gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
 
 	gRuntimeHooks.push_back(RuntimeHook_Halo1CreateGameEngine);
 	gRuntimeHooks.push_back(RuntimeHook_Halo2CreateGameEngine);
@@ -1122,9 +1124,10 @@ uint64_t hkHalo1Tick(int64_t param_a, int64_t param_b) {
 void hkHalo1TickDelta(float delta) {
 	//tas_logger::info("hkHalo1TickDelta: {}", delta);
 
-	/*bool slomoKeyDown = GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41) || GetAsyncKeyState(0x53) || GetAsyncKeyState(0x44) || GetAsyncKeyState(VK_SHIFT) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON);*/
+	// WASD shift mouseLR
+	//bool slomoKeyDown = GetAsyncKeyState(VK_SHIFT);// GetAsyncKeyState(0x57) || GetAsyncKeyState(0x41) || GetAsyncKeyState(0x53) || GetAsyncKeyState(0x44);
+		//|| GetAsyncKeyState(VK_SHIFT) || GetAsyncKeyState(VK_LBUTTON) || GetAsyncKeyState(VK_RBUTTON);
 
-	//originalHalo1Tick2(delta * (!slomoKeyDown ? .2f : 1.0f));
+	//originalHalo1Tick2(delta * (slomoKeyDown ? .2f : 1.0f));
 	originalHalo1Tick2(delta);
-
 }
