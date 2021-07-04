@@ -168,28 +168,39 @@ void PatcherMain()
 	attach_global_hooks();
 
 	/// HALO 1
+
 	///////////////////////////////
-	// 
+	// 	   Carrier Freeze        //
+	///////////////////////////////
 	// 2094: 0xd4c1d0
 	// 2241: 0xd47650
 	// 2282: 0xd47680
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd47680, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
+	// 2406: 0xd40fc0
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd40fc0, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
 	// 2241: 0xc90ca0
 	// 2282: 0xc90cd0
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc90cd0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
-
-	/// HALO 2
+	// 2406: 0xc878c0
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc878c0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 	///////////////////////////////
 
+	/// HALO 2
+	
+	///////////////////////////////
+	// 	   BSP Crash             //
+	///////////////////////////////
 	// 2282: 0x6df770
-	gRuntimeHooks.push_back(hook(L"hkBSPClearPointerTable", L"halo2.dll", 0x6df770, (PVOID**)&originalBSPClearPointerTable, hkBSPClearPointerTable));
+	// 2406: 0x6df710
+	gRuntimeHooks.push_back(hook(L"hkBSPClearPointerTable", L"halo2.dll", 0x6df710, (PVOID**)&originalBSPClearPointerTable, hkBSPClearPointerTable));
 	// 2282: 0x6df7a0
-	gRuntimeHooks.push_back(hook(L"hkBSPGetPointer", L"halo2.dll", 0x6df7a0, (PVOID**)&originalBSPGetPointer, hkBSPGetPointer));
+	// 2406: 0x6df740
+	gRuntimeHooks.push_back(hook(L"hkBSPGetPointer", L"halo2.dll", 0x6df740, (PVOID**)&originalBSPGetPointer, hkBSPGetPointer));
 	// 2282: 0x6df7b0
-	gRuntimeHooks.push_back(hook(L"hkBSPAddPointer", L"halo2.dll", 0x6df7b0, (PVOID**)&originalBSPAddPointer, hkBSPAddPointer));
+	// 2406: 0x6df750
+	gRuntimeHooks.push_back(hook(L"hkBSPAddPointer", L"halo2.dll", 0x6df750, (PVOID**)&originalBSPAddPointer, hkBSPAddPointer));
 	// Copy the existing pointer table to our bigger buffer
 	CopyExistingPointerTable();
+	///////////////////////////////
 
 	attach_runtime_hooks();
 
@@ -278,7 +289,9 @@ int32_t* GetNativePointerIndex()
 	auto dll = dll_cache::get_module_handle(L"halo2.dll");
 	if (dll.has_value()) {
 		char* module_ptr = (char*)dll.value();
-		return (int32_t*)(module_ptr + 0xCD8098);
+		// 2282: 0xcd8098
+		// 2406: 0xcd9098
+		return (int32_t*)(module_ptr + 0xcd9098);
 	}
 	else {
 		// If we somehow call into this function when we don't have a value, we're fucked anyways so just return a nullptr to crash out
@@ -292,7 +305,9 @@ void CopyExistingPointerTable()
 	if (dll.has_value())
 	{
 		PointerTable.resize(*GetNativePointerIndex());
-		uint64_t* existing_table_start = (uint64_t*)(((char*)dll.value()) + 0xE22370);
+		// 2282: 0xe22370
+		// 2406: 0xe23110
+		uint64_t* existing_table_start = (uint64_t*)(((char*)dll.value()) + 0xe23110);
 		memcpy_s(PointerTable.data(), PointerTable.size() * sizeof(uint64_t), existing_table_start, *GetNativePointerIndex() * sizeof(uint64_t));
 	}
 }
