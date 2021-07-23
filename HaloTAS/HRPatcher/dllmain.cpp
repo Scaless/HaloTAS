@@ -176,11 +176,13 @@ void PatcherMain()
 	// 2241: 0xd47650
 	// 2282: 0xd47680
 	// 2406: 0xd40fc0
+	// 2448: 0xd40fc0
 	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd40fc0, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
 	// 2241: 0xc90ca0
 	// 2282: 0xc90cd0
 	// 2406: 0xc878c0
+	// 2448: 0xc878c0
 	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc878c0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 	///////////////////////////////
 
@@ -191,12 +193,15 @@ void PatcherMain()
 	///////////////////////////////
 	// 2282: 0x6df770
 	// 2406: 0x6df710
+	// 2448: 0x6df710
 	gRuntimeHooks.push_back(hook(L"hkBSPClearPointerTable", L"halo2.dll", 0x6df710, (PVOID**)&originalBSPClearPointerTable, hkBSPClearPointerTable));
 	// 2282: 0x6df7a0
 	// 2406: 0x6df740
+	// 2448: 0x6df740
 	gRuntimeHooks.push_back(hook(L"hkBSPGetPointer", L"halo2.dll", 0x6df740, (PVOID**)&originalBSPGetPointer, hkBSPGetPointer));
 	// 2282: 0x6df7b0
 	// 2406: 0x6df750
+	// 2448: 0x6df750
 	gRuntimeHooks.push_back(hook(L"hkBSPAddPointer", L"halo2.dll", 0x6df750, (PVOID**)&originalBSPAddPointer, hkBSPAddPointer));
 	// Copy the existing pointer table to our bigger buffer
 	CopyExistingPointerTable();
@@ -291,6 +296,7 @@ int32_t* GetNativePointerIndex()
 		char* module_ptr = (char*)dll.value();
 		// 2282: 0xcd8098
 		// 2406: 0xcd9098
+		// 2448: 0xcd9098
 		return (int32_t*)(module_ptr + 0xcd9098);
 	}
 	else {
@@ -307,6 +313,7 @@ void CopyExistingPointerTable()
 		PointerTable.resize(*GetNativePointerIndex());
 		// 2282: 0xe22370
 		// 2406: 0xe23110
+		// 2448: 0xe23110
 		uint64_t* existing_table_start = (uint64_t*)(((char*)dll.value()) + 0xe23110);
 		memcpy_s(PointerTable.data(), PointerTable.size() * sizeof(uint64_t), existing_table_start, *GetNativePointerIndex() * sizeof(uint64_t));
 	}

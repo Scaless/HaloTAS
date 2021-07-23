@@ -1,25 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\J\\Desktop\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj": {}
+    "C:\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\J\\Desktop\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj": {
+    "C:\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\J\\Desktop\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj",
+        "projectUniqueName": "C:\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj",
         "projectName": "MCCTASGUI",
-        "projectPath": "C:\\Users\\J\\Desktop\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj",
-        "packagesPath": "C:\\Users\\J\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\J\\Desktop\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\obj\\",
+        "projectPath": "C:\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\MCCTASGUI.csproj",
+        "packagesPath": "C:\\Users\\Scales\\.nuget\\packages\\",
+        "outputPath": "C:\\Github\\HaloTAS\\HaloTAS\\MCCTASGUI\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
         ],
         "configFilePaths": [
-          "C:\\Users\\J\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\Scales\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
