@@ -56,9 +56,25 @@ namespace HRPatcherGUI
         const uint MEM_RESERVE = 0x00002000;
         const uint PAGE_READWRITE = 4;
 
+        public static Process GetMCCProcess()
+        {
+            Process steamProcess = Process.GetProcessesByName("MCC-Win64-Shipping").FirstOrDefault();
+            if(steamProcess != null)
+            {
+                return steamProcess;
+            }
+            Process winStoreProcess = Process.GetProcessesByName("MCCWinStore-Win64-Shipping").FirstOrDefault();
+            if(winStoreProcess != null)
+            {
+                return winStoreProcess;
+            }
+
+            return null;
+        }
+
         public static string GetRunningMCCVersion()
         {
-            Process targetProcess = Process.GetProcessesByName("MCC-Win64-Shipping").FirstOrDefault();
+            Process targetProcess = GetMCCProcess();
             if(targetProcess == null)
             {
                 return "";
@@ -82,11 +98,11 @@ namespace HRPatcherGUI
                 return false;
             }
 
-            Process targetProcess = Process.GetProcessesByName("MCC-Win64-Shipping").FirstOrDefault();
+            Process targetProcess = GetMCCProcess();
             if (targetProcess == null)
             {
                 string caption = "Injection Failed - MCC not running";
-                string message = "Couldn't find MCC-Win64-Shipping.exe. Are you sure the game is running?";
+                string message = "Couldn't find MCC executable. Are you sure the game is running?";
                 System.Windows.MessageBox.Show(message, caption, MessageBoxButton.OK);
                 return false;
             }
@@ -153,7 +169,7 @@ namespace HRPatcherGUI
             return false;
         }
 
-        const int CurrentPatcherVersion = 2;
+        const int CurrentPatcherVersion = 3;
 
         [STAThread]
         static void Main(string[] args)
