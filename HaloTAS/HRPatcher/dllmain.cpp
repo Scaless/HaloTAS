@@ -38,19 +38,19 @@ bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64
 CarrierFreezeInner originalCarrierFreezeInner;
 
 // H2 BSP Crash
-typedef void*(*BSPClearPointerTable)();
-void* hkBSPClearPointerTable();
-BSPClearPointerTable originalBSPClearPointerTable;
-
-typedef int64_t(*BSPGetPointer)(int64_t index);
-int64_t hkBSPGetPointer(int64_t index);
-BSPGetPointer originalBSPGetPointer;
-
-typedef int64_t(*BSPAddPointer)(int64_t new_param);
-int64_t hkBSPAddPointer(int64_t new_param);
-BSPAddPointer originalBSPAddPointer;
-
-void CopyExistingPointerTable();
+//typedef void*(*BSPClearPointerTable)();
+//void* hkBSPClearPointerTable();
+//BSPClearPointerTable originalBSPClearPointerTable;
+//
+//typedef int64_t(*BSPGetPointer)(int64_t index);
+//int64_t hkBSPGetPointer(int64_t index);
+//BSPGetPointer originalBSPGetPointer;
+//
+//typedef int64_t(*BSPAddPointer)(int64_t new_param);
+//int64_t hkBSPAddPointer(int64_t new_param);
+//BSPAddPointer originalBSPAddPointer;
+//
+//void CopyExistingPointerTable();
 
 // Hooks
 std::vector<hook> gGlobalHooks;
@@ -177,13 +177,15 @@ void PatcherMain()
 	// 2282: 0xd47680
 	// 2406: 0xd40fc0
 	// 2448: 0xd40fc0
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd40fc0, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
+	// 2580: 0xd46d00
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd46d00, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
 	// 2241: 0xc90ca0
 	// 2282: 0xc90cd0
 	// 2406: 0xc878c0
 	// 2448: 0xc878c0
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc878c0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
+	// 2580: 0xc93bb0
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc93bb0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 	///////////////////////////////
 
 	/// HALO 2
@@ -194,17 +196,20 @@ void PatcherMain()
 	// 2282: 0x6df770
 	// 2406: 0x6df710
 	// 2448: 0x6df710
-	gRuntimeHooks.push_back(hook(L"hkBSPClearPointerTable", L"halo2.dll", 0x6df710, (PVOID**)&originalBSPClearPointerTable, hkBSPClearPointerTable));
+	// 2580: FIXED? 
+	//gRuntimeHooks.push_back(hook(L"hkBSPClearPointerTable", L"halo2.dll", 0x6df710, (PVOID**)&originalBSPClearPointerTable, hkBSPClearPointerTable));
 	// 2282: 0x6df7a0
 	// 2406: 0x6df740
 	// 2448: 0x6df740
-	gRuntimeHooks.push_back(hook(L"hkBSPGetPointer", L"halo2.dll", 0x6df740, (PVOID**)&originalBSPGetPointer, hkBSPGetPointer));
+	// 2580: FIXED? 
+	//gRuntimeHooks.push_back(hook(L"hkBSPGetPointer", L"halo2.dll", 0x6df740, (PVOID**)&originalBSPGetPointer, hkBSPGetPointer));
 	// 2282: 0x6df7b0
 	// 2406: 0x6df750
 	// 2448: 0x6df750
-	gRuntimeHooks.push_back(hook(L"hkBSPAddPointer", L"halo2.dll", 0x6df750, (PVOID**)&originalBSPAddPointer, hkBSPAddPointer));
+	// 2580: FIXED? 
+	//gRuntimeHooks.push_back(hook(L"hkBSPAddPointer", L"halo2.dll", 0x6df750, (PVOID**)&originalBSPAddPointer, hkBSPAddPointer));
 	// Copy the existing pointer table to our bigger buffer
-	CopyExistingPointerTable();
+	//CopyExistingPointerTable();
 	///////////////////////////////
 
 	attach_runtime_hooks();
@@ -287,57 +292,59 @@ bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64
 /// 
 /// The solution given below is to redirect the tag pointers into a new table that has expandable storage.
 
-std::vector<int64_t> PointerTable;
-
-int32_t* GetNativePointerIndex()
-{
-	auto dll = dll_cache::get_module_handle(L"halo2.dll");
-	if (dll.has_value()) {
-		char* module_ptr = (char*)dll.value();
-		// 2282: 0xcd8098
-		// 2406: 0xcd9098
-		// 2448: 0xcd9098
-		return (int32_t*)(module_ptr + 0xcd9098);
-	}
-	else {
-		// If we somehow call into this function when we don't have a value, we're fucked anyways so just return a nullptr to crash out
-		return nullptr;
-	}
-}
-
-void CopyExistingPointerTable()
-{
-	auto dll = dll_cache::get_module_handle(L"halo2.dll");
-	if (dll.has_value())
-	{
-		PointerTable.resize(*GetNativePointerIndex());
-		// 2282: 0xe22370
-		// 2406: 0xe23110
-		// 2448: 0xe23110
-		uint64_t* existing_table_start = (uint64_t*)(((char*)dll.value()) + 0xe23110);
-		memcpy_s(PointerTable.data(), PointerTable.size() * sizeof(uint64_t), existing_table_start, *GetNativePointerIndex() * sizeof(uint64_t));
-	}
-}
-
-#pragma optimize("", off)
-void* hkBSPClearPointerTable()
-{
-	PointerTable.clear();
-	PointerTable.push_back(0);
-	*GetNativePointerIndex() = 1;
-	return PointerTable.data();
-}
-
-int64_t hkBSPGetPointer(int64_t index)
-{
-	return PointerTable[index];
-}
-
-int64_t hkBSPAddPointer(int64_t new_param)
-{
-	int64_t current_index = *GetNativePointerIndex();
-	PointerTable.push_back(new_param);
-	(*GetNativePointerIndex())++;
-	return current_index;
-}
-#pragma optimize("", on)
+//std::vector<int64_t> PointerTable;
+//
+//int32_t* GetNativePointerIndex()
+//{
+//	auto dll = dll_cache::get_module_handle(L"halo2.dll");
+//	if (dll.has_value()) {
+//		char* module_ptr = (char*)dll.value();
+//		// 2282: 0xcd8098
+//		// 2406: 0xcd9098
+//		// 2448: 0xcd9098
+//		// 2580: FIXED?
+//		return (int32_t*)(module_ptr + 0xcd9098);
+//	}
+//	else {
+//		// If we somehow call into this function when we don't have a value, we're fucked anyways so just return a nullptr to crash out
+//		return nullptr;
+//	}
+//}
+//
+//void CopyExistingPointerTable()
+//{
+//	auto dll = dll_cache::get_module_handle(L"halo2.dll");
+//	if (dll.has_value())
+//	{
+//		PointerTable.resize(*GetNativePointerIndex());
+//		// 2282: 0xe22370
+//		// 2406: 0xe23110
+//		// 2448: 0xe23110
+//		// 2580: FIXED?
+//		uint64_t* existing_table_start = (uint64_t*)(((char*)dll.value()) + 0xe23110);
+//		memcpy_s(PointerTable.data(), PointerTable.size() * sizeof(uint64_t), existing_table_start, *GetNativePointerIndex() * sizeof(uint64_t));
+//	}
+//}
+//
+//#pragma optimize("", off)
+//void* hkBSPClearPointerTable()
+//{
+//	PointerTable.clear();
+//	PointerTable.push_back(0);
+//	*GetNativePointerIndex() = 1;
+//	return PointerTable.data();
+//}
+//
+//int64_t hkBSPGetPointer(int64_t index)
+//{
+//	return PointerTable[index];
+//}
+//
+//int64_t hkBSPAddPointer(int64_t new_param)
+//{
+//	int64_t current_index = *GetNativePointerIndex();
+//	PointerTable.push_back(new_param);
+//	(*GetNativePointerIndex())++;
+//	return current_index;
+//}
+//#pragma optimize("", on)
