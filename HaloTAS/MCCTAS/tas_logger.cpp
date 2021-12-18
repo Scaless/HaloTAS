@@ -5,7 +5,7 @@ tas_logger::tas_logger()
 {
 	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 	console_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
-	console_sink->set_level(spdlog::level::info);
+	console_sink->set_level(spdlog::level::trace);
 
 	auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>("MCCTAS/MCCTAS_debug_log.txt", 5_MiB, 4, false);
 	file_sink->set_pattern("[%H:%M:%S.%e] [%^%l%$] %v");
@@ -15,7 +15,7 @@ tas_logger::tas_logger()
 	multi_logger->set_level(spdlog::level::trace);
 
 	spdlog::set_default_logger(multi_logger);
-	spdlog::set_level(spdlog::level::debug);
+	spdlog::set_level(spdlog::level::trace);
 	spdlog::flush_on(spdlog::level::trace);
 }
 

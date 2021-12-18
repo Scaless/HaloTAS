@@ -41,6 +41,14 @@ typedef BOOL(*FreeLibrary_t)(HMODULE hLibModule);
 BOOL hkFreeLibrary(HMODULE hLibModule);
 FreeLibrary_t originalFreeLibrary;
 
+typedef BOOL(*IsDebuggerPresent_t)();
+BOOL hkIsDebuggerPresent();
+IsDebuggerPresent_t originalIsDebuggerPresent;
+
+typedef BOOL(*CheckRemoteDebuggerPresent_t)(HANDLE hProcess, PBOOL pbDebuggerPresent);
+BOOL hkCheckRemoteDebuggerPresent(HANDLE hProcess, PBOOL pbDebuggerPresent);
+CheckRemoteDebuggerPresent_t originalCheckRemoteDebuggerPresent;
+
 std::mutex sprintf_lock;
 std::vector<std::string> sprintf_values;
 
@@ -91,6 +99,8 @@ H2TickLoop_t originalH2TickLoop;
 typedef void (*H3Tick_t)();
 void hkH3Tick();
 H3Tick_t originalH3Tick;
+
+
 
 typedef HRESULT(*D3D11Present_t)(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
 HRESULT hkD3D11Present(IDXGISwapChain* SwapChain, UINT SyncInterval, UINT Flags);
@@ -192,6 +202,11 @@ const hook GlobalHook_LoadLibraryW(L"hkLoadLibraryW", (PVOID**)&originalLoadLibr
 const hook GlobalHook_LoadLibraryExA(L"hkLoadLibraryExA", (PVOID**)&originalLoadLibraryExA, hkLoadLibraryExA);
 const hook GlobalHook_LoadLibraryExW(L"hkLoadLibraryExW", (PVOID**)&originalLoadLibraryExW, hkLoadLibraryExW);
 const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrary, hkFreeLibrary);
+const hook GlobalHook_IsDebuggerPresent(L"IsDebuggerPresent", (PVOID**)&originalIsDebuggerPresent, hkIsDebuggerPresent);
+const hook GlobalHook_CheckRemoteDebuggerPresent(L"CheckRemoteDebuggerPresent", (PVOID**)&originalCheckRemoteDebuggerPresent, hkCheckRemoteDebuggerPresent);
+
+//std::vector<uint8_t> z_level = {0xF3, 0x0f, 0x11, 0x8f, 0xe4, 0x01, 0x00,0x00};
+//const patch GlobalPatch_ZLevel(L"Wow", L"HaloInfinite.exe", 0x4BACD0, z_level);
 
 //const hook GlobalHook_sprintf(L"hksprintf", (PVOID**)&originalsprintf, hksprintf);
 //const hook GlobalHook_snprintf(L"hksnprintf", (PVOID**)&originalsnprintf, hksnprintf);
@@ -213,20 +228,22 @@ tas_hooks::tas_hooks()
 	//gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
 	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick);
-	gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
 
-	gRuntimeHooks.push_back(RuntimeHook_Halo1CreateGameEngine);
-	gRuntimeHooks.push_back(RuntimeHook_Halo2CreateGameEngine);
-	gRuntimeHooks.push_back(RuntimeHook_Halo3CreateGameEngine);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1CreateGameEngine);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo2CreateGameEngine);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo3CreateGameEngine);
 
-	gGlobalHooks.push_back(GlobalHook_D3D11Present);
-	gGlobalHooks.push_back(GlobalHook_D3D11Draw);
-	gGlobalHooks.push_back(GlobalHook_D3D11DrawIndexed);
+	//gGlobalHooks.push_back(GlobalHook_D3D11Present);
+	//gGlobalHooks.push_back(GlobalHook_D3D11Draw);
+	//gGlobalHooks.push_back(GlobalHook_D3D11DrawIndexed);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryA);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryW);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExA);
 	gGlobalHooks.push_back(GlobalHook_LoadLibraryExW);
 	gGlobalHooks.push_back(GlobalHook_FreeLibrary);
+	gGlobalHooks.push_back(GlobalHook_IsDebuggerPresent);
+	gGlobalHooks.push_back(GlobalHook_CheckRemoteDebuggerPresent);
 
 	//gGlobalHooks.push_back(GlobalHook_sprintf);
 	//gGlobalHooks.push_back(GlobalHook_snprintf);
@@ -236,6 +253,8 @@ tas_hooks::tas_hooks()
 	//gGlobalHooks.push_back(GlobalHook_stdio_vsnprintf_s);
 
 	//gGlobalHooks.push_back(GlobalHook_MCCGetInput);
+
+	//gRuntimePatches.push_back(GlobalPatch_ZLevel);
 
 	init_global_hooks();
 }
@@ -309,14 +328,16 @@ GameEngineType tas_hooks::get_loaded_engine()
 
 void tas_hooks::init_global_hooks()
 {
+	tas_logger::trace(L"Starting init_global_hooks");
+
 	// D3D11 Hooking
-	if (kiero::init(kiero::RenderType::D3D11) == kiero::Status::Success) {
+	if (kiero::init(kiero::RenderType::D3D12) == kiero::Status::Success) {
 		// See https://github.com/Rebzzel/kiero/blob/master/METHODSTABLE.txt for available functions
 		auto methods = kiero::getMethodsTable();
-		originalD3D11Present = (D3D11Present_t)methods[8];
-		originalD3D11RSSetState = (D3D11RSSetState_t)methods[104];
-		originalD3D11Draw = (D3D11Draw_t)methods[74];
-		originalD3D11DrawIndexed = (D3D11DrawIndexed_t)methods[73];
+		//originalD3D11Present = (D3D11Present_t)methods[8];
+		//originalD3D11RSSetState = (D3D11RSSetState_t)methods[104];
+		//originalD3D11Draw = (D3D11Draw_t)methods[74];
+		//originalD3D11DrawIndexed = (D3D11DrawIndexed_t)methods[73];
 	}
 
 	// D3D9 Hooking
@@ -326,12 +347,18 @@ void tas_hooks::init_global_hooks()
 	//	originalD3D9SetRenderState = (D3D9SetRenderState_t)methods[57];
 	//}
 
+
+
 	// Windows API Hooking
 	originalLoadLibraryA = LoadLibraryA;
 	originalLoadLibraryW = LoadLibraryW;
 	originalLoadLibraryExA = LoadLibraryExA;
 	originalLoadLibraryExW = LoadLibraryExW;
 	originalFreeLibrary = FreeLibrary;
+	originalIsDebuggerPresent = IsDebuggerPresent;
+	originalCheckRemoteDebuggerPresent = CheckRemoteDebuggerPresent;
+
+	tas_logger::trace(L"Finished init_global_hooks");
 
 	//originalsprintf = sprintf;
 	//originalsnprintf = snprintf;
@@ -427,11 +454,34 @@ BOOL hkFreeLibrary(HMODULE hLibModule) {
 	std::filesystem::path path = moduleFilePath;
 	auto filename = path.filename().generic_wstring();
 
+	if (!IsDebuggerPresent())
+	{
+		tas_logger::trace(L"FreeLibrary: Debugger is not present", moduleFilePath);
+
+	}
+
 	pre_lib_unload_hooks_patches(filename);
 	dll_cache::remove_from_cache(filename);
 
 	return originalFreeLibrary(hLibModule);
 }
+
+BOOL hkIsDebuggerPresent() {
+	tas_logger::trace(L"hkIsDebuggerPresent");
+
+	return FALSE;
+}
+
+BOOL hkCheckRemoteDebuggerPresent(HANDLE hProcess, PBOOL pbDebuggerPresent) {
+	tas_logger::trace(L"hkCheckRemoteDebuggerPresent");
+
+	if (pbDebuggerPresent)
+	{
+		*pbDebuggerPresent = FALSE;
+	}
+	return TRUE;
+}
+
 //
 //int hksprintf(char* str, const char* format, ...)
 //{

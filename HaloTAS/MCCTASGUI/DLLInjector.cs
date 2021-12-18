@@ -56,7 +56,7 @@ namespace MCCTASGUI
                 return;
             }
 
-            Process targetProcess = Process.GetProcessesByName("MCC-Win64-Shipping").FirstOrDefault();
+            Process targetProcess = Process.GetProcessesByName("HaloInfinite").FirstOrDefault();
 
             if(targetProcess == null)
             {
@@ -67,17 +67,17 @@ namespace MCCTASGUI
             }
 
             // Version Checking
-            var fileVersionInfo = FileVersionInfo.GetVersionInfo(targetProcess.MainModule.FileName);
-            if(fileVersionInfo.FileVersion != CURRENT_SUPPORTED_VERSION)
-            {
-                string caption = "Injection Failed - Version Mismatch";
-                string message = $"The version of Master Chief Collection that is running ({fileVersionInfo.FileVersion}) does not match the version supported by MCCTAS ({CURRENT_SUPPORTED_VERSION}). Launch Anyways?";
-                MessageBoxResult result = MessageBox.Show(message, caption, MessageBoxButton.YesNo);
-                if(result != MessageBoxResult.Yes)
-                {
-                    return;
-                }
-            }
+            //var fileVersionInfo = FileVersionInfo.GetVersionInfo(targetProcess.MainModule.FileName);
+            //if(fileVersionInfo.FileVersion != CURRENT_SUPPORTED_VERSION)
+            //{
+            //    string caption = "Injection Failed - Version Mismatch";
+            //    string message = $"The version of Master Chief Collection that is running ({fileVersionInfo.FileVersion}) does not match the version supported by MCCTAS ({CURRENT_SUPPORTED_VERSION}). Launch Anyways?";
+            //    MessageBoxResult result = MessageBox.Show(message, caption, MessageBoxButton.YesNo);
+            //    if(result != MessageBoxResult.Yes)
+            //    {
+            //        return;
+            //    }
+            //}
 
             // geting the handle of the process - with required privileges
             IntPtr procHandle = OpenProcess(PROCESS_CREATE_THREAD | PROCESS_QUERY_INFORMATION | PROCESS_VM_OPERATION | PROCESS_VM_WRITE | PROCESS_VM_READ, false, targetProcess.Id);

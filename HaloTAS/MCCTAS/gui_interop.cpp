@@ -319,7 +319,7 @@ void gui_interop::answer_request(windows_pipe_server::LPPIPEINST pipe)
 	auto request_execution_stop_time = std::chrono::steady_clock::now();
 	auto diff = request_execution_stop_time - request_execution_start_time;
 	auto execution_time_ms = std::chrono::duration <double, std::milli>(diff).count();
-	tas_logger::trace(L"Pipe serviced request {} with response {} in {:0.3f} ms", requestStr, responseStr, execution_time_ms);
+	//tas_logger::trace(L"Pipe serviced request {} with response {} in {:0.3f} ms", requestStr, responseStr, execution_time_ms);
 }
 
 gui_interop::gui_interop()
