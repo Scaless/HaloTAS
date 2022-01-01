@@ -3,9 +3,9 @@ Halo: Combat Evolved PC Speedrunning Tools
 
 Blog stuff: https://blog.scal.es/
 
-Development has halted for the TAS of the 2003 version of the game. All new efforts will be on the Master Chief Collection (MCCTAS).
+Video Demo: https://www.youtube.com/watch?v=xlSbQE2whhw
 
-Video Demo: https://www.youtube.com/watch?v=AEBJUeXLTlo
+Development has halted for the TAS of the 2003 version of the game. All new efforts will be on the Master Chief Collection (MCCTAS).
 
 #### Goals:
 - Have fun
