@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <unordered_map>
 #include <optional>
+#include <string>
 
 /// <summary>
 /// The dll_cache contains the current status of ALL loaded DLLs

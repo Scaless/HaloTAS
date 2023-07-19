@@ -180,7 +180,9 @@ void PatcherMain()
 	// 2580: 0xd46d00
 	// 2611: 0xd46f80
 	// 2645: 0xd46fb0
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd46fb0, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
+	// 3073: 0xe67ae0
+	// 3232: 0xd32910
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd32910, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
 	// 2241: 0xc90ca0
 	// 2282: 0xc90cd0
@@ -189,7 +191,9 @@ void PatcherMain()
 	// 2580: 0xc93bb0
 	// 2611: 0xc93d60
 	// 2645: 0xc93d60
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc93d60, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
+	// 3073: 0xd49890
+	// 3232: 0xc73bd0
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc73bd0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 	///////////////////////////////
 
 	/// HALO 2
@@ -273,7 +277,10 @@ bool __fastcall hkCarrierFreezeInner(int64_t p1, int32_t p2, uint64_t p3, uint64
 {
 	FreezeCounter++;
 	if (FreezeCounter > 10'000) {
-		std::this_thread::sleep_for(std::chrono::milliseconds(5));
+		*p5 = NAN;
+		*p6 = NAN;
+		*p7 = 0;
+		//std::this_thread::sleep_for(std::chrono::milliseconds(5));
 	}
 	return originalCarrierFreezeInner(p1, p2, p3, p4, p5, p6, p7);
 }
