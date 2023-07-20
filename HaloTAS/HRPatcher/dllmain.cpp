@@ -182,7 +182,8 @@ void PatcherMain()
 	// 2645: 0xd46fb0
 	// 3073: 0xe67ae0
 	// 3232: 0xd32910
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd32910, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
+	// 3251: 0xd32960
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd32960, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
 	// 2241: 0xc90ca0
 	// 2282: 0xc90cd0
@@ -193,7 +194,8 @@ void PatcherMain()
 	// 2645: 0xc93d60
 	// 3073: 0xd49890
 	// 3232: 0xc73bd0
-	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc73bd0, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
+	// 3251: 0xc73c20
+	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc73c20, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 	///////////////////////////////
 
 	/// HALO 2
