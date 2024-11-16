@@ -80,6 +80,14 @@ typedef char (*Halo1HandleInput_t)();
 char hkHalo1HandleInput();
 Halo1HandleInput_t originalHalo1HandleInput;
 
+typedef void (*Halo1GatherInputs_t)();
+void hkHalo1GatherInputs();
+Halo1GatherInputs_t originalHalo1GatherInputs;
+
+typedef void (*Halo1ProcessInputs_t)();
+void hkHalo1ProcessInputs();
+Halo1ProcessInputs_t originalHalo1ProcessInputs;
+
 typedef int64_t(*H2Tick_t)(void* a1);
 int64_t hkH2Tick(void* a1);
 H2Tick_t originalH2Tick;
@@ -172,6 +180,10 @@ Halo1Tick2_t originalHalo1Tick2;
 //const hook RuntimeHook_Halo2TickLoop(L"hkHalo2TickLoop", HALO2_DLL_WSTR, halo2::function::OFFSET_H2_TICK_LOOP, (PVOID**)&originalH2TickLoop, hkH2TickLoop);
 //const hook RuntimeHook_Halo3Tick(L"hkHalo3Tick", HALO3_DLL_WSTR, halo3::function::OFFSET_H3_TICK, (PVOID**)&originalH3Tick, hkH3Tick);
 
+const hook RuntimeHook_Halo1GatherInputs(L"hkHalo1GatherInputs", HALO1_DLL_WSTR, 0xB071A0, (PVOID**)&originalHalo1GatherInputs, hkHalo1GatherInputs);
+const hook RuntimeHook_Halo1ProcessInputs(L"hkHalo1ProcessInputs", HALO1_DLL_WSTR, 0xB0ED10, (PVOID**)&originalHalo1ProcessInputs, hkHalo1ProcessInputs);
+
+
 //const hook RuntimeHook_Halo1Tick(L"Halo1Tick", HALO1_DLL_WSTR, 0xc44320, (PVOID**)&originalHalo1Tick, hkHalo1Tick);
 const hook RuntimeHook_Halo1Tick2(L"Halo1Tick2", HALO1_DLL_WSTR, 0x0abf710, (PVOID**)&originalHalo1Tick2, hkHalo1TickDelta);
 // 0x0ac19a0
@@ -202,7 +214,7 @@ const hook GlobalHook_FreeLibrary(L"hkFreeLibrary", (PVOID**)&originalFreeLibrar
 
 //const hook GlobalHook_stdio_vsprintf(L"hkstdio_vsprintf", L"API-MS-WIN-CRT-STDIO-L1-1-0.DLL", "_stdio_common_vsprintf", (PVOID**)&originalstdio_vsprintf, hkstdio_vsprintf);
 
-//const hook GlobalHook_MCCGetInput(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
+const hook GlobalHook_MCCGetInput(L"hkMCCGetInput", L"MCC-Win64-Shipping.exe", mcc::function::OFFSET_MCCGETINPUT, (PVOID**)&originalMCCInput, hkMCCGetInput);
 
 tas_hooks::tas_hooks()
 {
@@ -213,11 +225,19 @@ tas_hooks::tas_hooks()
 	//gRuntimeHooks.push_back(RuntimeHook_Halo3Tick);
 
 	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick);
-	gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1Tick2);
 
 	gRuntimeHooks.push_back(RuntimeHook_Halo1CreateGameEngine);
 	gRuntimeHooks.push_back(RuntimeHook_Halo2CreateGameEngine);
 	gRuntimeHooks.push_back(RuntimeHook_Halo3CreateGameEngine);
+
+	///////////// COOP STUFF
+
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1GatherInputs);
+	//gRuntimeHooks.push_back(RuntimeHook_Halo1ProcessInputs);
+
+	//gGlobalHooks.push_back(GlobalHook_MCCGetInput);
+
 
 	gGlobalHooks.push_back(GlobalHook_D3D11Present);
 	gGlobalHooks.push_back(GlobalHook_D3D11Draw);
@@ -235,7 +255,6 @@ tas_hooks::tas_hooks()
 	//gGlobalHooks.push_back(GlobalHook_stdio_vswprintf);
 	//gGlobalHooks.push_back(GlobalHook_stdio_vsnprintf_s);
 
-	//gGlobalHooks.push_back(GlobalHook_MCCGetInput);
 
 	init_global_hooks();
 }
@@ -565,6 +584,83 @@ char hkHalo1HandleInput() {
 	return originalHalo1HandleInput();
 }
 
+uint64_t currentPlayer = 0;
+void hkHalo1GatherInputs()
+{
+	static uint64_t counter = 0;
+	auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
+	if (H1DLL.has_value()) {
+		uint8_t* PlayerInputEnable[4];
+		PlayerInputEnable[0] = value_ptr<uint8_t>(H1DLL.value(), 0x29A9404);
+		PlayerInputEnable[1] = value_ptr<uint8_t>(H1DLL.value(), 0x29A9408);
+		PlayerInputEnable[2] = value_ptr<uint8_t>(H1DLL.value(), 0x29A940C);
+		PlayerInputEnable[3] = value_ptr<uint8_t>(H1DLL.value(), 0x29A9410);
+
+		currentPlayer = 0;
+		*PlayerInputEnable[0] = 1;
+		*PlayerInputEnable[1] = 0;
+		*PlayerInputEnable[2] = 0;
+		*PlayerInputEnable[3] = 0;
+
+		originalHalo1GatherInputs();
+		originalHalo1ProcessInputs();
+
+		currentPlayer = 1;
+		*PlayerInputEnable[0] = 0;
+		*PlayerInputEnable[1] = 1;
+		*PlayerInputEnable[2] = 0;
+		*PlayerInputEnable[3] = 0;
+
+		originalHalo1GatherInputs();
+		originalHalo1ProcessInputs();
+
+		currentPlayer = 2;
+		*PlayerInputEnable[0] = 0;
+		*PlayerInputEnable[1] = 0;
+		*PlayerInputEnable[2] = 1;
+		*PlayerInputEnable[3] = 0;
+
+		originalHalo1GatherInputs();
+		originalHalo1ProcessInputs();
+
+		currentPlayer = 3;
+		*PlayerInputEnable[0] = 0;
+		*PlayerInputEnable[1] = 0;
+		*PlayerInputEnable[2] = 0;
+		*PlayerInputEnable[3] = 1;
+
+		originalHalo1GatherInputs();
+		originalHalo1ProcessInputs();
+
+		counter++;
+	}
+}
+
+void hkHalo1ProcessInputs()
+{
+
+	return;
+	/*auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
+	if (H1DLL.has_value()) {
+		
+
+		for (uint8_t i = 0; i < 4; i++)
+		{
+			for (uint8_t p = 0; p < 4; p++)
+			{
+				*PlayerInputEnable[p] = (i == p) ? 1 : 0;
+			}
+
+			float* mouse_x = value_ptr<float>(H1DLL.value(), 0x29A9848);
+			*mouse_x = 0.1f * i;
+
+			originalHalo1ProcessInputs();
+
+		}
+		
+	}*/
+}
+
 // The MCCGetInput function is used to pass input from the MCC parent process to each individual game DLL.
 // Be careful when doing anything game-specific in here unless doing the proper checks!
 
@@ -573,117 +669,165 @@ bool recording = false;
 bool playback = false;
 bool forceTick = false;
 int currentPlaybackFrame = 0;
+
 uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 
-	auto OriginalReturn = originalMCCInput(functionAddr, unknown, Input);
-
-	bool tasEnabled = true;
-	if (!tasEnabled) {
-		return OriginalReturn;
-	}
-
-	// This is where we set our own inputs
-	// Buffered: Space, CTRL, Tab , Mouse (& more) are buffered in the engine, multiple presses will be evaluated on the next tick.
-	// Ex: Pressing tab twice will be processed on the next tick, resulting in no weapon swap because you would end up on the original weapon.
-	// Other keys are immediate on the tick that they are needed, for example movement.
-
-	if (GetAsyncKeyState(VK_ADD)) {
-		recording = true;
-		playback = false;
-		tas_logger::warning("recording");
-	}
-	if (GetAsyncKeyState(VK_MULTIPLY)) {
-		playback = true;
-		recording = false;
-		tas_logger::warning("playback");
-	}
-	if (GetAsyncKeyState(VK_SUBTRACT)) {
-		playback = false;
-		recording = false;
-		tas_logger::warning("disabled");
-	}
-
-	tas::overlay::set_current_speedometer(speedo);
-
-	// Halo 1
+	///uint8_t original_return = originalMCCInput(functionAddr, unknown, Input);
+	uint8_t original_return = 0;
+	static uint32_t count = 0;
+	static uint32_t tabCount = 0;
 	auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
 	if (H1DLL.has_value()) {
-		auto rng = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_RNG);
-		auto tick_ptr = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_TICK_BASE, { 0xC });
 
-		if (!rng || !tick_ptr) {
-			return OriginalReturn;
+		switch (currentPlayer) {
+		case 0:
+			original_return = originalMCCInput(functionAddr, unknown, Input);
+			Input->MouseDeltaX *= 20;
+			Input->MouseDeltaY *= 20;
+			/*Input->MouseDeltaX = 0.5f;
+			Input->VKeyTable[VK_TAB] = ((tabCount > 100) && (tabCount <= 200)) ? 1 : 0;
+			tabCount++;
+			if (tabCount >= 200)
+				tabCount = 0;*/
+			break;
+		case 1:
+			memset(Input, 0x00, sizeof(MCCInput));
+			Input->GamepadButtonFlags = Input->GamepadButtonFlags & XINPUT_GAMEPAD_A;
+			Input->GamepadThumbRightX = -12000;
+			Input->GamepadRightTrigger = 255;
+			break;
+		case 2:
+			memset(Input, 0x00, sizeof(MCCInput));
+			Input->VKeyTable[0x53] = 1;
+			Input->VKeyTable[VK_SPACE] = 1;
+			break;
+		case 3:
+			memset(Input, 0x00, sizeof(MCCInput));
+			if(count < 1200)
+				Input->VKeyTable[VK_LCONTROL] = 1;
+			else
+				Input->VKeyTable[VK_LCONTROL] = 0;
+
+			if (count > 2400)
+				count = 0;
+			break;
 		}
 
-		if (globalStall) {
-			return OriginalReturn;
-		}
+		count++;
 
-		int32_t tick = *tick_ptr;
-		static int32_t lasttick = tick;
-		static int32_t absoluteTick = 0;
-		static bool tickRevert = false;
-
-		tas_logger::info("GetInput on tick {} | RNG({})", tick, *rng);
-
-		if (tick == 0 && recording) {
-			InputCache.reset();
-			InputCache.start_tick(*rng);
-		}
-
-		if (tick == 0) {
-			absoluteTick = 0;
-			currentPlaybackFrame = 0;
-			speedo->clear();
-		}
-
-		bool ticked = false;
-		if (lasttick != tick && tick != 0) {
-			if (!(tick < lasttick && lasttick != 0)) { // Revert
-				ticked = true;
-			}
-		}
-		lasttick = tick;
-
-		if (tick > 0 && recording && ticked) {
-			InputCache.end_tick();
-			InputCache.start_tick(*rng);
-		}
-
-		if (recording) {
-			InputCache.push_input(*Input);
-		}
-
-		if (ticked) {
-			absoluteTick++;
-			currentPlaybackFrame = 0;
-		}
-
-		if (playback) {
-			auto hasCurrentInput = InputCache.get_input(absoluteTick, currentPlaybackFrame, *rng);
-			if (hasCurrentInput.has_value()) {
-				auto currentInput = hasCurrentInput.value();
-				memcpy_s(Input, sizeof(MCCInput), &currentInput.input, sizeof(currentInput.input));
-				forceTick = currentInput.isLastFrame;
-				currentPlaybackFrame++;
-
-				if (currentInput.rngError) {
-					globalStall = true;
-				}
-			}
-			else {
-				tas_logger::info("Tick({}) No input", absoluteTick);
-				currentPlaybackFrame = 0;
-				forceTick = true;
-			}
-		}
-
-		// Just in case
-		if (!playback) {
-			forceTick = false;
-		}
-
+		return original_return;
 	}
+
+	
+	return original_return;
+
+	//bool tasEnabled = true;
+	//if (!tasEnabled) {
+	//	return OriginalReturn;
+	//}
+
+	//// This is where we set our own inputs
+	//// Buffered: Space, CTRL, Tab , Mouse (& more) are buffered in the engine, multiple presses will be evaluated on the next tick.
+	//// Ex: Pressing tab twice will be processed on the next tick, resulting in no weapon swap because you would end up on the original weapon.
+	//// Other keys are immediate on the tick that they are needed, for example movement.
+
+	//if (GetAsyncKeyState(VK_ADD)) {
+	//	recording = true;
+	//	playback = false;
+	//	tas_logger::warning("recording");
+	//}
+	//if (GetAsyncKeyState(VK_MULTIPLY)) {
+	//	playback = true;
+	//	recording = false;
+	//	tas_logger::warning("playback");
+	//}
+	//if (GetAsyncKeyState(VK_SUBTRACT)) {
+	//	playback = false;
+	//	recording = false;
+	//	tas_logger::warning("disabled");
+	//}
+
+	//tas::overlay::set_current_speedometer(speedo);
+
+	//// Halo 1
+	//auto H1DLL = dll_cache::get_module_handle(HALO1_DLL_WSTR);
+	//if (H1DLL.has_value()) {
+	//	auto rng = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_RNG);
+	//	auto tick_ptr = value_ptr<int32_t>(H1DLL.value(), halo1::data::OFFSET_TICK_BASE, { 0xC });
+
+	//	if (!rng || !tick_ptr) {
+	//		return OriginalReturn;
+	//	}
+
+	//	if (globalStall) {
+	//		return OriginalReturn;
+	//	}
+
+	//	int32_t tick = *tick_ptr;
+	//	static int32_t lasttick = tick;
+	//	static int32_t absoluteTick = 0;
+	//	static bool tickRevert = false;
+
+	//	tas_logger::info("GetInput on tick {} | RNG({})", tick, *rng);
+
+	//	if (tick == 0 && recording) {
+	//		InputCache.reset();
+	//		InputCache.start_tick(*rng);
+	//	}
+
+	//	if (tick == 0) {
+	//		absoluteTick = 0;
+	//		currentPlaybackFrame = 0;
+	//		speedo->clear();
+	//	}
+
+	//	bool ticked = false;
+	//	if (lasttick != tick && tick != 0) {
+	//		if (!(tick < lasttick && lasttick != 0)) { // Revert
+	//			ticked = true;
+	//		}
+	//	}
+	//	lasttick = tick;
+
+	//	if (tick > 0 && recording && ticked) {
+	//		InputCache.end_tick();
+	//		InputCache.start_tick(*rng);
+	//	}
+
+	//	if (recording) {
+	//		InputCache.push_input(*Input);
+	//	}
+
+	//	if (ticked) {
+	//		absoluteTick++;
+	//		currentPlaybackFrame = 0;
+	//	}
+
+	//	if (playback) {
+	//		auto hasCurrentInput = InputCache.get_input(absoluteTick, currentPlaybackFrame, *rng);
+	//		if (hasCurrentInput.has_value()) {
+	//			auto currentInput = hasCurrentInput.value();
+	//			memcpy_s(Input, sizeof(MCCInput), &currentInput.input, sizeof(currentInput.input));
+	//			forceTick = currentInput.isLastFrame;
+	//			currentPlaybackFrame++;
+
+	//			if (currentInput.rngError) {
+	//				globalStall = true;
+	//			}
+	//		}
+	//		else {
+	//			tas_logger::info("Tick({}) No input", absoluteTick);
+	//			currentPlaybackFrame = 0;
+	//			forceTick = true;
+	//		}
+	//	}
+
+	//	// Just in case
+	//	if (!playback) {
+	//		forceTick = false;
+	//	}
+
+	//}
 
 	// Halo 2
 	/*
@@ -844,7 +988,7 @@ uint8_t hkMCCGetInput(int64_t functionAddr, int64_t unknown, MCCInput* Input) {
 	*/
 
 	// DEFAULT
-	return OriginalReturn;
+//	return 1;
 }
 
 int64_t hkH1GetNumberOfTicksToTick(float a1, uint8_t a2) {
@@ -1001,6 +1145,9 @@ HANDLE hkGameEnginePlayGame(void* engine, GameHost** host, void* options) {
 	tas_logger::info("\tcampaign_difficulty_level: {}", opt->campaign_difficulty_level);
 	tas_logger::info("\tpeer_count: {}", opt->peer_count);
 	tas_logger::info("\tplayer_count: {}", opt->player_count);
+
+	//uint64_t* player_count_new = (uint64_t*)((char*)(options) + 0xE8);
+	//*player_count_new = 2;
 
 	HANDLE result = engine_play_game_vptr(engine, host, options);
 

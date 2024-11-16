@@ -32,7 +32,8 @@ static std::array<const std::string, 7> GameEngineTypeString = {
 
 namespace mcc {
 	namespace function {
-		inline const uint64_t OFFSET_MCCGETINPUT = 0x18E3714;
+		inline const uint64_t OFFSET_MCCGETINPUT = 0x1D9270;
+		// 2448:  0x1D32C4
 	}
 }
 

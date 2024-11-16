@@ -183,6 +183,8 @@ void PatcherMain()
 	// 3073: 0xe67ae0
 	// 3232: 0xd32910
 	// 3251: 0xd32960
+	// 3272: 0xd32960
+	// 3385: 0xd32960
 	gRuntimeHooks.push_back(hook(L"CarrierFreezeOuter", L"halo1.dll", 0xd32960, (PVOID**)&originalCarrierFreezeOuter, hkCarrierFreezeOuter));
 	// 2094: 0xc8a470
 	// 2241: 0xc90ca0
@@ -195,6 +197,8 @@ void PatcherMain()
 	// 3073: 0xd49890
 	// 3232: 0xc73bd0
 	// 3251: 0xc73c20
+	// 3272: 0xc73c20
+	// 3385: 0xc73c20
 	gRuntimeHooks.push_back(hook(L"CarrierFreezeInner", L"halo1.dll", 0xc73c20, (PVOID**)&originalCarrierFreezeInner, hkCarrierFreezeInner));
 	///////////////////////////////
 
